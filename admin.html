@@ -29,9 +29,20 @@
       <h2>Bestellungen</h2>
       <div id="ordersList">Lade Bestellungen...</div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
     // Einfaches statisches Passwort (z.B. "tortenadmin2025")
     const ADMIN_PW = "tortenadmin2025";
+    // Firebase-Konfiguration (ersetzen durch eigene Werte!)
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       if(document.getElementById('adminPw').value === ADMIN_PW) {
@@ -43,33 +54,35 @@
       }
     });
 
-    // Platzhalter: Lade Bestellungen aus Firestore
-    function loadOrders() {
-      // TODO: Firestore-Integration
-      // Beispiel-Daten
-      const orders = [
-        {id:'abc123', name:'Max Mustermann', status:'neu', email:'max@test.de'},
-        {id:'def456', name:'Erika Musterfrau', status:'in Vorbereitung', email:'erika@test.de'}
-      ];
+    async function loadOrders() {
       const statusOptions = ['neu','angenommen','in Vorbereitung','abgelehnt','fertig'];
       let html = '<table style="width:100%;border-collapse:collapse;margin-top:12px;">';
       html += '<tr><th>Name</th><th>Status</th><th>Aktion</th></tr>';
-      orders.forEach(order => {
-        html += `<tr><td>${order.name}</td><td><select data-id="${order.id}" class="statusSel">`;
-        statusOptions.forEach(opt => {
-          html += `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`;
+      try {
+        const snap = await db.collection('orders').orderBy('created','desc').get();
+        snap.forEach(doc => {
+          const order = doc.data();
+          html += `<tr><td>${order.name}</td><td><select data-id="${doc.id}" class="statusSel">`;
+          statusOptions.forEach(opt => {
+            html += `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`;
+          });
+          html += `</select></td><td><a href="mailto:${order.email}">Mail</a></td></tr>`;
         });
-        html += `</select></td><td><a href="mailto:${order.email}">Mail</a></td></tr>`;
-      });
-      html += '</table>';
-      document.getElementById('ordersList').innerHTML = html;
-      // Status-Änderung (Platzhalter)
-      document.querySelectorAll('.statusSel').forEach(sel => {
-        sel.addEventListener('change', function() {
-          // TODO: Firestore-Update + ggf. Cloud Function Trigger
-          alert('Status geändert für Bestellung ' + this.dataset.id + ' auf ' + this.value);
+        html += '</table>';
+        document.getElementById('ordersList').innerHTML = html;
+        document.querySelectorAll('.statusSel').forEach(sel => {
+          sel.addEventListener('change', async function() {
+            try {
+              await db.collection('orders').doc(this.dataset.id).update({status:this.value});
+              alert('Status geändert für Bestellung ' + this.dataset.id + ' auf ' + this.value);
+            } catch (err) {
+              alert('Fehler beim Status-Update!');
+            }
+          });
         });
-      });
+      } catch (err) {
+        document.getElementById('ordersList').innerHTML = 'Fehler beim Laden der Bestellungen.';
+      }
     }
     </script>
   </div>

@@ -1,0 +1,12 @@
+{
+  "name": "torten-functions",
+  "description": "Cloud Functions für Bestell- und Bewertungsseite",
+  "dependencies": {
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1",
+    "@sendgrid/mail": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -54,7 +54,18 @@
       <div id="orderSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank! Ihre Bestellung wurde übermittelt.</div>
       <div id="orderError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
     </form>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
+    // Firebase-Konfiguration (ersetzen durch eigene Werte!)
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     // Preisberechnung
     const prices = {
       size: { mini: 45, normal: 55, gross: 80 },
@@ -70,14 +81,34 @@
       document.getElementById('orderSum').textContent = sum ? `Gesamt: ${sum} €` : '';
     }
     document.getElementById('orderForm').addEventListener('change', calcSum);
-    // Platzhalter für Firestore-Integration und Formular-Submit
-    document.getElementById('orderForm').addEventListener('submit', function(e) {
+
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      // TODO: Firestore-Integration
-      document.getElementById('orderSuccess').style.display = 'block';
-      document.getElementById('orderError').style.display = 'none';
-      this.reset();
-      document.getElementById('orderSum').textContent = '';
+      const f = this;
+      const extras = f.extras ? (f.extras.length ? Array.from(f.extras).filter(e=>e.checked).map(e=>e.value) : (f.extras.checked ? [f.extras.value] : [])) : [];
+      const order = {
+        name: f.name.value,
+        adresse: f.strasse.value + ', ' + f.plzort.value,
+        telefon: f.telefon.value,
+        email: f.email.value,
+        details: {
+          groesse: f.size.value,
+          extras: extras,
+          lieferung: f.lieferung.value
+        },
+        status: "neu",
+        created: new Date().toISOString()
+      };
+      try {
+        await db.collection('orders').add(order);
+        document.getElementById('orderSuccess').style.display = 'block';
+        document.getElementById('orderError').style.display = 'none';
+        f.reset();
+        document.getElementById('orderSum').textContent = '';
+      } catch (err) {
+        document.getElementById('orderSuccess').style.display = 'none';
+        document.getElementById('orderError').style.display = 'block';
+      }
     });
     </script>
   </div>

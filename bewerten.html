@@ -81,14 +81,46 @@
       <div id="reviewSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank für Ihre Bewertung!</div>
       <div id="reviewError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
     </form>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
-    // Platzhalter für Firestore-Integration und Formular-Submit
-    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    // Firebase-Konfiguration (ersetzen durch eigene Werte!)
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // orderId aus URL holen
+    function getOrderId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('orderId') || '';
+    }
+
+    document.getElementById('reviewForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      // TODO: Firestore-Integration
-      document.getElementById('reviewSuccess').style.display = 'block';
-      document.getElementById('reviewError').style.display = 'none';
-      this.reset();
+      const f = this;
+      const review = {
+        orderId: getOrderId(),
+        geschmack: f.geschmack.value,
+        aussehen: f.aussehen.value,
+        service: f.service.value,
+        gesamt: f.gesamt.value,
+        empfehlung: f.empfehlung.value,
+        text: f.text.value,
+        created: new Date().toISOString()
+      };
+      try {
+        await db.collection('reviews').add(review);
+        document.getElementById('reviewSuccess').style.display = 'block';
+        document.getElementById('reviewError').style.display = 'none';
+        f.reset();
+      } catch (err) {
+        document.getElementById('reviewSuccess').style.display = 'none';
+        document.getElementById('reviewError').style.display = 'block';
+      }
     });
     </script>
   </div>
