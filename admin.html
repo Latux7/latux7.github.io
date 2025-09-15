@@ -1,106 +1,580 @@
 <!-- admin.html Grundgerüst -->
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <nav>
-      <a href="index.html">Startseite</a>
-      <a href="bestellen.html">Bestellen</a>
-      <a href="bewerten.html">Bewerten</a>
-    </nav>
-    <h1>Admin Dashboard</h1>
-    <div id="adminLogin">
-      <form id="loginForm">
-        <label>Passwort:<br><input type="password" id="adminPw" required></label>
-        <input type="submit" value="Login">
-      </form>
-      <div id="loginError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Falsches Passwort!</div>
-    </div>
-    <div id="adminPanel" style="display:none;">
-  <h2>Alle Bestellungen</h2>
-  <div id="ordersList">Lade Bestellungen...</div>
-    </div>
-    <script src="firebase-config.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script>
-    // Einfaches statisches Passwort (z.B. "tortenadmin2025")
-    const ADMIN_PW = "tortenadmin2025";
-    // Firebase-Konfiguration aus externer Datei
-    firebase.initializeApp(window.firebaseConfig);
-    const db = firebase.firestore();
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav>
+        <a href="index.html">Startseite</a>
+        <a href="bestellen.html">Bestellen</a>
+        <a href="bewerten.html">Bewerten</a>
+      </nav>
+      <h1>Admin Dashboard</h1>
+      <div id="adminLogin">
+        <form id="loginForm">
+          <label
+            >Passwort:<br /><input type="password" id="adminPw" required
+          /></label>
+          <input type="submit" value="Login" />
+        </form>
+        <div
+          id="loginError"
+          style="
+            display: none;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 12px;
+          "
+        >
+          Falsches Passwort!
+        </div>
+      </div>
+      <div id="adminPanel" style="display: none">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2 style="margin: 0">Bestellungen</h2>
+          <button
+            id="logoutBtn"
+            style="background: #d32f2f; padding: 8px 16px; font-size: 0.9rem"
+          >
+            Abmelden
+          </button>
+        </div>
+        <div id="ordersList">Lade Bestellungen...</div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+      <script src="firebase-config.js"></script>
+      <script src="email-config.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+      <script>
+        // Einfaches statisches Passwort (z.B. "tortenadmin2025")
+        const ADMIN_PW = "tortenadmin2025";
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      if(document.getElementById('adminPw').value === ADMIN_PW) {
-        document.getElementById('adminLogin').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-        loadOrders();
-      } else {
-        document.getElementById('loginError').style.display = 'block';
-      }
-    });
+        // Firebase-Konfiguration aus externer Datei
+        firebase.initializeApp(window.firebaseConfig);
+        const db = firebase.firestore();
 
-    async function loadOrders() {
-      const statusOptions = ['neu','angenommen','in Vorbereitung','abgelehnt','fertig'];
-      let html = '';
-      try {
-        const snap = await db.collection('orders').orderBy('created','desc').get();
-        const customerIds = Array.from(new Set(snap.docs.map(doc => doc.data().customerId)));
-        const customers = {};
-        if (customerIds.length > 0) {
-          const custSnaps = await db.collection('customers').where(firebase.firestore.FieldPath.documentId(), 'in', customerIds).get();
-          custSnaps.forEach(custDoc => { customers[custDoc.id] = custDoc.data(); });
+        // Bestellung löschen (global verfügbar)
+        window.deleteOrder = async function (orderId) {
+          if (
+            !confirm(
+              "Sind Sie sicher, dass Sie diese Bestellung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+            )
+          ) {
+            return;
+          }
+
+          try {
+            await db.collection("orders").doc(orderId).delete();
+            alert("Bestellung erfolgreich gelöscht.");
+            loadOrders(); // Liste neu laden
+          } catch (err) {
+            console.error("Fehler beim Löschen:", err);
+            alert("Fehler beim Löschen der Bestellung!");
+          }
+        };
+
+        // E-Mail Templates basierend auf Status
+        function getEmailTemplate(status, customerName, orderDetails) {
+          const templates = {
+            angenommen: {
+              subject: "Ihre Tortenbestellung wurde angenommen! 🎂",
+              html: `
+                <h2>Liebe/r ${customerName},</h2>
+                <p>vielen Dank für Ihre Bestellung bei Laura's Backstube!</p>
+                <p><strong>Gute Nachricht:</strong> Ihre Tortenbestellung wurde angenommen und wird nun vorbereitet.</p>
+                <p><strong>Bestelldetails:</strong><br>
+                Tortengröße: ${orderDetails.size}<br>
+                Extras: ${orderDetails.extras}<br>
+                Gesamtpreis: ${orderDetails.price}€</p>
+                <p>Wir werden Sie informieren, sobald Ihre Torte fertig ist.</p>
+                <p>Mit süßen Grüßen,<br>Laura's Backstube Team</p>
+              `,
+            },
+            "in Vorbereitung": {
+              subject: "Ihre Torte ist in Vorbereitung! 👩‍🍳",
+              html: `
+                <h2>Liebe/r ${customerName},</h2>
+                <p>Ihre Torte wird gerade mit viel Liebe zubereitet!</p>
+                <p>Unsere Bäckerin arbeitet bereits an Ihrer individuellen Torte. Sie können sich schon auf das Ergebnis freuen!</p>
+                <p><strong>Bestelldetails:</strong><br>
+                Tortengröße: ${orderDetails.size}<br>
+                Extras: ${orderDetails.extras}<br>
+                Gesamtpreis: ${orderDetails.price}€</p>
+                <p>Wir melden uns, sobald Ihre Torte abholbereit ist.</p>
+                <p>Mit süßen Grüßen,<br>Laura's Backstube Team</p>
+              `,
+            },
+            fertig: {
+              subject: "Ihre Torte ist fertig zur Abholung! 🎉",
+              html: `
+                <h2>Liebe/r ${customerName},</h2>
+                <p><strong>Ihre Torte ist fertig!</strong></p>
+                <p>Sie können Ihre wunderschöne, frisch gebackene Torte jetzt abholen.</p>
+                <p><strong>Bestelldetails:</strong><br>
+                Tortengröße: ${orderDetails.size}<br>
+                Extras: ${orderDetails.extras}<br>
+                Gesamtpreis: ${orderDetails.price}€</p>
+                <p><strong>Abholung:</strong><br>
+                ${window.emailConfig.company.name}<br>
+                ${window.emailConfig.company.address}<br>
+                ${window.emailConfig.company.postal}<br>
+                Öffnungszeiten: ${window.emailConfig.company.hours}</p>
+                <p>Wir freuen uns auf Ihren Besuch!</p>
+                <p>Mit süßen Grüßen,<br>Laura's Backstube Team</p>
+              `,
+            },
+            abgelehnt: {
+              subject: "Ihre Tortenbestellung - Leider müssen wir absagen",
+              html: `
+                <h2>Liebe/r ${customerName},</h2>
+                <p>vielen Dank für Ihr Interesse an Laura's Backstube.</p>
+                <p>Leider müssen wir Ihre Bestellung absagen. Dies kann verschiedene Gründe haben (Kapazität, spezielle Anforderungen, etc.).</p>
+                <p>Gerne können Sie uns telefonisch kontaktieren, um eine alternative Lösung zu finden.</p>
+                <p>Wir entschuldigen uns für die Unannehmlichkeiten.</p>
+                <p>Mit freundlichen Grüßen,<br>Laura's Backstube Team</p>
+              `,
+            },
+          };
+
+          return templates[status] || null;
         }
-        if (snap.empty) {
-          html = '<div style="margin:2em 0;">Keine Bestellungen vorhanden.</div>';
-        } else {
-          snap.forEach(doc => {
-            const order = doc.data();
-            const cust = customers[order.customerId] || {};
-            html += `<div style="border:1px solid #dbeedb;border-radius:16px;padding:18px 16px;margin-bottom:24px;box-shadow:0 1px 8px #e6f4ea;">
-              <div style="font-size:1.1em;font-weight:600;color:#92d050;">Bestellung vom ${order.created ? new Date(order.created).toLocaleString('de-DE') : '-'}</div>
-              <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || '-'}<br>
-                <b>E-Mail:</b> <a href="mailto:${cust.email||''}">${cust.email||''}</a><br>
-                <b>Telefon:</b> ${cust.telefon||''}
-              </div>
-              <div style="margin:8px 0 0 0;"><b>Adresse:</b> ${cust.street||'-'}, ${cust.plz||''} ${cust.city||''}</div>
-              <div style="margin:8px 0 0 0;"><b>Tortengröße:</b> ${order.details && order.details.groesse ? order.details.groesse : '-'}<br>
-                <b>Extras:</b> ${(order.details && order.details.extras && order.details.extras.length) ? order.details.extras.join(', ') : 'keine'}<br>
-                <b>Lieferung:</b> ${order.details && order.details.lieferung ? (order.details.lieferung === '' ? 'Abholung' : (order.details.lieferung === '20km' ? 'bis 20 km' : 'bis 40 km')) : 'Abholung'}
-              </div>
-              <div style="margin:8px 0 0 0;"><b>Status:</b> <select data-id="${doc.id}" class="statusSel" style="font-size:1em;padding:4px 10px;border-radius:8px;">
-                ${statusOptions.map(opt => `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`).join('')}
-              </select></div>
-              <div style="margin:8px 0 0 0;"><b>Aktion:</b> <a href="mailto:${cust.email||''}">Mail an Kunde</a></div>
-            </div>`;
-          });
+
+        // E-Mail über EmailJS senden (kostenlos, funktioniert vom Frontend)
+        async function sendEmailToCustomer(
+          customerEmail,
+          customerName,
+          status,
+          orderDetails
+        ) {
+          try {
+            const config = window.emailConfig;
+
+            // EmailJS initialisieren
+            emailjs.init(config.publicKey);
+
+            // Bestimme Template und Parameter basierend auf Status
+            let templateId, templateParams;
+
+            if (status === "fertig") {
+              // Verwende separates "fertig" Template
+              templateId = config.templates.order_ready;
+
+              // Bestimme Liefermethode (Standard = Abholung)
+              const deliveryType = orderDetails.delivery || "abholung";
+              const deliveryMessage =
+                config.deliveryMessages[deliveryType] ||
+                config.deliveryMessages.abholung;
+
+              templateParams = {
+                to: customerEmail,              // Alternative 1
+                to_email: customerEmail,        // Standard
+                user_email: customerEmail,      // Alternative 2
+                email: customerEmail,           // Alternative 3
+                to_name: customerName,
+                customer_name: customerName,
+                order_items: `${orderDetails.size} mit ${orderDetails.extras}`,
+                total_price: orderDetails.price,
+                company_email: config.company.email,
+                delivery_message: deliveryMessage,
+                wunschtermin: orderDetails.wunschtermin || "Nicht angegeben",
+              };
+            } else {
+              // Verwende universelles Status-Template
+              templateId = config.templates.order_status;
+              const statusInfo = config.statusData[status];
+
+              if (!statusInfo) {
+                alert('Status "' + status + '" nicht konfiguriert!');
+                return;
+              }
+
+              templateParams = {
+                to: customerEmail,              // Alternative 1
+                to_email: customerEmail,        // Standard
+                user_email: customerEmail,      // Alternative 2
+                email: customerEmail,           // Alternative 3
+                to_name: customerName,
+                customer_name: customerName,
+                order_items: `${orderDetails.size} mit ${orderDetails.extras}`,
+                total_price: orderDetails.price,
+                company_email: config.company.email,
+                header_color: statusInfo.header_color,
+                status_title: statusInfo.title,
+                status_message: statusInfo.message,
+                delivery_message: "", // Leer bei allen Status außer "fertig"
+                footer_message: statusInfo.footer_message,
+                wunschtermin: orderDetails.wunschtermin || "Nicht angegeben",
+              };
+            }
+
+            console.log(
+              "Sende E-Mail mit Template:",
+              templateId,
+              templateParams
+            );
+
+            // Alternative Sendemethode für bessere Kompatibilität
+            const response = await emailjs.send(
+              config.serviceId,
+              templateId,
+              templateParams,
+              {
+                publicKey: config.publicKey,
+                // Zusätzliche Optionen für Empfänger
+                to_email: customerEmail,
+                to_name: customerName
+              }
+            );
+
+            console.log("E-Mail erfolgreich gesendet:", response);
+            alert("E-Mail erfolgreich an " + customerEmail + " gesendet!");
+          } catch (error) {
+            console.error("E-Mail Versand Fehler:", error);
+            alert(
+              "Fehler beim E-Mail-Versand: " + (error.text || error.message)
+            );
+          }
         }
-        document.getElementById('ordersList').innerHTML = html;
-        document.querySelectorAll('.statusSel').forEach(sel => {
-          sel.addEventListener('change', async function() {
-            try {
-              await db.collection('orders').doc(this.dataset.id).update({status:this.value});
-              alert('Status geändert für Bestellung ' + this.dataset.id + ' auf ' + this.value);
-            } catch (err) {
-              alert('Fehler beim Status-Update!');
+
+        // Status-E-Mail senden (global verfügbar)
+        window.sendStatusEmail = async function (
+          orderId,
+          customerEmail,
+          customerName,
+          status,
+          size,
+          extras,
+          price
+        ) {
+          if (!customerEmail) {
+            alert("Keine E-Mail-Adresse für diesen Kunden verfügbar.");
+            return;
+          }
+
+          // Prüfe EmailJS-Konfiguration
+          if (
+            !window.emailConfig.serviceId ||
+            !window.emailConfig.publicKey ||
+            window.emailConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY"
+          ) {
+            alert(
+              "EmailJS nicht konfiguriert. Bitte Public Key in email-config.js eintragen."
+            );
+            return;
+          }
+
+          // Hole Bestellungsdetails falls zusätzliche Infos benötigt werden
+          try {
+            const orderDoc = await db.collection("orders").doc(orderId).get();
+            const orderData = orderDoc.data();
+
+            const orderDetails = {
+              size: size || "Unbekannt",
+              extras: extras || "keine",
+              price: price || "0",
+              delivery: orderData?.lieferung ? "lieferung" : "abholung", // Bestimme Lieferart
+              wunschtermin: orderData?.wunschtermin
+                ? `${new Date(orderData.wunschtermin.datum).toLocaleDateString(
+                    "de-DE"
+                  )}${
+                    orderData.wunschtermin.uhrzeit
+                      ? ` um ${orderData.wunschtermin.uhrzeit}`
+                      : ""
+                  }`
+                : "Nicht angegeben",
+            };
+
+            await sendEmailToCustomer(
+              customerEmail,
+              customerName,
+              status,
+              orderDetails
+            );
+          } catch (error) {
+            console.error("Fehler beim Laden der Bestelldetails:", error);
+            // Fallback mit verfügbaren Daten
+            const orderDetails = {
+              size: size || "Unbekannt",
+              extras: extras || "keine",
+              price: price || "0",
+              delivery: "abholung", // Standard
+              wunschtermin: "Nicht angegeben",
+            };
+
+            await sendEmailToCustomer(
+              customerEmail,
+              customerName,
+              status,
+              orderDetails
+            );
+          }
+        };
+
+        // Prüfe beim Laden, ob bereits angemeldet
+        function checkLoginStatus() {
+          if (localStorage.getItem("adminLoggedIn") === "true") {
+            document.getElementById("adminLogin").style.display = "none";
+            document.getElementById("adminPanel").style.display = "block";
+            loadOrders();
+          }
+        }
+
+        // Login-Handler
+        document
+          .getElementById("loginForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (document.getElementById("adminPw").value === ADMIN_PW) {
+              localStorage.setItem("adminLoggedIn", "true");
+              document.getElementById("adminLogin").style.display = "none";
+              document.getElementById("adminPanel").style.display = "block";
+              loadOrders();
+            } else {
+              document.getElementById("loginError").style.display = "block";
             }
           });
+
+        // Logout-Handler
+        function logout() {
+          localStorage.removeItem("adminLoggedIn");
+          document.getElementById("adminLogin").style.display = "block";
+          document.getElementById("adminPanel").style.display = "none";
+          document.getElementById("adminPw").value = "";
+          document.getElementById("loginError").style.display = "none";
+        }
+
+        // Beim Laden der Seite prüfen
+        window.addEventListener("DOMContentLoaded", function () {
+          checkLoginStatus();
+
+          // Logout-Button Event-Listener hinzufügen
+          document
+            .getElementById("logoutBtn")
+            .addEventListener("click", logout);
         });
-      } catch (err) {
-        document.getElementById('ordersList').innerHTML = 'Fehler beim Laden der Bestellungen.';
-      }
-    }
-    </script>
-  </div>
-</body>
+
+        async function loadOrders() {
+          const statusOptions = [
+            "neu",
+            "angenommen",
+            "in Vorbereitung",
+            "abgelehnt",
+            "fertig",
+          ];
+          let html = "";
+          try {
+            const snap = await db
+              .collection("orders")
+              .orderBy("created", "desc")
+              .get();
+            const customerIds = Array.from(
+              new Set(snap.docs.map((doc) => doc.data().customerId))
+            );
+            const customers = {};
+            if (customerIds.length > 0) {
+              const custSnaps = await db
+                .collection("customers")
+                .where(
+                  firebase.firestore.FieldPath.documentId(),
+                  "in",
+                  customerIds
+                )
+                .get();
+              custSnaps.forEach((custDoc) => {
+                customers[custDoc.id] = custDoc.data();
+              });
+            }
+            if (snap.empty) {
+              html =
+                '<div style="margin:2em 0;">Keine Bestellungen vorhanden.</div>';
+            } else {
+              // Gruppiere Bestellungen nach Status (fertig wird ausgeblendet)
+              const grouped = {
+                neu: [],
+                angenommen: [],
+                "in Vorbereitung": [],
+                abgelehnt: [],
+              };
+              snap.forEach((doc) => {
+                const order = doc.data();
+                if (order.status === "fertig") return; // Fertige ausblenden
+                if (grouped[order.status])
+                  grouped[order.status].push({ doc, order });
+              });
+              // Accordion UI
+              html += `<div style="margin-bottom:18px;">`;
+              // NEU immer offen
+              html += `<details open style='margin-bottom:12px;'><summary style="font-size:1.1em;font-weight:600;color:#d32f2f;cursor:pointer;">Neue Bestellungen (${grouped.neu.length})</summary>`;
+              if (grouped.neu.length === 0) {
+                html +=
+                  '<div style="margin:1em 0 1em 1em;">Keine neuen Bestellungen.</div>';
+              } else {
+                grouped.neu.forEach(({ doc, order }) => {
+                  const cust = customers[order.customerId] || {};
+                  html += renderOrder(doc, order, cust, statusOptions);
+                });
+              }
+              html += `</details>`;
+              // Andere Status (zugeklappt)
+              const otherStatus = [
+                "angenommen",
+                "in Vorbereitung",
+                "abgelehnt",
+              ];
+              otherStatus.forEach((st) => {
+                html += `<details style='margin-bottom:12px;'><summary style="font-size:1.1em;font-weight:600;color:#92d050;cursor:pointer;">${
+                  st.charAt(0).toUpperCase() + st.slice(1)
+                } (${grouped[st].length})</summary>`;
+                if (grouped[st].length === 0) {
+                  html +=
+                    '<div style="margin:1em 0 1em 1em;">Keine Bestellungen.</div>';
+                } else {
+                  grouped[st].forEach(({ doc, order }) => {
+                    const cust = customers[order.customerId] || {};
+                    html += renderOrder(doc, order, cust, statusOptions);
+                  });
+                }
+                html += `</details>`;
+              });
+              html += `</div>`;
+            }
+            document.getElementById("ordersList").innerHTML = html;
+            document.querySelectorAll(".statusSel").forEach((sel) => {
+              sel.addEventListener("change", async function () {
+                try {
+                  await db
+                    .collection("orders")
+                    .doc(this.dataset.id)
+                    .update({ status: this.value });
+                  alert(
+                    "Status geändert für Bestellung " +
+                      this.dataset.id +
+                      " auf " +
+                      this.value
+                  );
+                  loadOrders(); // Liste neu laden
+                } catch (err) {
+                  alert("Fehler beim Status-Update!");
+                }
+              });
+            });
+          } catch (err) {
+            document.getElementById("ordersList").innerHTML =
+              "Fehler beim Laden der Bestellungen.";
+          }
+        }
+
+        // Hilfsfunktion für Bestell-HTML
+        function renderOrder(doc, order, cust, statusOptions) {
+          return `<div style="border:1px solid #dbeedb;border-radius:16px;padding:18px 16px;margin-bottom:24px;box-shadow:0 1px 8px #e6f4ea;">
+        <div style="font-size:1.1em;font-weight:600;color:#92d050;">Bestellung vom ${
+          order.created ? new Date(order.created).toLocaleString("de-DE") : "-"
+        }</div>
+        <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || "-"}<br>
+          <b>E-Mail:</b> <a href="mailto:${cust.email || ""}">${
+            cust.email || ""
+          }</a><br>
+          <b>Telefon:</b> ${cust.telefon || ""}
+        </div>
+        <div style="margin:8px 0 0 0;"><b>Adresse:</b> ${
+          order.adresse
+            ? `${order.adresse.street || "-"}, ${order.adresse.plz || ""} ${
+                order.adresse.city || ""
+              }`
+            : cust.street
+            ? `${cust.street || "-"}, ${cust.plz || ""} ${cust.city || ""}`
+            : "Keine Adresse (Abholung)"
+        }</div>
+        <div style="margin:8px 0 0 0;">
+          <b>Tortengröße:</b> ${
+            order.details && order.details.durchmesserCm
+              ? `${order.details.durchmesserCm} cm`
+              : order.details && order.details.groesse
+              ? order.details.groesse
+              : "-"
+          }<br>
+          <b>Extras:</b> ${
+            order.details && order.details.extras && order.details.extras.length
+              ? order.details.extras.join(", ")
+              : "keine"
+          }<br>
+          <b>Lieferung:</b> ${
+            order.details && order.details.lieferung
+              ? order.details.lieferung === ""
+                ? "Abholung"
+                : order.details.lieferung === "20km"
+                ? "bis 20 km"
+                : "bis 40 km"
+              : "Abholung"
+          }<br>
+          <b>Gewünschter Termin:</b> ${
+            order.wunschtermin && order.wunschtermin.datum
+              ? `${new Date(order.wunschtermin.datum).toLocaleDateString(
+                  "de-DE"
+                )}${
+                  order.wunschtermin.uhrzeit
+                    ? ` um ${order.wunschtermin.uhrzeit}`
+                    : ""
+                }`
+              : "Nicht angegeben"
+          }
+        </div>
+        <div style="margin:8px 0 0 0;"><b>Gesamtwert:</b> <span style="font-weight:600;color:#d32f2f;">${
+          order.gesamtpreis || "nicht berechnet"
+        } €</span></div>
+        <div style="margin:8px 0 0 0;"><b>Status:</b> <select data-id="${
+          doc.id
+        }" class="statusSel" style="font-size:1em;padding:4px 10px;border-radius:8px;">
+          ${statusOptions
+            .map(
+              (opt) =>
+                `<option value="${opt}"${
+                  order.status === opt ? " selected" : ""
+                }>${opt}</option>`
+            )
+            .join("")}
+        </select></div>
+        <div style="margin:8px 0 0 0;"><b>Aktion:</b> 
+          <button onclick="sendStatusEmail('${doc.id}', '${
+            cust.email || ""
+          }', '${cust.name || ""}', '${order.status}', '${
+            order.details && order.details.durchmesserCm
+              ? order.details.durchmesserCm + " cm"
+              : order.details && order.details.groesse
+              ? order.details.groesse
+              : "-"
+          }', '${
+            order.details && order.details.extras && order.details.extras.length
+              ? order.details.extras.join(", ")
+              : "keine"
+          }', '${order.gesamtpreis || "nicht berechnet"}')" 
+                  style="background:#4CAF50;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.9em;margin-right:8px;">Status-Mail senden</button>
+          <button onclick="deleteOrder('${
+            doc.id
+          }')" style="background:#d32f2f;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.9em;">Löschen</button>
+        </div>
+      </div>`;
+        }
+      </script>
+    </div>
+  </body>
 </html>

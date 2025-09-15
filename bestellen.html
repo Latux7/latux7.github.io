@@ -1,157 +1,411 @@
-<!-- bestellen.html Grundgerüst -->
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Torte bestellen</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <nav>
-      <a href="index.html">Startseite</a>
-      <a href="bewerten.html">Bewerten</a>
-    </nav>
-    <h1>Torte bestellen</h1>
-    <form id="orderForm">
-      <fieldset>
-        <legend>Tortengröße</legend>
-        <label><input type="radio" name="size" value="mini" required> 10–14 cm (Mini, 45&nbsp;€)</label><br>
-        <label><input type="radio" name="size" value="normal"> 15–20 cm (Normal, 55&nbsp;€)</label><br>
-        <label><input type="radio" name="size" value="gross"> 21–25 cm (Groß, 80&nbsp;€)</label>
-      </fieldset>
-      <fieldset>
-        <legend>Extras</legend>
-        <label><input type="checkbox" name="extras" value="schokoboden"> Schokoboden (+5&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="vanillecreme"> Vanillecreme (+5&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="nutella"> Nutella (+5&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="pistaziencreme"> Pistaziencreme (+7&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="buttercreme"> Buttercreme (+10&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="fruchtfuellung"> Fruchtfüllung (+8&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="obst"> Frisches Obst (+10&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="deko"> Dekoration (+15&nbsp;€)</label><br>
-        <label><input type="checkbox" name="extras" value="mehrstoeckig"> Mehrstöckig (+30&nbsp;€)</label>
-      </fieldset>
-      <fieldset>
-        <legend>Lieferung (optional)</legend>
-        <label><input type="radio" name="lieferung" value=""> Keine Lieferung (Abholung)</label><br>
-        <label><input type="radio" name="lieferung" value="20km"> Lieferung bis 20 km (+10&nbsp;€)</label><br>
-        <label><input type="radio" name="lieferung" value="40km"> Lieferung bis 40 km (+20&nbsp;€)</label>
-      </fieldset>
-      <fieldset>
-        <legend>Kontaktdaten</legend>
-        <label>Name*<br><input type="text" name="name" required></label><br>
-        <label>Telefon*<br><input type="tel" name="telefon" required></label><br>
-        <label>E-Mail*<br><input type="email" name="email" required></label><br>
-        <div id="deliveryFields" style="display:none;">
-          <label>Straße & Hausnummer*<br><input type="text" name="strasse" id="strasse"></label><br>
-          <label>PLZ*<br><input type="text" name="plz" id="plz"></label><br>
-          <label>Ort*<br><input type="text" name="ort" id="ort"></label><br>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Torte bestellen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav>
+        <a href="index.html">Startseite</a>
+        <a href="bewerten.html">Bewerten</a>
+      </nav>
+      <h1>Torte bestellen</h1>
+
+      <form id="orderForm">
+        <!-- NEU: Exakter Durchmesser -->
+        <fieldset>
+          <legend>Durchmesser (exakt)</legend>
+          <label for="diameter">Gewünschter Durchmesser in cm (10–24):</label
+          ><br />
+          <input
+            type="number"
+            id="diameter"
+            name="diameter"
+            min="10"
+            max="24"
+            step="1"
+            required
+            style="max-width: 140px"
+          />
+          <div
+            id="sizeHint"
+            style="margin-top: 6px; opacity: 0.8; font-size: 0.95em"
+          >
+            Kategorie: <strong id="sizeLabel">–</strong> (Basispreis:
+            <strong id="sizePrice">–</strong>)
+          </div>
+        </fieldset>
+
+        <!-- (Optional) Wenn du die alten Radios behalten willst, kannst du dieses Feldset löschen -->
+        <!-- Feldset “Extras” bleibt gleich -->
+        <fieldset>
+          <legend>Extras</legend>
+          <label
+            ><input type="checkbox" name="extras" value="schokoboden" />
+            Schokoboden (+5&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="vanillecreme" />
+            Vanillecreme (+5&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="nutella" /> Nutella
+            (+5&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="pistaziencreme" />
+            Pistaziencreme (+7&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="buttercreme" />
+            Buttercreme (+10&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="fruchtfuellung" />
+            Fruchtfüllung (+8&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="obst" /> Frisches Obst
+            (+10&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="deko" /> Dekoration
+            (+15&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="checkbox" name="extras" value="mehrstoeckig" />
+            Mehrstöckig (+30&nbsp;€)</label
+          >
+        </fieldset>
+
+        <fieldset>
+          <legend>Lieferung (optional)</legend>
+          <label
+            ><input type="radio" name="lieferung" value="" checked /> Keine
+            Lieferung (Abholung)</label
+          ><br />
+          <label
+            ><input type="radio" name="lieferung" value="20km" /> Lieferung bis
+            20 km (+10&nbsp;€)</label
+          ><br />
+          <label
+            ><input type="radio" name="lieferung" value="40km" /> Lieferung bis
+            40 km (+20&nbsp;€)</label
+          >
+        </fieldset>
+
+        <fieldset>
+          <legend>Gewünschter Termin*</legend>
+          <label
+            >Datum (benötigt am)*<br />
+            <input
+              type="date"
+              name="wunschDatum"
+              id="wunschDatum"
+              required
+              style="
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                font-size: 16px;
+              " /></label
+          ><br />
+          <label
+            >Uhrzeit (optional)<br />
+            <input
+              type="time"
+              name="wunschUhrzeit"
+              id="wunschUhrzeit"
+              style="
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                font-size: 16px;
+              "
+          /></label>
+          <div style="margin-top: 8px; font-size: 0.9em; color: #666">
+            Bitte geben Sie an, wann Sie die Torte benötigen.
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Kontaktdaten</legend>
+          <label>Name*<br /><input type="text" name="name" required /></label
+          ><br />
+          <label
+            >Telefon*<br /><input type="tel" name="telefon" required /></label
+          ><br />
+          <label
+            >E-Mail*<br /><input type="email" name="email" required /></label
+          ><br />
+          <div id="deliveryFields" style="display: none">
+            <label
+              >Straße & Hausnummer*<br /><input
+                type="text"
+                name="strasse"
+                id="strasse" /></label
+            ><br />
+            <label>PLZ*<br /><input type="text" name="plz" id="plz" /></label
+            ><br />
+            <label>Ort*<br /><input type="text" name="ort" id="ort" /></label
+            ><br />
+          </div>
+        </fieldset>
+
+        <div id="orderSum" style="font-weight: bold; margin: 10px 0"></div>
+        <input type="submit" value="Bestellung absenden" />
+        <div
+          id="orderSuccess"
+          style="
+            display: none;
+            color: #92d050;
+            font-weight: bold;
+            margin-top: 12px;
+          "
+        >
+          Vielen Dank! Ihre Bestellung wurde übermittelt.
         </div>
-      </fieldset>
-      <div id="orderSum" style="font-weight:bold;margin:10px 0;"></div>
-      <input type="submit" value="Bestellung absenden">
-      <div id="orderSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank! Ihre Bestellung wurde übermittelt.</div>
-      <div id="orderError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
-    </form>
-    <script src="firebase-config.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script>
-    // firebaseConfig kommt jetzt aus externer Datei
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        <div
+          id="orderError"
+          style="
+            display: none;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 12px;
+          "
+        >
+          Fehler beim Absenden. Bitte versuchen Sie es erneut.
+        </div>
+      </form>
 
-    // Preisberechnung
-    const prices = {
-      size: { mini: 45, normal: 55, gross: 80 },
-      extras: { schokoboden: 5, vanillecreme: 5, nutella: 5, pistaziencreme: 7, buttercreme: 10, fruchtfuellung: 8, obst: 10, deko: 15, mehrstoeckig: 30 },
-      lieferung: { '20km': 10, '40km': 20 }
-    };
-    function calcSum() {
-      let sum = 0;
-      const f = document.forms.orderForm;
-      if (f.size.value) sum += prices.size[f.size.value];
-      if (f.lieferung.value) sum += prices.lieferung[f.lieferung.value];
-      (f.extras && f.extras.length ? Array.from(f.extras) : [f.extras]).forEach(e => { if (e && e.checked) sum += prices.extras[e.value] });
-      document.getElementById('orderSum').textContent = sum ? `Gesamt: ${sum} €` : '';
-    }
+      <script src="firebase-config.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+      <script>
+        // Firebase init
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    // Zeige Adressfelder nur bei Lieferung
-    function toggleDeliveryFields() {
-      const lieferung = document.querySelector('input[name="lieferung"]:checked');
-      const show = lieferung && lieferung.value !== '';
-      document.getElementById('deliveryFields').style.display = show ? '' : 'none';
-      // Pflicht nur wenn Lieferung
-      document.getElementById('strasse').required = show;
-      document.getElementById('plz').required = show;
-      document.getElementById('ort').required = show;
-    }
-    document.getElementById('orderForm').addEventListener('change', function(e) {
-      if(e.target.name === 'lieferung') toggleDeliveryFields();
-      calcSum();
-    });
-    // Initial bei Laden
-    window.addEventListener('DOMContentLoaded', toggleDeliveryFields);
-
-    document.getElementById('orderForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const f = this;
-      const extras = f.extras ? (f.extras.length ? Array.from(f.extras).filter(e=>e.checked).map(e=>e.value) : (f.extras.checked ? [f.extras.value] : [])) : [];
-      // Kundendaten
-      const customerData = {
-        name: f.name.value,
-        street: f.strasse ? f.strasse.value : '',
-        plz: f.plz ? f.plz.value : '',
-        city: f.ort ? f.ort.value : '',
-        telefon: f.telefon.value,
-        email: f.email.value
-      };
-      let customerId = null;
-      try {
-        // Suche nach bestehendem Kunden per E-Mail
-        const snap = await db.collection('customers').where('email', '==', customerData.email).limit(1).get();
-        if (!snap.empty) {
-          customerId = snap.docs[0].id;
-          // Optional: Kundenstammdaten aktualisieren
-          await db.collection('customers').doc(customerId).set(customerData, {merge:true});
-        } else {
-          // Neuen Kunden anlegen
-          const custRef = await db.collection('customers').add(customerData);
-          customerId = custRef.id;
-        }
-        // Order anlegen mit Referenz auf customerId
-        const order = {
-          customerId,
-          details: {
-            groesse: f.size.value,
-            extras: extras,
-            lieferung: f.lieferung.value
+        // Preise & Logik
+        const prices = {
+          tiers: { mini: 45, normal: 55, gross: 80 },
+          extras: {
+            schokoboden: 5,
+            vanillecreme: 5,
+            nutella: 5,
+            pistaziencreme: 7,
+            buttercreme: 10,
+            fruchtfuellung: 8,
+            obst: 10,
+            deko: 15,
+            mehrstoeckig: 30,
           },
-          // Adresse nur bei Lieferung speichern
-          adresse: (f.lieferung.value !== '' ? {
-            street: f.strasse.value,
-            plz: f.plz.value,
-            city: f.ort.value
-          } : null),
-          status: "neu",
-          created: new Date().toISOString()
+          lieferung: { "20km": 10, "40km": 20 },
         };
-        await db.collection('orders').add(order);
-        document.getElementById('orderSuccess').style.display = 'block';
-        document.getElementById('orderError').style.display = 'none';
-        f.reset();
-        document.getElementById('orderSum').textContent = '';
-      } catch (err) {
-        document.getElementById('orderSuccess').style.display = 'none';
-        document.getElementById('orderError').style.display = 'block';
-      }
-    });
-    </script>
-  </div>
-</body>
+
+        function deriveTierFromCm(cm) {
+          if (!cm) return null;
+          const n = Number(cm);
+          if (n >= 10 && n <= 14) return "mini";
+          if (n >= 15 && n <= 20) return "normal";
+          if (n >= 21 && n <= 24) return "gross";
+          return null;
+        }
+
+        function updateSizeUI() {
+          const cm = document.getElementById("diameter").value;
+          const tier = deriveTierFromCm(cm);
+          const sizeLabel = document.getElementById("sizeLabel");
+          const sizePrice = document.getElementById("sizePrice");
+
+          if (!tier) {
+            sizeLabel.textContent = "–";
+            sizePrice.textContent = "–";
+          } else {
+            const labelMap = {
+              mini: "Mini (10–14 cm)",
+              normal: "Normal (15–20 cm)",
+              gross: "Groß (21–24 cm)",
+            };
+            sizeLabel.textContent = labelMap[tier];
+            sizePrice.textContent = prices.tiers[tier] + " €";
+          }
+        }
+
+        function calcSum() {
+          let sum = 0;
+          const f = document.forms.orderForm;
+          const cm = f.diameter.value;
+          const tier = deriveTierFromCm(cm);
+
+          if (tier) sum += prices.tiers[tier];
+
+          // Lieferung
+          if (f.lieferung.value)
+            sum += prices.lieferung[f.lieferung.value] || 0;
+
+          // Extras
+          const extrasInputs = f.extras
+            ? f.extras.length
+              ? Array.from(f.extras)
+              : [f.extras]
+            : [];
+          extrasInputs.forEach((e) => {
+            if (e && e.checked) sum += prices.extras[e.value] || 0;
+          });
+
+          document.getElementById("orderSum").textContent = sum
+            ? `Gesamt: ${sum} €`
+            : "";
+          return sum; // Rückgabe für Verwendung beim Speichern
+        }
+
+        // Adresse nur bei Lieferung
+        function toggleDeliveryFields() {
+          const lieferung = document.querySelector(
+            'input[name="lieferung"]:checked'
+          );
+          const show = lieferung && lieferung.value !== "";
+          document.getElementById("deliveryFields").style.display = show
+            ? ""
+            : "none";
+          document.getElementById("strasse").required = show;
+          document.getElementById("plz").required = show;
+          document.getElementById("ort").required = show;
+        }
+
+        // Events
+        document
+          .getElementById("orderForm")
+          .addEventListener("change", function (e) {
+            if (e.target.name === "lieferung") toggleDeliveryFields();
+            if (e.target.id === "diameter") updateSizeUI();
+            calcSum();
+          });
+        window.addEventListener("DOMContentLoaded", () => {
+          toggleDeliveryFields();
+          updateSizeUI();
+          calcSum();
+
+          // Setze Minimum-Datum auf heute
+          const heute = new Date().toISOString().split("T")[0];
+          document.getElementById("wunschDatum").min = heute;
+        });
+
+        // Absenden
+        document
+          .getElementById("orderForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const f = this;
+
+            // Extras sammeln
+            const extras = f.extras
+              ? f.extras.length
+                ? Array.from(f.extras)
+                    .filter((e) => e.checked)
+                    .map((e) => e.value)
+                : f.extras.checked
+                ? [f.extras.value]
+                : []
+              : [];
+
+            // Validiere Datum (nicht in der Vergangenheit)
+            const wunschDatum = f.wunschDatum.value;
+            const heute = new Date().toISOString().split("T")[0];
+
+            if (wunschDatum < heute) {
+              alert(
+                "Das gewünschte Datum kann nicht in der Vergangenheit liegen."
+              );
+              return;
+            }
+
+            const cm = Number(f.diameter.value);
+            const tier = deriveTierFromCm(cm);
+            const gesamtpreis = calcSum(); // Aktuellen Gesamtpreis berechnen
+
+            // Kundendaten
+            const customerData = {
+              name: f.name.value,
+              street: f.strasse ? f.strasse.value : "",
+              plz: f.plz ? f.plz.value : "",
+              city: f.ort ? f.ort.value : "",
+              telefon: f.telefon.value,
+              email: f.email.value,
+            };
+
+            try {
+              // Kunden anlegen/finden
+              let customerId = null;
+              const snap = await db
+                .collection("customers")
+                .where("email", "==", customerData.email)
+                .limit(1)
+                .get();
+              if (!snap.empty) {
+                customerId = snap.docs[0].id;
+                await db
+                  .collection("customers")
+                  .doc(customerId)
+                  .set(customerData, { merge: true });
+              } else {
+                const custRef = await db
+                  .collection("customers")
+                  .add(customerData);
+                customerId = custRef.id;
+              }
+
+              // Bestellung speichern – jetzt mit exaktem Durchmesser, Gesamtpreis und Wunschtermin
+              const order = {
+                customerId,
+                details: {
+                  durchmesserCm: cm, // <<<<<< EXAKTE CM
+                  kategorie: tier, // abgeleitet
+                  extras: extras,
+                  lieferung: f.lieferung.value,
+                },
+                wunschtermin: {
+                  datum: wunschDatum,
+                  uhrzeit: f.wunschUhrzeit.value || null,
+                },
+                gesamtpreis: gesamtpreis, // <<<<<< GESAMTPREIS
+                adresse:
+                  f.lieferung.value !== ""
+                    ? {
+                        street: f.strasse.value,
+                        plz: f.plz.value,
+                        city: f.ort.value,
+                      }
+                    : null,
+                status: "neu",
+                created: new Date().toISOString(),
+              };
+
+              await db.collection("orders").add(order);
+
+              document.getElementById("orderSuccess").style.display = "block";
+              document.getElementById("orderError").style.display = "none";
+              f.reset();
+              updateSizeUI();
+              document.getElementById("orderSum").textContent = "";
+              toggleDeliveryFields();
+            } catch (err) {
+              console.error(err);
+              document.getElementById("orderSuccess").style.display = "none";
+              document.getElementById("orderError").style.display = "block";
+            }
+          });
+      </script>
+    </div>
+  </body>
 </html>
