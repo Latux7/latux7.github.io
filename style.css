@@ -405,9 +405,9 @@ details > div {
   }
 
   .review-form fieldset {
-    padding: 8px 4px !important;
-    margin: 0 0 8px 0 !important;
-    border-radius: 12px !important;
+    padding: 12px 6px !important;
+    margin: 0 0 12px 0 !important;
+    border-radius: 16px !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -415,9 +415,9 @@ details > div {
   }
 
   .review-form legend {
-    padding: 0 2px !important;
-    font-size: 0.85rem !important;
-    max-width: calc(100% - 10px) !important;
+    padding: 0 4px !important;
+    font-size: 0.9rem !important;
+    max-width: calc(100% - 15px) !important;
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
@@ -425,37 +425,36 @@ details > div {
   /* Heart rating mobile */
   .heart-group {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 4px !important;
-    padding: 4px 2px !important;
+    gap: 8px !important;
+    padding: 8px 4px !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: hidden;
   }
 
   .heart-option {
-    padding: 2px 1px !important;
+    padding: 6px 2px !important;
     min-width: 0;
     max-width: 100%;
   }
 
   .heart-icon {
-    font-size: 18px !important;
+    font-size: 22px !important;
   }
 
   .heart-label {
-    font-size: 0.7rem !important;
-    line-height: 1.1 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
     text-align: center;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    hyphens: auto;
   }
 
   /* NPS scale mobile */
   .nps-scale {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 1px !important;
-    padding: 4px 2px !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 3px !important;
+    padding: 8px 4px !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: hidden;
@@ -467,17 +466,17 @@ details > div {
   }
 
   .nps-num {
-    font-size: 1.1rem !important;
-    padding: 1px !important;
+    font-size: 1.4rem !important;
+    padding: 4px 2px !important;
   }
 
   .nps-hint {
-    font-size: 0.65rem !important;
-    padding: 1px 1px !important;
-    margin-top: 1px !important;
+    font-size: 0.7rem !important;
+    padding: 2px 3px !important;
+    margin-top: 4px !important;
     text-align: center;
     max-width: 100%;
-    line-height: 1.1;
+    line-height: 1.2;
   }
 
   /* Notes textarea mobile */
