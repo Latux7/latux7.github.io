@@ -364,8 +364,11 @@
         // Sofort beim Laden prüfen
         checkAccess().then((accessGranted) => {
           if (!accessGranted) {
-            // Seite wird bereits weitergeleitet
-            document.body.style.display = "none"; // Inhalt verstecken während Weiterleitung
+            // Nur das Formular verstecken, nicht den ganzen Body (Modal muss sichtbar bleiben)
+            const reviewForm = document.getElementById("reviewForm");
+            const reviewIntro = document.querySelector(".review-intro");
+            if (reviewForm) reviewForm.style.display = "none";
+            if (reviewIntro) reviewIntro.style.display = "none";
           }
         });
 
@@ -402,6 +405,7 @@
 
         // Modal-Funktionen
         function showAlreadyReviewedModal() {
+          console.log("Zeige Already Reviewed Modal"); // Debug
           const modal = document.getElementById("alreadyReviewedModal");
           modal.style.display = "flex";
           document.body.style.overflow = "hidden"; // Scroll verhindern
