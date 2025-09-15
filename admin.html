@@ -55,6 +55,30 @@
         </div>
       </div>
       <div id="adminPanel" style="display: none">
+        <!-- Notification Container -->
+        <div
+          id="adminNotification"
+          class="alert"
+          style="display: none; margin-bottom: 20px"
+        >
+          <span id="notificationText"></span>
+          <button
+            onclick="hideNotification()"
+            style="
+              background: none;
+              border: none;
+              color: inherit;
+              font-size: 1.2em;
+              cursor: pointer;
+              float: right;
+              padding: 0;
+              margin-left: 10px;
+            "
+          >
+            &times;
+          </button>
+        </div>
+
         <div
           style="
             display: flex;
@@ -86,6 +110,25 @@
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
       <script>
+        // Notification functions to replace alerts
+        function showNotification(message, type = "success") {
+          const notification = document.getElementById("adminNotification");
+          const text = document.getElementById("notificationText");
+
+          text.textContent = message;
+          notification.className = `alert ${type}`;
+          notification.style.display = "block";
+
+          // Auto-hide after 5 seconds for success messages
+          if (type === "success") {
+            setTimeout(hideNotification, 5000);
+          }
+        }
+
+        function hideNotification() {
+          document.getElementById("adminNotification").style.display = "none";
+        }
+
         // Einfaches statisches Passwort (z.B. "tortenadmin2025")
         const ADMIN_PW = "tortenadmin2025";
 
@@ -105,11 +148,11 @@
 
           try {
             await db.collection("orders").doc(orderId).delete();
-            alert("Bestellung erfolgreich gelöscht.");
+            showNotification("Bestellung erfolgreich gelöscht.", "success");
             loadOrders(); // Liste neu laden
           } catch (err) {
             console.error("Fehler beim Löschen:", err);
-            alert("Fehler beim Löschen der Bestellung!");
+            showNotification("Fehler beim Löschen der Bestellung!", "error");
           }
         };
 
@@ -232,7 +275,10 @@
               const statusInfo = config.statusData[status];
 
               if (!statusInfo) {
-                alert('Status "' + status + '" nicht konfiguriert!');
+                showNotification(
+                  'Status "' + status + '" nicht konfiguriert!',
+                  "error"
+                );
                 return;
               }
 
@@ -275,11 +321,15 @@
             );
 
             console.log("E-Mail erfolgreich gesendet:", response);
-            alert("E-Mail erfolgreich an " + customerEmail + " gesendet!");
+            showNotification(
+              "E-Mail erfolgreich an " + customerEmail + " gesendet!",
+              "success"
+            );
           } catch (error) {
             console.error("E-Mail Versand Fehler:", error);
-            alert(
-              "Fehler beim E-Mail-Versand: " + (error.text || error.message)
+            showNotification(
+              "Fehler beim E-Mail-Versand: " + (error.text || error.message),
+              "error"
             );
           }
         }
@@ -295,7 +345,10 @@
           price
         ) {
           if (!customerEmail) {
-            alert("Keine E-Mail-Adresse für diesen Kunden verfügbar.");
+            showNotification(
+              "Keine E-Mail-Adresse für diesen Kunden verfügbar.",
+              "error"
+            );
             return;
           }
 
@@ -305,8 +358,9 @@
             !window.emailConfig.publicKey ||
             window.emailConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY"
           ) {
-            alert(
-              "EmailJS nicht konfiguriert. Bitte Public Key in email-config.js eintragen."
+            showNotification(
+              "EmailJS nicht konfiguriert. Bitte Public Key in email-config.js eintragen.",
+              "error"
             );
             return;
           }
@@ -394,6 +448,7 @@
           document.getElementById("adminPanel").style.display = "none";
           document.getElementById("adminPw").value = "";
           document.getElementById("loginError").style.display = "none";
+          hideNotification(); // Hide any notifications when logging out
         }
 
         // Beim Laden der Seite prüfen
@@ -500,15 +555,16 @@
                     .collection("orders")
                     .doc(this.dataset.id)
                     .update({ status: this.value });
-                  alert(
+                  showNotification(
                     "Status geändert für Bestellung " +
                       this.dataset.id +
                       " auf " +
-                      this.value
+                      this.value,
+                    "success"
                   );
                   loadOrders(); // Liste neu laden
                 } catch (err) {
-                  alert("Fehler beim Status-Update!");
+                  showNotification("Fehler beim Status-Update!", "error");
                 }
               });
             });
@@ -615,11 +671,11 @@
           if (!confirm("Diese Bewertung wirklich löschen?")) return;
           try {
             await db.collection("reviews").doc(reviewId).delete();
-            alert("Bewertung gelöscht.");
+            showNotification("Bewertung gelöscht.", "success");
             loadReviews();
           } catch (e) {
             console.error(e);
-            alert("Fehler beim Löschen der Bewertung.");
+            showNotification("Fehler beim Löschen der Bewertung.", "error");
           }
         };
 
