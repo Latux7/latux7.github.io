@@ -81,16 +81,12 @@
       <div id="reviewSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank für Ihre Bewertung!</div>
       <div id="reviewError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
     </form>
+    <script src="firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
-    // Firebase-Konfiguration (ersetzen durch eigene Werte!)
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
+    // Firebase-Konfiguration aus externer Datei
+    firebase.initializeApp(window.firebaseConfig);
     const db = firebase.firestore();
 
     // orderId aus URL holen

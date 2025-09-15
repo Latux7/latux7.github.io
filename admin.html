@@ -29,18 +29,14 @@
       <h2>Bestellungen</h2>
       <div id="ordersList">Lade Bestellungen...</div>
     </div>
+    <script src="firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
     // Einfaches statisches Passwort (z.B. "tortenadmin2025")
     const ADMIN_PW = "tortenadmin2025";
-    // Firebase-Konfiguration (ersetzen durch eigene Werte!)
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
+    // Firebase-Konfiguration aus externer Datei
+    firebase.initializeApp(window.firebaseConfig);
     const db = firebase.firestore();
 
     document.getElementById('loginForm').addEventListener('submit', function(e) {
