@@ -376,6 +376,66 @@ details > div {
     gap: 6px;
     align-items: flex-start;
   }
+
+  /* Review page mobile adjustments */
+  .review-title {
+    font-size: 2.2rem;
+    padding: 0 4px 2px 4px;
+  }
+
+  .review-note {
+    max-width: 100%;
+    padding: 0 8px;
+  }
+
+  .review-form fieldset {
+    padding: 16px 12px;
+    margin-bottom: 16px;
+  }
+
+  .review-form legend {
+    padding: 0 6px;
+    font-size: 0.95rem;
+  }
+
+  /* Heart rating mobile */
+  .heart-group {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 0 8px;
+  }
+
+  .heart-icon {
+    font-size: 24px;
+  }
+
+  .heart-label {
+    font-size: 0.85rem;
+  }
+
+  /* NPS scale mobile */
+  .nps-scale {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  .nps-num {
+    font-size: 1.5rem;
+    padding: 4px 0;
+  }
+
+  .nps-hint {
+    font-size: 0.8rem;
+    padding: 1px 4px;
+    margin-top: 4px;
+  }
+
+  /* Notes textarea mobile */
+  .notes-fieldset .lined-textarea {
+    padding: calc(var(--line-offset) + var(--baseline-adjust) + 6px) 12px 12px;
+    min-height: 120px;
+  }
 }
 
 /* Review page extras */
