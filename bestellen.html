@@ -86,20 +86,39 @@
       e.preventDefault();
       const f = this;
       const extras = f.extras ? (f.extras.length ? Array.from(f.extras).filter(e=>e.checked).map(e=>e.value) : (f.extras.checked ? [f.extras.value] : [])) : [];
-      const order = {
+      // Kundendaten
+      const customerData = {
         name: f.name.value,
-        adresse: f.strasse.value + ', ' + f.plzort.value,
+        street: f.strasse.value,
+        plz: (f.plzort.value || '').split(/\s+/)[0] || '',
+        city: (f.plzort.value || '').split(/\s+/).slice(1).join(' ') || '',
         telefon: f.telefon.value,
-        email: f.email.value,
-        details: {
-          groesse: f.size.value,
-          extras: extras,
-          lieferung: f.lieferung.value
-        },
-        status: "neu",
-        created: new Date().toISOString()
+        email: f.email.value
       };
+      let customerId = null;
       try {
+        // Suche nach bestehendem Kunden per E-Mail
+        const snap = await db.collection('customers').where('email', '==', customerData.email).limit(1).get();
+        if (!snap.empty) {
+          customerId = snap.docs[0].id;
+          // Optional: Kundenstammdaten aktualisieren
+          await db.collection('customers').doc(customerId).set(customerData, {merge:true});
+        } else {
+          // Neuen Kunden anlegen
+          const custRef = await db.collection('customers').add(customerData);
+          customerId = custRef.id;
+        }
+        // Order anlegen mit Referenz auf customerId
+        const order = {
+          customerId,
+          details: {
+            groesse: f.size.value,
+            extras: extras,
+            lieferung: f.lieferung.value
+          },
+          status: "neu",
+          created: new Date().toISOString()
+        };
         await db.collection('orders').add(order);
         document.getElementById('orderSuccess').style.display = 'block';
         document.getElementById('orderError').style.display = 'none';

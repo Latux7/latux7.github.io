@@ -57,16 +57,31 @@
     async function loadOrders() {
       const statusOptions = ['neu','angenommen','in Vorbereitung','abgelehnt','fertig'];
       let html = '<table style="width:100%;border-collapse:collapse;margin-top:12px;">';
-      html += '<tr><th>Name</th><th>Status</th><th>Aktion</th></tr>';
+      html += '<tr><th>Kunde</th><th>Adresse</th><th>Telefon</th><th>Status</th><th>Aktion</th></tr>';
       try {
         const snap = await db.collection('orders').orderBy('created','desc').get();
+        // Hole alle customerIds
+        const customerIds = Array.from(new Set(snap.docs.map(doc => doc.data().customerId)));
+        // Lade alle Kunden in einem Rutsch
+        const customers = {};
+        if (customerIds.length > 0) {
+          const custSnaps = await db.collection('customers').where(firebase.firestore.FieldPath.documentId(), 'in', customerIds).get();
+          custSnaps.forEach(custDoc => { customers[custDoc.id] = custDoc.data(); });
+        }
         snap.forEach(doc => {
           const order = doc.data();
-          html += `<tr><td>${order.name}</td><td><select data-id="${doc.id}" class="statusSel">`;
+          const cust = customers[order.customerId] || {};
+          html += `<tr>`;
+          html += `<td>${cust.name || '-'}<br><a href="mailto:${cust.email||''}">${cust.email||''}</a></td>`;
+          html += `<td>${cust.street||''}<br>${cust.plz||''} ${cust.city||''}</td>`;
+          html += `<td>${cust.telefon||''}</td>`;
+          html += `<td><select data-id="${doc.id}" class="statusSel">`;
           statusOptions.forEach(opt => {
             html += `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`;
           });
-          html += `</select></td><td><a href="mailto:${order.email}">Mail</a></td></tr>`;
+          html += `</select></td>`;
+          html += `<td><a href="mailto:${cust.email||''}">Mail</a></td>`;
+          html += `</tr>`;
         });
         html += '</table>';
         document.getElementById('ordersList').innerHTML = html;
