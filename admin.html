@@ -26,8 +26,8 @@
       <div id="loginError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Falsches Passwort!</div>
     </div>
     <div id="adminPanel" style="display:none;">
-      <h2>Bestellungen</h2>
-      <div id="ordersList">Lade Bestellungen...</div>
+  <h2>Alle Bestellungen</h2>
+  <div id="ordersList">Lade Bestellungen...</div>
     </div>
     <script src="firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -52,34 +52,39 @@
 
     async function loadOrders() {
       const statusOptions = ['neu','angenommen','in Vorbereitung','abgelehnt','fertig'];
-      let html = '<table style="width:100%;border-collapse:collapse;margin-top:12px;">';
-      html += '<tr><th>Kunde</th><th>Adresse</th><th>Telefon</th><th>Status</th><th>Aktion</th></tr>';
+      let html = '';
       try {
         const snap = await db.collection('orders').orderBy('created','desc').get();
-        // Hole alle customerIds
         const customerIds = Array.from(new Set(snap.docs.map(doc => doc.data().customerId)));
-        // Lade alle Kunden in einem Rutsch
         const customers = {};
         if (customerIds.length > 0) {
           const custSnaps = await db.collection('customers').where(firebase.firestore.FieldPath.documentId(), 'in', customerIds).get();
           custSnaps.forEach(custDoc => { customers[custDoc.id] = custDoc.data(); });
         }
-        snap.forEach(doc => {
-          const order = doc.data();
-          const cust = customers[order.customerId] || {};
-          html += `<tr>`;
-          html += `<td>${cust.name || '-'}<br><a href="mailto:${cust.email||''}">${cust.email||''}</a></td>`;
-          html += `<td>${cust.street||''}<br>${cust.plz||''} ${cust.city||''}</td>`;
-          html += `<td>${cust.telefon||''}</td>`;
-          html += `<td><select data-id="${doc.id}" class="statusSel">`;
-          statusOptions.forEach(opt => {
-            html += `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`;
+        if (snap.empty) {
+          html = '<div style="margin:2em 0;">Keine Bestellungen vorhanden.</div>';
+        } else {
+          snap.forEach(doc => {
+            const order = doc.data();
+            const cust = customers[order.customerId] || {};
+            html += `<div style="border:1px solid #dbeedb;border-radius:16px;padding:18px 16px;margin-bottom:24px;box-shadow:0 1px 8px #e6f4ea;">
+              <div style="font-size:1.1em;font-weight:600;color:#92d050;">Bestellung vom ${order.created ? new Date(order.created).toLocaleString('de-DE') : '-'}</div>
+              <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || '-'}<br>
+                <b>E-Mail:</b> <a href="mailto:${cust.email||''}">${cust.email||''}</a><br>
+                <b>Telefon:</b> ${cust.telefon||''}
+              </div>
+              <div style="margin:8px 0 0 0;"><b>Adresse:</b> ${cust.street||'-'}, ${cust.plz||''} ${cust.city||''}</div>
+              <div style="margin:8px 0 0 0;"><b>Tortengröße:</b> ${order.details && order.details.groesse ? order.details.groesse : '-'}<br>
+                <b>Extras:</b> ${(order.details && order.details.extras && order.details.extras.length) ? order.details.extras.join(', ') : 'keine'}<br>
+                <b>Lieferung:</b> ${order.details && order.details.lieferung ? (order.details.lieferung === '' ? 'Abholung' : (order.details.lieferung === '20km' ? 'bis 20 km' : 'bis 40 km')) : 'Abholung'}
+              </div>
+              <div style="margin:8px 0 0 0;"><b>Status:</b> <select data-id="${doc.id}" class="statusSel" style="font-size:1em;padding:4px 10px;border-radius:8px;">
+                ${statusOptions.map(opt => `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`).join('')}
+              </select></div>
+              <div style="margin:8px 0 0 0;"><b>Aktion:</b> <a href="mailto:${cust.email||''}">Mail an Kunde</a></div>
+            </div>`;
           });
-          html += `</select></td>`;
-          html += `<td><a href="mailto:${cust.email||''}">Mail</a></td>`;
-          html += `</tr>`;
-        });
-        html += '</table>';
+        }
         document.getElementById('ordersList').innerHTML = html;
         document.querySelectorAll('.statusSel').forEach(sel => {
           sel.addEventListener('change', async function() {
