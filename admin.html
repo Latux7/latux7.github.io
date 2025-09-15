@@ -15,12 +15,26 @@
   </head>
   <body>
     <div class="container">
-      <nav>
-        <a href="index.html">Startseite</a>
-        <a href="bestellen.html">Bestellen</a>
-        <a href="bewerten.html">Bewerten</a>
-      </nav>
-      <h1>Admin Dashboard</h1>
+      <header class="site-header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <div class="title">Laura's Backstube</div>
+            <div class="subtitle">Torten & Kuchen mit Liebe</div>
+          </div>
+        </div>
+        <nav>
+          <a href="index.html">Startseite</a>
+          <a href="bestellen.html">Bestellen</a>
+        </nav>
+      </header>
+      <section class="hero">
+        <h1>Admin Dashboard</h1>
+        <p>
+          Verwalten Sie Bestellungen, aktualisieren Sie den Status und
+          informieren Sie Kundinnen & Kunden.
+        </p>
+      </section>
       <div id="adminLogin">
         <form id="loginForm">
           <label
@@ -50,14 +64,20 @@
           "
         >
           <h2 style="margin: 0">Bestellungen</h2>
-          <button
-            id="logoutBtn"
-            style="background: #d32f2f; padding: 8px 16px; font-size: 0.9rem"
-          >
-            Abmelden
-          </button>
+          <button id="logoutBtn" class="btn-small btn-danger">Abmelden</button>
         </div>
         <div id="ordersList">Lade Bestellungen...</div>
+
+        <div
+          style="
+            margin-top: 32px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 20px;
+          "
+        >
+          <h2 style="margin: 0 0 12px 0">Bewertungen</h2>
+          <div id="reviewsList">Lade Bewertungen...</div>
+        </div>
       </div>
       <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
       <script src="firebase-config.js"></script>
@@ -184,17 +204,25 @@
                 config.deliveryMessages[deliveryType] ||
                 config.deliveryMessages.abholung;
 
+              // Erstelle Review-Link mit orderId und customerId
+              const reviewLink = `${
+                window.location.origin
+              }/bewerten.html?orderId=${orderDetails.orderId}&customerId=${
+                orderDetails.customerId || ""
+              }`;
+
               templateParams = {
-                to: customerEmail,              // Alternative 1
-                to_email: customerEmail,        // Standard
-                user_email: customerEmail,      // Alternative 2
-                email: customerEmail,           // Alternative 3
+                to: customerEmail, // Alternative 1
+                to_email: customerEmail, // Standard
+                user_email: customerEmail, // Alternative 2
+                email: customerEmail, // Alternative 3
                 to_name: customerName,
                 customer_name: customerName,
                 order_items: `${orderDetails.size} mit ${orderDetails.extras}`,
                 total_price: orderDetails.price,
                 company_email: config.company.email,
                 delivery_message: deliveryMessage,
+                review_link: reviewLink,
                 wunschtermin: orderDetails.wunschtermin || "Nicht angegeben",
               };
             } else {
@@ -208,10 +236,10 @@
               }
 
               templateParams = {
-                to: customerEmail,              // Alternative 1
-                to_email: customerEmail,        // Standard
-                user_email: customerEmail,      // Alternative 2
-                email: customerEmail,           // Alternative 3
+                to: customerEmail, // Alternative 1
+                to_email: customerEmail, // Standard
+                user_email: customerEmail, // Alternative 2
+                email: customerEmail, // Alternative 3
                 to_name: customerName,
                 customer_name: customerName,
                 order_items: `${orderDetails.size} mit ${orderDetails.extras}`,
@@ -241,7 +269,7 @@
                 publicKey: config.publicKey,
                 // Zusätzliche Optionen für Empfänger
                 to_email: customerEmail,
-                to_name: customerName
+                to_name: customerName,
               }
             );
 
@@ -288,10 +316,12 @@
             const orderData = orderDoc.data();
 
             const orderDetails = {
+              orderId: orderId, // Für Review-Link
               size: size || "Unbekannt",
               extras: extras || "keine",
               price: price || "0",
               delivery: orderData?.lieferung ? "lieferung" : "abholung", // Bestimme Lieferart
+              customerId: orderData?.customerId, // Für Review-Link
               wunschtermin: orderData?.wunschtermin
                 ? `${new Date(orderData.wunschtermin.datum).toLocaleDateString(
                     "de-DE"
@@ -313,6 +343,7 @@
             console.error("Fehler beim Laden der Bestelldetails:", error);
             // Fallback mit verfügbaren Daten
             const orderDetails = {
+              orderId: orderId, // Für Review-Link
               size: size || "Unbekannt",
               extras: extras || "keine",
               price: price || "0",
@@ -335,6 +366,7 @@
             document.getElementById("adminLogin").style.display = "none";
             document.getElementById("adminPanel").style.display = "block";
             loadOrders();
+            loadReviews();
           }
         }
 
@@ -348,6 +380,7 @@
               document.getElementById("adminLogin").style.display = "none";
               document.getElementById("adminPanel").style.display = "block";
               loadOrders();
+              loadReviews();
             } else {
               document.getElementById("loginError").style.display = "block";
             }
@@ -413,10 +446,10 @@
                 angenommen: [],
                 "in Vorbereitung": [],
                 abgelehnt: [],
+                fertig: [],
               };
               snap.forEach((doc) => {
                 const order = doc.data();
-                if (order.status === "fertig") return; // Fertige ausblenden
                 if (grouped[order.status])
                   grouped[order.status].push({ doc, order });
               });
@@ -439,6 +472,7 @@
                 "angenommen",
                 "in Vorbereitung",
                 "abgelehnt",
+                "fertig",
               ];
               otherStatus.forEach((st) => {
                 html += `<details style='margin-bottom:12px;'><summary style="font-size:1.1em;font-weight:600;color:#92d050;cursor:pointer;">${
@@ -567,12 +601,163 @@
               ? order.details.extras.join(", ")
               : "keine"
           }', '${order.gesamtpreis || "nicht berechnet"}')" 
-                  style="background:#4CAF50;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.9em;margin-right:8px;">Status-Mail senden</button>
+                  class="btn-small" style="background:#4CAF50;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9em;margin-right:8px;">Status-Mail senden</button>
           <button onclick="deleteOrder('${
             doc.id
-          }')" style="background:#d32f2f;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.9em;">Löschen</button>
+          }')" class="btn-small btn-danger" style="border-radius:6px;">Löschen</button>
         </div>
       </div>`;
+        }
+
+        // Bewertung löschen (global verfügbar)
+        window.deleteReview = async function (reviewId) {
+          if (!confirm("Diese Bewertung wirklich löschen?")) return;
+          try {
+            await db.collection("reviews").doc(reviewId).delete();
+            alert("Bewertung gelöscht.");
+            loadReviews();
+          } catch (e) {
+            console.error(e);
+            alert("Fehler beim Löschen der Bewertung.");
+          }
+        };
+
+        // Bewertungen laden und rendern
+        async function loadReviews() {
+          try {
+            const snap = await db
+              .collection("reviews")
+              .orderBy("created", "desc")
+              .get();
+            if (snap.empty) {
+              document.getElementById("reviewsList").innerHTML =
+                '<div style="margin:1em 0;">Keine Bewertungen vorhanden.</div>';
+              return;
+            }
+
+            // Bestell-Infos zuordnen (optional)
+            const orderIds = Array.from(
+              new Set(snap.docs.map((d) => d.data().orderId).filter(Boolean))
+            );
+            const ordersMap = {};
+            if (orderIds.length) {
+              const orderDocs = await Promise.all(
+                orderIds.map((id) =>
+                  db
+                    .collection("orders")
+                    .doc(id)
+                    .get()
+                    .catch(() => null)
+                )
+              );
+              orderDocs.forEach((od) => {
+                if (od && od.exists) ordersMap[od.id] = od.data();
+              });
+            }
+            // Kunden optional nachziehen
+            const customerIds = Array.from(
+              new Set(
+                Object.values(ordersMap)
+                  .map((o) => o.customerId)
+                  .filter(Boolean)
+              )
+            );
+            const customersMap = {};
+            if (customerIds.length) {
+              const custDocs = await db
+                .collection("customers")
+                .where(
+                  firebase.firestore.FieldPath.documentId(),
+                  "in",
+                  customerIds.slice(0, 10)
+                )
+                .get()
+                .catch(() => null);
+              if (custDocs)
+                custDocs.forEach((cd) => (customersMap[cd.id] = cd.data()));
+              // Hinweis: Mehr als 10 Kunden sind selten hier; für mehr könnte man paginieren.
+            }
+
+            let html = "";
+            snap.forEach((doc) => {
+              const r = doc.data();
+              const order = r.orderId ? ordersMap[r.orderId] : null;
+              const customer =
+                order && order.customerId
+                  ? customersMap[order.customerId]
+                  : null;
+              html += renderReview(doc, r, order, customer);
+            });
+            document.getElementById("reviewsList").innerHTML = html;
+          } catch (err) {
+            console.error(err);
+            document.getElementById("reviewsList").innerHTML =
+              "Fehler beim Laden der Bewertungen.";
+          }
+        }
+
+        function renderReview(doc, review, order, customer) {
+          const label = (v) =>
+            ({
+              1: "Unzufrieden",
+              2: "Zufriedenstellend",
+              3: "Gut",
+              4: "Sehr gut",
+              5: "Exzellent",
+            }[Number(v)] || "-");
+
+          const when = review.created
+            ? new Date(review.created).toLocaleString("de-DE")
+            : "-";
+          const nps = review.empfehlung ? Number(review.empfehlung) : null;
+          const custName = review.customerName || customer?.name || "-";
+          const custEmail = customer?.email || "";
+          const orderRef = review.orderId
+            ? `#${review.orderId.slice(0, 6)}`
+            : "—";
+
+          return `<div style="border:1px solid #dbeedb;border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 1px 8px #e6f4ea;">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+              <div style="font-weight:600;color:#2f855a;">Bewertung vom ${when}</div>
+              <div>
+                <button onclick="deleteReview('${
+                  doc.id
+                }')" class="btn-small btn-danger" style="border-radius:6px;">Löschen</button>
+              </div>
+            </div>
+            <div style="margin-top:6px;color:#374151;">
+              <b>Kunde:</b> ${custName} ${
+            custEmail
+              ? `&lt;<a href=\"mailto:${custEmail}\">${custEmail}</a>&gt;`
+              : ""
+          }
+              &nbsp;•&nbsp; <b>Bestellung:</b> ${orderRef}
+            </div>
+            <div style="display:grid;grid-template-columns: repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px;">
+              <div><b>Geschmack:</b> ${label(review.geschmack)}</div>
+              <div><b>Aussehen:</b> ${label(review.aussehen)}</div>
+              <div><b>Service:</b> ${label(review.service)}</div>
+              <div><b>Gesamteindruck:</b> ${label(review.gesamt)}</div>
+              <div><b>Weiterempfehlung:</b> ${nps ?? "-"}/10</div>
+            </div>
+            ${
+              review.text
+                ? `<div style=\"margin-top:10px;white-space:pre-wrap;\"><b>Kommentar:</b> ${escapeHtml(
+                    review.text
+                  )}</div>`
+                : ""
+            }
+          </div>`;
+        }
+
+        function escapeHtml(s) {
+          if (!s) return "";
+          return s
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
         }
       </script>
     </div>

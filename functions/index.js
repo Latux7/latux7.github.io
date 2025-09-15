@@ -15,7 +15,7 @@ exports.sendReviewMailOnStatus = functions.firestore
     if (before.status !== 'fertig' && after.status === 'fertig') {
       const orderId = context.params.orderId;
       const reviewLink = `${BASE_URL}${orderId}`;
-      
+
       // Log für Debugging - E-Mail wird über Frontend/EmailJS gesendet
       console.log('Bestellung fertig, Review-Link:', reviewLink);
       console.log('Kunde:', after.name || 'unbekannt');

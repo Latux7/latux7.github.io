@@ -1,124 +1,452 @@
 <!-- bewerten.html Grundgerüst -->
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Torte bewerten</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <nav>
-      <a href="index.html">Startseite</a>
-      <a href="bestellen.html">Bestellen</a>
-    </nav>
-    <h1>Torte bewerten</h1>
-    <form id="reviewForm">
-      <fieldset>
-        <legend>Wie hat Ihnen die Torte geschmeckt?</legend>
-        <div class="rating">
-          <label><input type="radio" name="geschmack" value="1" required> 1</label>
-          <label><input type="radio" name="geschmack" value="2"> 2</label>
-          <label><input type="radio" name="geschmack" value="3"> 3</label>
-          <label><input type="radio" name="geschmack" value="4"> 4</label>
-          <label><input type="radio" name="geschmack" value="5"> 5</label>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Torte bewerten</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Script/Handwriting fonts for review page heading and NPS numbers -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Kalam:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="site-header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <div class="title">Laura's Backstube</div>
+            <div class="subtitle">Torten & Kuchen mit Liebe</div>
+          </div>
         </div>
-      </fieldset>
-      <fieldset>
-        <legend>Wie fanden Sie Aussehen / Dekoration?</legend>
-        <div class="rating">
-          <label><input type="radio" name="aussehen" value="1" required> 1</label>
-          <label><input type="radio" name="aussehen" value="2"> 2</label>
-          <label><input type="radio" name="aussehen" value="3"> 3</label>
-          <label><input type="radio" name="aussehen" value="4"> 4</label>
-          <label><input type="radio" name="aussehen" value="5"> 5</label>
+        <nav>
+          <a href="index.html">Startseite</a>
+          <a href="bestellen.html">Bestellen</a>
+        </nav>
+      </header>
+      <section class="review-intro">
+        <h1 class="review-title">Feedback zur Torte & Service</h1>
+        <p class="review-note">
+          Vielen Dank, dass Sie sich für eine Torte von mir entschieden haben!
+          Ihr Feedback ist mir sehr wichtig – so erfahre ich, was Ihnen gefallen
+          hat und wo ich mich noch verbessern kann.
+        </p>
+      </section>
+      <form id="reviewForm" class="review-form">
+        <fieldset>
+          <legend>Wie hat Ihnen die Torte geschmeckt?</legend>
+          <div class="heart-group" role="radiogroup" aria-label="Geschmack">
+            <label class="heart-option">
+              <input type="radio" name="geschmack" value="1" required />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Unzufrieden</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="geschmack" value="2" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Zufriedenstellend</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="geschmack" value="3" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="geschmack" value="4" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Sehr gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="geschmack" value="5" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Exzellent</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Wie fanden Sie das Aussehen / die Dekoration der Torte?
+          </legend>
+          <div class="heart-group" role="radiogroup" aria-label="Aussehen">
+            <label class="heart-option">
+              <input type="radio" name="aussehen" value="1" required />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Unzufrieden</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="aussehen" value="2" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Zufriedenstellend</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="aussehen" value="3" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="aussehen" value="4" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Sehr gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="aussehen" value="5" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Exzellent</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Wie zufrieden waren Sie mit meinem Service (Kommunikation,
+            Abwicklung, ggf. Lieferung)?
+          </legend>
+          <div class="heart-group" role="radiogroup" aria-label="Service">
+            <label class="heart-option">
+              <input type="radio" name="service" value="1" required />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Unzufrieden</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="service" value="2" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Zufriedenstellend</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="service" value="3" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="service" value="4" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Sehr gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="service" value="5" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Exzellent</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Gesamteindruck?</legend>
+          <div
+            class="heart-group"
+            role="radiogroup"
+            aria-label="Gesamteindruck"
+          >
+            <label class="heart-option">
+              <input type="radio" name="gesamt" value="1" required />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Unzufrieden</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="gesamt" value="2" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Zufriedenstellend</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="gesamt" value="3" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="gesamt" value="4" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Sehr gut</span>
+            </label>
+            <label class="heart-option">
+              <input type="radio" name="gesamt" value="5" />
+              <span class="heart-icon">♡</span>
+              <span class="heart-label">Exzellent</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            Wie wahrscheinlich ist es, dass Sie mich weiterempfehlen?
+          </legend>
+          <div
+            class="nps-scale"
+            role="radiogroup"
+            aria-label="Weiterempfehlung"
+          >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="1" required /><span
+                class="nps-num"
+                >1</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="2" /><span
+                class="nps-num"
+                >2</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="3" /><span
+                class="nps-num"
+                >3</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="4" /><span
+                class="nps-num"
+                >4</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="5" /><span
+                class="nps-num"
+                >5</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="6" /><span
+                class="nps-num"
+                >6</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="7" /><span
+                class="nps-num"
+                >7</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="8" /><span
+                class="nps-num"
+                >8</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="9" /><span
+                class="nps-num"
+                >9</span
+              ></label
+            >
+            <label class="nps-item"
+              ><input type="radio" name="empfehlung" value="10" /><span
+                class="nps-num"
+                >10</span
+              ></label
+            >
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-top: 6px;
+            "
+          >
+            <span class="nps-hint">eher nicht</span>
+            <span class="nps-hint">auf jeden Fall</span>
+          </div>
+        </fieldset>
+        <fieldset class="notes-fieldset">
+          <legend>
+            Haben Sie Anmerkungen, Wünsche oder Verbesserungsvorschläge?
+          </legend>
+          <textarea
+            name="text"
+            rows="7"
+            class="lined-textarea"
+            placeholder=""
+          ></textarea>
+        </fieldset>
+        <input type="submit" value="Absenden" />
+        <div id="reviewSuccess" class="alert success">
+          Vielen Dank für Ihre Bewertung! Sie werden in Kürze zur Startseite
+          weitergeleitet...
         </div>
-      </fieldset>
-      <fieldset>
-        <legend>Wie zufrieden waren Sie mit dem Service?</legend>
-        <div class="rating">
-          <label><input type="radio" name="service" value="1" required> 1</label>
-          <label><input type="radio" name="service" value="2"> 2</label>
-          <label><input type="radio" name="service" value="3"> 3</label>
-          <label><input type="radio" name="service" value="4"> 4</label>
-          <label><input type="radio" name="service" value="5"> 5</label>
+        <div id="reviewError" class="alert error">
+          Fehler beim Absenden. Bitte versuchen Sie es erneut.
         </div>
-      </fieldset>
-      <fieldset>
-        <legend>Gesamteindruck?</legend>
-        <div class="rating">
-          <label><input type="radio" name="gesamt" value="1" required> 1</label>
-          <label><input type="radio" name="gesamt" value="2"> 2</label>
-          <label><input type="radio" name="gesamt" value="3"> 3</label>
-          <label><input type="radio" name="gesamt" value="4"> 4</label>
-          <label><input type="radio" name="gesamt" value="5"> 5</label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Wie wahrscheinlich ist eine Weiterempfehlung?</legend>
-        <div class="rating">
-          <label><input type="radio" name="empfehlung" value="1" required> 1</label>
-          <label><input type="radio" name="empfehlung" value="2"> 2</label>
-          <label><input type="radio" name="empfehlung" value="3"> 3</label>
-          <label><input type="radio" name="empfehlung" value="4"> 4</label>
-          <label><input type="radio" name="empfehlung" value="5"> 5</label>
-          <label><input type="radio" name="empfehlung" value="6"> 6</label>
-          <label><input type="radio" name="empfehlung" value="7"> 7</label>
-          <label><input type="radio" name="empfehlung" value="8"> 8</label>
-          <label><input type="radio" name="empfehlung" value="9"> 9</label>
-          <label><input type="radio" name="empfehlung" value="10"> 10</label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Anmerkungen</legend>
-        <textarea name="text" rows="3" placeholder="Ihre Anmerkungen..."></textarea>
-      </fieldset>
-      <input type="submit" value="Absenden">
-      <div id="reviewSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank für Ihre Bewertung!</div>
-      <div id="reviewError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
-    </form>
-    <script src="firebase-config.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script>
-    // Firebase-Konfiguration aus externer Datei
-    firebase.initializeApp(window.firebaseConfig);
-    const db = firebase.firestore();
+      </form>
 
-    // orderId aus URL holen
-    function getOrderId() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('orderId') || '';
-    }
+      <!-- Modal für bereits bewertete Bestellungen -->
+      <div
+        id="alreadyReviewedModal"
+        style="
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 1000;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <div
+          style="
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            margin: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+          "
+        >
+          <h3 style="color: var(--clr-accent); margin: 0 0 16px 0">
+            Bereits bewertet
+          </h3>
+          <p style="margin: 0 0 24px 0">
+            Sie haben bereits eine Bewertung für diese Bestellung abgegeben.
+            Vielen Dank für Ihr Feedback!
+          </p>
+          <button
+            onclick="closeModalAndRedirect()"
+            class="btn"
+            style="margin: 0"
+          >
+            Zur Startseite
+          </button>
+        </div>
+      </div>
 
-    document.getElementById('reviewForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const f = this;
-      const review = {
-        orderId: getOrderId(),
-        geschmack: f.geschmack.value,
-        aussehen: f.aussehen.value,
-        service: f.service.value,
-        gesamt: f.gesamt.value,
-        empfehlung: f.empfehlung.value,
-        text: f.text.value,
-        created: new Date().toISOString()
-      };
-      try {
-        await db.collection('reviews').add(review);
-        document.getElementById('reviewSuccess').style.display = 'block';
-        document.getElementById('reviewError').style.display = 'none';
-        f.reset();
-      } catch (err) {
-        document.getElementById('reviewSuccess').style.display = 'none';
-        document.getElementById('reviewError').style.display = 'block';
-      }
-    });
-    </script>
-  </div>
-</body>
+      <script src="firebase-config.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+      <script>
+        // Firebase-Konfiguration aus externer Datei
+        firebase.initializeApp(window.firebaseConfig);
+        const db = firebase.firestore();
+
+        // Zugangsüberprüfung: Nur mit gültigen Parametern erlaubt
+        async function checkAccess() {
+          const params = new URLSearchParams(window.location.search);
+          const orderId = params.get("orderId");
+          const customerId = params.get("customerId");
+
+          if (!orderId || !customerId) {
+            // Keine gültigen Parameter - zur Startseite weiterleiten
+            window.location.href = "index.html";
+            return false;
+          }
+
+          // Überprüfe, ob bereits eine Bewertung für diese Bestellung existiert
+          try {
+            const existingReviewsQuery = await db
+              .collection("reviews")
+              .where("orderId", "==", orderId)
+              .get();
+
+            if (!existingReviewsQuery.empty) {
+              // Bewertung bereits vorhanden - Modal anzeigen
+              showAlreadyReviewedModal();
+              return false;
+            }
+          } catch (error) {
+            console.log(
+              "Fehler beim Überprüfen bestehender Bewertungen:",
+              error
+            );
+            // Bei Fehler trotzdem fortfahren (Fail-Safe)
+          }
+
+          return true;
+        }
+
+        // Sofort beim Laden prüfen
+        checkAccess().then((accessGranted) => {
+          if (!accessGranted) {
+            // Seite wird bereits weitergeleitet
+            document.body.style.display = "none"; // Inhalt verstecken während Weiterleitung
+          }
+        });
+
+        // orderId aus URL holen
+        function getOrderId() {
+          const params = new URLSearchParams(window.location.search);
+          return params.get("orderId") || "";
+        }
+
+        // customerId aus URL holen
+        function getCustomerId() {
+          const params = new URLSearchParams(window.location.search);
+          return params.get("customerId") || "";
+        }
+
+        // Kundendaten laden (falls customerId verfügbar)
+        async function getCustomerName() {
+          const customerId = getCustomerId();
+          if (!customerId) return "";
+
+          try {
+            const customerDoc = await db
+              .collection("customers")
+              .doc(customerId)
+              .get();
+            if (customerDoc.exists) {
+              return customerDoc.data().name || "";
+            }
+          } catch (error) {
+            console.log("Kunde nicht gefunden:", error);
+          }
+          return "";
+        }
+
+        // Modal-Funktionen
+        function showAlreadyReviewedModal() {
+          const modal = document.getElementById("alreadyReviewedModal");
+          modal.style.display = "flex";
+          document.body.style.overflow = "hidden"; // Scroll verhindern
+        }
+
+        function closeModalAndRedirect() {
+          window.location.href = "index.html";
+        }
+
+        document
+          .getElementById("reviewForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const f = this;
+
+            // Kundennamen laden (falls customerId verfügbar)
+            const customerName = await getCustomerName();
+
+            const review = {
+              orderId: getOrderId(),
+              customerId: getCustomerId(),
+              customerName: customerName,
+              geschmack: f.geschmack.value,
+              aussehen: f.aussehen.value,
+              service: f.service.value,
+              gesamt: f.gesamt.value,
+              empfehlung: f.empfehlung.value,
+              text: f.text.value,
+              created: new Date().toISOString(),
+            };
+            try {
+              await db.collection("reviews").add(review);
+              document.getElementById("reviewSuccess").style.display = "block";
+              document.getElementById("reviewError").style.display = "none";
+              f.reset();
+
+              // Nach erfolgreicher Bewertung zur Homepage weiterleiten
+              setTimeout(() => {
+                window.location.href = "index.html";
+              }, 2000); // 2 Sekunden warten, damit der Benutzer die Erfolgsmeldung sieht
+            } catch (err) {
+              document.getElementById("reviewSuccess").style.display = "none";
+              document.getElementById("reviewError").style.display = "block";
+            }
+          });
+      </script>
+    </div>
+  </body>
 </html>

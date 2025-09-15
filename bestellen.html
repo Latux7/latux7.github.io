@@ -14,32 +14,45 @@
   </head>
   <body>
     <div class="container">
-      <nav>
-        <a href="index.html">Startseite</a>
-        <a href="bewerten.html">Bewerten</a>
-      </nav>
-      <h1>Torte bestellen</h1>
+      <header class="site-header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <div class="title">Laura's Backstube</div>
+            <div class="subtitle">Torten & Kuchen mit Liebe</div>
+          </div>
+        </div>
+        <nav>
+          <a href="index.html">Startseite</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <h1>Torte bestellen</h1>
+        <p>
+          Stellen Sie Ihre Wunschtorte zusammen und wählen Sie optional
+          Lieferung.
+        </p>
+      </section>
 
       <form id="orderForm">
         <!-- NEU: Exakter Durchmesser -->
         <fieldset>
           <legend>Durchmesser (exakt)</legend>
-          <label for="diameter">Gewünschter Durchmesser in cm (10–24):</label
-          ><br />
-          <input
-            type="number"
-            id="diameter"
-            name="diameter"
-            min="10"
-            max="24"
-            step="1"
-            required
-            style="max-width: 140px"
-          />
-          <div
-            id="sizeHint"
-            style="margin-top: 6px; opacity: 0.8; font-size: 0.95em"
-          >
+          <label for="diameter">Gewünschter Durchmesser in cm (10–24):</label>
+          <div class="input-inline">
+            <input
+              type="number"
+              id="diameter"
+              name="diameter"
+              min="10"
+              max="24"
+              step="1"
+              required
+              class="input-small"
+            />
+          </div>
+          <div id="sizeHint" class="help" style="margin-top: 6px">
             Kategorie: <strong id="sizeLabel">–</strong> (Basispreis:
             <strong id="sizePrice">–</strong>)
           </div>
@@ -112,27 +125,13 @@
               name="wunschDatum"
               id="wunschDatum"
               required
-              style="
-                padding: 8px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-                font-size: 16px;
-              " /></label
+            /> </label
           ><br />
           <label
             >Uhrzeit (optional)<br />
-            <input
-              type="time"
-              name="wunschUhrzeit"
-              id="wunschUhrzeit"
-              style="
-                padding: 8px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-                font-size: 16px;
-              "
-          /></label>
-          <div style="margin-top: 8px; font-size: 0.9em; color: #666">
+            <input type="time" name="wunschUhrzeit" id="wunschUhrzeit" />
+          </label>
+          <div class="help" style="margin-top: 8px">
             Bitte geben Sie an, wann Sie die Torte benötigen.
           </div>
         </fieldset>
@@ -161,28 +160,12 @@
           </div>
         </fieldset>
 
-        <div id="orderSum" style="font-weight: bold; margin: 10px 0"></div>
+        <div id="orderSum" class="order-summary"></div>
         <input type="submit" value="Bestellung absenden" />
-        <div
-          id="orderSuccess"
-          style="
-            display: none;
-            color: #92d050;
-            font-weight: bold;
-            margin-top: 12px;
-          "
-        >
+        <div id="orderSuccess" class="alert success">
           Vielen Dank! Ihre Bestellung wurde übermittelt.
         </div>
-        <div
-          id="orderError"
-          style="
-            display: none;
-            color: #d32f2f;
-            font-weight: bold;
-            margin-top: 12px;
-          "
-        >
+        <div id="orderError" class="alert error">
           Fehler beim Absenden. Bitte versuchen Sie es erneut.
         </div>
       </form>
