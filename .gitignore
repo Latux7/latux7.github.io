@@ -23,4 +23,3 @@ build/
 # Lokale Umgebungsdateien
 .env
 .env.*
-firebase-config.js
