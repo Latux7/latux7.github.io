@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bestellformular – Personalisierte Torte</title>
+    <title>Laura's Backstube – Personalisierte Torten</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -35,9 +35,167 @@
         </div>
       </section>
 
-      <p class="muted">
-        Hinweis: Abholung oder Lieferung im Umkreis von 40&nbsp;km möglich.
-      </p>
-    </div>
+      <!-- Portfolio Galerie -->
+      <section class="portfolio-section">
+        <div class="portfolio-header">
+          <h2>Mein Portfolio</h2>
+          <p>
+            Entdecken Sie einige meiner schönsten Torten.
+          </p>
+        </div>
+
+        <div class="portfolio-grid" id="portfolioGrid">
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop&crop=center"
+                alt="Schokoladentorte"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Schokoladentorte</h3>
+                <p>Mit Ganache und frischen Beeren</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=400&fit=crop&crop=center"
+                alt="Hochzeitstorte"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Hochzeitstorte</h3>
+                <p>Mehrstöckig mit Fondant-Dekoration</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=400&fit=crop&crop=center"
+                alt="Erdbeertorte"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Erdbeertorte</h3>
+                <p>Sahne und frische Erdbeeren</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&h=400&fit=crop&crop=center"
+                alt="Geburtstagstorte"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Geburtstagstorte</h3>
+                <p>Bunte Dekoration für Kinder</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop&crop=center"
+                alt="Cupcakes"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Cupcakes</h3>
+                <p>Verschiedene Geschmacksrichtungen</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-item">
+            <div class="portfolio-content">
+              <img
+                src="images/Motivtorte.jpg"
+                alt="Motivtorte"
+                loading="lazy"
+              />
+              <div class="portfolio-overlay">
+                <h3>Motivtorte</h3>
+                <p>Individuelle Gestaltung nach Wunsch</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="lightbox">
+          <div class="lightbox-content">
+            <span class="lightbox-close">&times;</span>
+            <img id="lightboxImage" src="" alt="" />
+            <div class="lightbox-info">
+              <h3 id="lightboxTitle"></h3>
+              <p id="lightboxDescription"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer class="site-footer">
+        <p>&copy; 2025 Laura's Backstube</p>
+      </footer>
+
+    <script>
+      // Portfolio Galerie Funktionalität (nur Lightbox, kein Upload)
+      document.addEventListener("DOMContentLoaded", function () {
+        const lightbox = document.getElementById("lightbox");
+        const lightboxClose = document.querySelector(".lightbox-close");
+        const lightboxImage = document.getElementById("lightboxImage");
+        const lightboxTitle = document.getElementById("lightboxTitle");
+        const lightboxDescription = document.getElementById(
+          "lightboxDescription"
+        );
+
+        // Lightbox Funktionalität
+        function openLightbox(src, title, description) {
+          lightboxImage.src = src;
+          lightboxTitle.textContent = title;
+          lightboxDescription.textContent = description;
+          lightbox.style.display = "flex";
+          document.body.style.overflow = "hidden";
+        }
+
+        // Lightbox schließen
+        function closeLightbox() {
+          lightbox.style.display = "none";
+          document.body.style.overflow = "auto";
+        }
+
+        lightboxClose.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", (e) => {
+          if (e.target === lightbox) closeLightbox();
+        });
+
+        // Portfolio Items clickable machen
+        document
+          .querySelectorAll(".portfolio-item .portfolio-content")
+          .forEach((item) => {
+            item.addEventListener("click", () => {
+              const img = item.querySelector("img");
+              const title = item.querySelector("h3").textContent;
+              const description = item.querySelector("p").textContent;
+              openLightbox(img.src, title, description);
+            });
+          });
+
+        // ESC Key für Lightbox
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && lightbox.style.display === "flex") {
+            closeLightbox();
+          }
+        });
+      });
+    </script>
   </body>
 </html>

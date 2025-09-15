@@ -665,3 +665,209 @@ details > div {
   padding: calc(var(--line-offset) + var(--baseline-adjust) + 8px) 18px 16px; /* align first baseline to grid */
   background-color: #fff;
 }
+
+/* Portfolio Galerie Styles */
+.portfolio-section {
+  margin: var(--space-6) 0;
+}
+
+.portfolio-header {
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.portfolio-header h2 {
+  margin-bottom: var(--space-2);
+  font-size: 1.8rem;
+}
+
+.portfolio-header p {
+  color: var(--clr-muted);
+  margin-bottom: var(--space-4);
+}
+
+.upload-icon {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.portfolio-item {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  background: var(--clr-surface);
+}
+
+.portfolio-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.portfolio-content {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+.portfolio-content img,
+.portfolio-content video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-content img,
+.portfolio-item:hover .portfolio-content video {
+  transform: scale(1.05);
+}
+
+.portfolio-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: var(--space-4);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-overlay {
+  transform: translateY(0);
+}
+
+.portfolio-overlay h3 {
+  margin: 0 0 var(--space-1) 0;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.portfolio-overlay p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+  opacity: 0;
+}
+
+.portfolio-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: var(--clr-danger);
+  color: white;
+}
+
+/* Lightbox Styles */
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  text-align: center;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 2001;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#lightboxImage,
+#lightboxVideo {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.lightbox-info {
+  color: white;
+  margin-top: var(--space-3);
+}
+
+.lightbox-info h3 {
+  margin: 0 0 var(--space-1) 0;
+  color: white;
+}
+
+.lightbox-info p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .portfolio-content {
+    height: 250px;
+  }
+
+  .lightbox-content {
+    max-width: 95vw;
+  }
+
+  #lightboxImage,
+  #lightboxVideo {
+    max-height: 60vh;
+  }
+}
