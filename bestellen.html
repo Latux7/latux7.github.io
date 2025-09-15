@@ -1,0 +1,85 @@
+<!-- bestellen.html Grundgerüst -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torte bestellen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Startseite</a>
+      <a href="bewerten.html">Bewerten</a>
+    </nav>
+    <h1>Torte bestellen</h1>
+    <form id="orderForm">
+      <fieldset>
+        <legend>Tortengröße</legend>
+        <label><input type="radio" name="size" value="mini" required> 10–14 cm (Mini, 45&nbsp;€)</label><br>
+        <label><input type="radio" name="size" value="normal"> 15–20 cm (Normal, 55&nbsp;€)</label><br>
+        <label><input type="radio" name="size" value="gross"> 21–25 cm (Groß, 80&nbsp;€)</label>
+      </fieldset>
+      <fieldset>
+        <legend>Extras</legend>
+        <label><input type="checkbox" name="extras" value="schokoboden"> Schokoboden (+5&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="vanillecreme"> Vanillecreme (+5&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="nutella"> Nutella (+5&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="pistaziencreme"> Pistaziencreme (+7&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="buttercreme"> Buttercreme (+10&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="fruchtfuellung"> Fruchtfüllung (+8&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="obst"> Frisches Obst (+10&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="deko"> Dekoration (+15&nbsp;€)</label><br>
+        <label><input type="checkbox" name="extras" value="mehrstoeckig"> Mehrstöckig (+30&nbsp;€)</label>
+      </fieldset>
+      <fieldset>
+        <legend>Lieferung</legend>
+        <label><input type="radio" name="lieferung" value="20km" required> Lieferung bis 20 km (+10&nbsp;€)</label><br>
+        <label><input type="radio" name="lieferung" value="40km"> Lieferung bis 40 km (+20&nbsp;€)</label>
+      </fieldset>
+      <fieldset>
+        <legend>Kontaktdaten</legend>
+        <label>Name*<br><input type="text" name="name" required></label><br>
+        <label>Straße<br><input type="text" name="strasse" required></label><br>
+        <label>PLZ/Ort<br><input type="text" name="plzort" required></label><br>
+        <label>Telefon<br><input type="tel" name="telefon" required></label><br>
+        <label>E-Mail*<br><input type="email" name="email" required></label>
+      </fieldset>
+      <div id="orderSum" style="font-weight:bold;margin:10px 0;"></div>
+      <input type="submit" value="Bestellung absenden">
+      <div id="orderSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank! Ihre Bestellung wurde übermittelt.</div>
+      <div id="orderError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
+    </form>
+    <script>
+    // Preisberechnung
+    const prices = {
+      size: { mini: 45, normal: 55, gross: 80 },
+      extras: { schokoboden: 5, vanillecreme: 5, nutella: 5, pistaziencreme: 7, buttercreme: 10, fruchtfuellung: 8, obst: 10, deko: 15, mehrstoeckig: 30 },
+      lieferung: { '20km': 10, '40km': 20 }
+    };
+    function calcSum() {
+      let sum = 0;
+      const f = document.forms.orderForm;
+      if (f.size.value) sum += prices.size[f.size.value];
+      if (f.lieferung.value) sum += prices.lieferung[f.lieferung.value];
+      (f.extras && f.extras.length ? Array.from(f.extras) : [f.extras]).forEach(e => { if (e && e.checked) sum += prices.extras[e.value] });
+      document.getElementById('orderSum').textContent = sum ? `Gesamt: ${sum} €` : '';
+    }
+    document.getElementById('orderForm').addEventListener('change', calcSum);
+    // Platzhalter für Firestore-Integration und Formular-Submit
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // TODO: Firestore-Integration
+      document.getElementById('orderSuccess').style.display = 'block';
+      document.getElementById('orderError').style.display = 'none';
+      this.reset();
+      document.getElementById('orderSum').textContent = '';
+    });
+    </script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!-- admin.html Grundgerüst -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Startseite</a>
+      <a href="bestellen.html">Bestellen</a>
+      <a href="bewerten.html">Bewerten</a>
+    </nav>
+    <h1>Admin Dashboard</h1>
+    <div id="adminLogin">
+      <form id="loginForm">
+        <label>Passwort:<br><input type="password" id="adminPw" required></label>
+        <input type="submit" value="Login">
+      </form>
+      <div id="loginError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Falsches Passwort!</div>
+    </div>
+    <div id="adminPanel" style="display:none;">
+      <h2>Bestellungen</h2>
+      <div id="ordersList">Lade Bestellungen...</div>
+    </div>
+    <script>
+    // Einfaches statisches Passwort (z.B. "tortenadmin2025")
+    const ADMIN_PW = "tortenadmin2025";
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if(document.getElementById('adminPw').value === ADMIN_PW) {
+        document.getElementById('adminLogin').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        loadOrders();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    });
+
+    // Platzhalter: Lade Bestellungen aus Firestore
+    function loadOrders() {
+      // TODO: Firestore-Integration
+      // Beispiel-Daten
+      const orders = [
+        {id:'abc123', name:'Max Mustermann', status:'neu', email:'max@test.de'},
+        {id:'def456', name:'Erika Musterfrau', status:'in Vorbereitung', email:'erika@test.de'}
+      ];
+      const statusOptions = ['neu','angenommen','in Vorbereitung','abgelehnt','fertig'];
+      let html = '<table style="width:100%;border-collapse:collapse;margin-top:12px;">';
+      html += '<tr><th>Name</th><th>Status</th><th>Aktion</th></tr>';
+      orders.forEach(order => {
+        html += `<tr><td>${order.name}</td><td><select data-id="${order.id}" class="statusSel">`;
+        statusOptions.forEach(opt => {
+          html += `<option value="${opt}"${order.status===opt?' selected':''}>${opt}</option>`;
+        });
+        html += `</select></td><td><a href="mailto:${order.email}">Mail</a></td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('ordersList').innerHTML = html;
+      // Status-Änderung (Platzhalter)
+      document.querySelectorAll('.statusSel').forEach(sel => {
+        sel.addEventListener('change', function() {
+          // TODO: Firestore-Update + ggf. Cloud Function Trigger
+          alert('Status geändert für Bestellung ' + this.dataset.id + ' auf ' + this.value);
+        });
+      });
+    }
+    </script>
+  </div>
+</body>
+</html>

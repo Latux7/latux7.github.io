@@ -1,0 +1,96 @@
+<!-- bewerten.html Grundgerüst -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torte bewerten</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Startseite</a>
+      <a href="bestellen.html">Bestellen</a>
+    </nav>
+    <h1>Torte bewerten</h1>
+    <form id="reviewForm">
+      <fieldset>
+        <legend>Wie hat Ihnen die Torte geschmeckt?</legend>
+        <div class="rating">
+          <label><input type="radio" name="geschmack" value="1" required> 1</label>
+          <label><input type="radio" name="geschmack" value="2"> 2</label>
+          <label><input type="radio" name="geschmack" value="3"> 3</label>
+          <label><input type="radio" name="geschmack" value="4"> 4</label>
+          <label><input type="radio" name="geschmack" value="5"> 5</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Wie fanden Sie Aussehen / Dekoration?</legend>
+        <div class="rating">
+          <label><input type="radio" name="aussehen" value="1" required> 1</label>
+          <label><input type="radio" name="aussehen" value="2"> 2</label>
+          <label><input type="radio" name="aussehen" value="3"> 3</label>
+          <label><input type="radio" name="aussehen" value="4"> 4</label>
+          <label><input type="radio" name="aussehen" value="5"> 5</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Wie zufrieden waren Sie mit dem Service?</legend>
+        <div class="rating">
+          <label><input type="radio" name="service" value="1" required> 1</label>
+          <label><input type="radio" name="service" value="2"> 2</label>
+          <label><input type="radio" name="service" value="3"> 3</label>
+          <label><input type="radio" name="service" value="4"> 4</label>
+          <label><input type="radio" name="service" value="5"> 5</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Gesamteindruck?</legend>
+        <div class="rating">
+          <label><input type="radio" name="gesamt" value="1" required> 1</label>
+          <label><input type="radio" name="gesamt" value="2"> 2</label>
+          <label><input type="radio" name="gesamt" value="3"> 3</label>
+          <label><input type="radio" name="gesamt" value="4"> 4</label>
+          <label><input type="radio" name="gesamt" value="5"> 5</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Wie wahrscheinlich ist eine Weiterempfehlung?</legend>
+        <div class="rating">
+          <label><input type="radio" name="empfehlung" value="1" required> 1</label>
+          <label><input type="radio" name="empfehlung" value="2"> 2</label>
+          <label><input type="radio" name="empfehlung" value="3"> 3</label>
+          <label><input type="radio" name="empfehlung" value="4"> 4</label>
+          <label><input type="radio" name="empfehlung" value="5"> 5</label>
+          <label><input type="radio" name="empfehlung" value="6"> 6</label>
+          <label><input type="radio" name="empfehlung" value="7"> 7</label>
+          <label><input type="radio" name="empfehlung" value="8"> 8</label>
+          <label><input type="radio" name="empfehlung" value="9"> 9</label>
+          <label><input type="radio" name="empfehlung" value="10"> 10</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Anmerkungen</legend>
+        <textarea name="text" rows="3" placeholder="Ihre Anmerkungen..."></textarea>
+      </fieldset>
+      <input type="submit" value="Absenden">
+      <div id="reviewSuccess" style="display:none;color:#92d050;font-weight:bold;margin-top:12px;">Vielen Dank für Ihre Bewertung!</div>
+      <div id="reviewError" style="display:none;color:#d32f2f;font-weight:bold;margin-top:12px;">Fehler beim Absenden. Bitte versuchen Sie es erneut.</div>
+    </form>
+    <script>
+    // Platzhalter für Firestore-Integration und Formular-Submit
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // TODO: Firestore-Integration
+      document.getElementById('reviewSuccess').style.display = 'block';
+      document.getElementById('reviewError').style.display = 'none';
+      this.reset();
+    });
+    </script>
+  </div>
+</body>
+</html>
