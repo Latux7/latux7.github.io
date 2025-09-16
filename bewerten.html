@@ -318,14 +318,15 @@
         </div>
       </div>
 
-      <script src="config/firebase.js"></script>
-      <script src="js/common.js"></script>
+      <!-- Firebase Bibliotheken ZUERST laden -->
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+      <!-- Dann Firebase Config und andere Configs -->
+      <script src="config/firebase.js"></script>
+      <script src="js/common.js"></script>
       <script>
-        // Firebase-Konfiguration aus externer Datei
-        firebase.initializeApp(window.firebaseConfig);
-        const db = firebase.firestore();
+        // Firebase wird bereits in config/firebase.js initialisiert
+        const db = initializeFirebaseApp();
 
         // Zugangsüberprüfung: Nur mit gültigen Parametern erlaubt
         async function checkAccess() {

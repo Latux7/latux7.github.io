@@ -320,10 +320,10 @@ class OrderManager {
         try {
             showLoading('ordersList', 'Lade Bestellungen...');
 
+            // Vereinfachte Abfrage ohne Composite Index
+            // Erst alle aktiven Bestellungen laden, dann clientseitig filtern und sortieren
             const ordersSnapshot = await this.db
                 .collection("orders")
-                .where("status", "!=", "archiviert")
-                .orderBy("status")
                 .orderBy("created", "desc")
                 .get();
 
@@ -332,8 +332,38 @@ class OrderManager {
                 return;
             }
 
+            // Clientseitig filtern und sortieren
+            const activeOrders = ordersSnapshot.docs
+                .filter(doc => {
+                    const order = doc.data();
+                    return order.status !== "archiviert";
+                })
+                .sort((a, b) => {
+                    const orderA = a.data();
+                    const orderB = b.data();
+
+                    // Erst nach Status sortieren (neue Bestellungen zuerst)
+                    const statusPriority = {
+                        "neu": 0,
+                        "in_bearbeitung": 1,
+                        "fertig": 2
+                    };
+
+                    const priorityA = statusPriority[orderA.status] ?? 999;
+                    const priorityB = statusPriority[orderB.status] ?? 999;
+
+                    if (priorityA !== priorityB) {
+                        return priorityA - priorityB;
+                    }
+
+                    // Bei gleichem Status: nach Datum sortieren (neuste zuerst)
+                    const dateA = orderA.created ? new Date(orderA.created) : new Date(0);
+                    const dateB = orderB.created ? new Date(orderB.created) : new Date(0);
+                    return dateB - dateA;
+                });
+
             let html = "";
-            for (const doc of ordersSnapshot.docs) {
+            for (const doc of activeOrders) {
                 const order = doc.data();
                 html += await this.renderOrder(doc, order);
             }
