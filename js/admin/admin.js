@@ -227,14 +227,23 @@ class AdminDashboard {
             reviewsSnapshot.forEach(doc => {
                 const review = doc.data();
 
-                // Sterne für Kategorien
-                const tasteStars = '★'.repeat(review.taste || 0) + '☆'.repeat(5 - (review.taste || 0));
-                const appearanceStars = '★'.repeat(review.appearance || 0) + '☆'.repeat(5 - (review.appearance || 0));
-                const serviceStars = '★'.repeat(review.service || 0) + '☆'.repeat(5 - (review.service || 0));
-                const overallStars = '★'.repeat(review.overall || 0) + '☆'.repeat(5 - (review.overall || 0));
+                // Feldnamen sowohl deutsch als auch englisch unterstützen
+                const taste = review.taste || review.geschmack || 0;
+                const appearance = review.appearance || review.aussehen || 0;
+                const service = review.service || review.bedienung || 0;
+                const overall = review.overall || review.gesamt || 0;
+                const nps = review.nps || review.empfehlung || review.weiterempfehlung || 0;
+                const comment = review.comment || review.text || review.kommentar || '';
+                const improvements = review.improvements || review.verbesserungen || '';
 
-                // NPS Farbe
-                const npsScore = review.nps || 0;
+                // Sterne für Kategorien (validiert auf 1-5 Bereich)
+                const tasteStars = '★'.repeat(Math.max(0, Math.min(5, taste))) + '☆'.repeat(5 - Math.max(0, Math.min(5, taste)));
+                const appearanceStars = '★'.repeat(Math.max(0, Math.min(5, appearance))) + '☆'.repeat(5 - Math.max(0, Math.min(5, appearance)));
+                const serviceStars = '★'.repeat(Math.max(0, Math.min(5, service))) + '☆'.repeat(5 - Math.max(0, Math.min(5, service)));
+                const overallStars = '★'.repeat(Math.max(0, Math.min(5, overall))) + '☆'.repeat(5 - Math.max(0, Math.min(5, overall)));
+
+                // NPS Farbe (validiert auf 1-10 Bereich)
+                const npsScore = Math.max(0, Math.min(10, nps));
                 const npsColor = npsScore >= 9 ? '#4CAF50' : npsScore >= 7 ? '#FF9800' : '#f44336';
 
                 // Datum formatieren
@@ -247,17 +256,21 @@ class AdminDashboard {
                             <span style="color: #666; font-size: 0.9em;">${reviewDate}</span>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px;">
-                            <div><strong>Geschmack:</strong> <span style="color: #FFD700;">${tasteStars}</span></div>
-                            <div><strong>Aussehen:</strong> <span style="color: #FFD700;">${appearanceStars}</span></div>
-                            <div><strong>Service:</strong> <span style="color: #FFD700;">${serviceStars}</span></div>
-                            <div><strong>Gesamt:</strong> <span style="color: #FFD700;">${overallStars}</span></div>
+                            <div><strong>Geschmack:</strong> <span style="color: #FFD700;">${tasteStars}</span> (${taste}/5)</div>
+                            <div><strong>Aussehen:</strong> <span style="color: #FFD700;">${appearanceStars}</span> (${appearance}/5)</div>
+                            <div><strong>Service:</strong> <span style="color: #FFD700;">${serviceStars}</span> (${service}/5)</div>
+                            <div><strong>Gesamt:</strong> <span style="color: #FFD700;">${overallStars}</span> (${overall}/5)</div>
                         </div>
                         <div style="margin-bottom: 10px;">
-                            <strong>NPS-Score:</strong> 
+                            <strong>Weiterempfehlung:</strong> 
                             <span style="background: ${npsColor}; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold;">${npsScore}/10</span>
                         </div>
-                        ${review.comment ? `<div style="background: white; padding: 10px; border-radius: 3px; font-style: italic;">"${review.comment}"</div>` : ''}
-                        ${review.improvements ? `<div style="margin-top: 8px; color: #666;"><strong>Verbesserungen:</strong> ${review.improvements}</div>` : ''}
+                        ${comment ? `<div style="background: white; padding: 10px; border-radius: 3px; border-left: 3px solid #8B4513; font-style: italic; margin-top: 10px;"><strong>Kommentar:</strong><br>"${comment}"</div>` : ''}
+                        ${improvements ? `<div style="margin-top: 8px; color: #666; background: #f0f0f0; padding: 8px; border-radius: 3px;"><strong>Verbesserungen:</strong> ${improvements}</div>` : ''}
+                        <div style="margin-top: 8px; color: #999; font-size: 0.8em;">
+                            <strong>Bestellung:</strong> ${review.orderId || 'Unbekannt'} | 
+                            <strong>Kunde:</strong> ${review.customerId || 'Unbekannt'}
+                        </div>
                     </div>
                 `;
             });
