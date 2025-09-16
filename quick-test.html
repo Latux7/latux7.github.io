@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Test - Laura's Backstube</title>
+    <script src="js/website-protection.js"></script>
+  </head>
+  <body>
+    <div
+      style="
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      "
+    >
+      <h1>🔍 Quick Test - System Check</h1>
+      <p>Schnelle Überprüfung der kritischen Systemkomponenten</p>
+
+      <div id="results" style="margin: 20px 0">
+        <div
+          style="
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+          "
+        >
+          ⏳ Tests werden geladen...
+        </div>
+      </div>
+
+      <button
+        onclick="runQuickTests()"
+        style="
+          padding: 10px 20px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 5px;
+        "
+      >
+        Tests erneut ausführen
+      </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="config/firebase.js"></script>
+    <script src="config/prices.js"></script>
+    <script src="config/email.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/order-limits.js"></script>
+    <script src="js/embedded-calendar.js"></script>
+    <script src="js/order.js"></script>
+    <script src="js/email-template-manager.js"></script>
+    <script src="js/admin/notifications.js"></script>
+    <script src="js/test-fixes.js"></script>
+
+    <script>
+      function addResult(name, status, message = "") {
+        const resultsDiv = document.getElementById("results");
+        const icon = status ? "✅" : "❌";
+        const color = status ? "#d4edda" : "#f8d7da";
+
+        const div = document.createElement("div");
+        div.style.cssText = `padding: 10px; margin: 5px 0; background: ${color}; border-radius: 5px; font-family: monospace;`;
+        div.innerHTML = `${icon} ${name} ${message ? "- " + message : ""}`;
+        resultsDiv.appendChild(div);
+      }
+
+      function runQuickTests() {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "<h3>🔍 Kritische System-Tests:</h3>";
+
+        // Firebase Konfiguration
+        const firebaseOk =
+          window.firebaseConfig &&
+          window.firebaseConfig.apiKey &&
+          window.firebaseConfig.projectId;
+        addResult(
+          "Firebase Konfiguration",
+          firebaseOk,
+          firebaseOk ? "OK" : "Nicht verfügbar"
+        );
+
+        // Preiskonfiguration
+        const priceOk =
+          window.priceConfig &&
+          window.priceConfig.tiers &&
+          window.priceConfig.extras;
+        addResult(
+          "Preiskonfiguration",
+          priceOk,
+          priceOk ? "OK" : "Nicht verfügbar"
+        );
+
+        // EmailJS Konfiguration
+        const emailOk =
+          window.emailConfig &&
+          window.emailConfig.serviceId &&
+          window.emailConfig.publicKey;
+        addResult(
+          "EmailJS Konfiguration",
+          emailOk,
+          emailOk ? "OK" : "Nicht verfügbar"
+        );
+
+        // EmailJS Bibliothek
+        const emailjsOk = typeof emailjs !== "undefined";
+        addResult(
+          "EmailJS Bibliothek",
+          emailjsOk,
+          emailjsOk ? "Geladen" : "Nicht geladen"
+        );
+
+        // EmailTemplateManager
+        const templateOk = typeof window.emailTemplateManager !== "undefined";
+        addResult(
+          "EmailTemplateManager",
+          templateOk,
+          templateOk ? "Geladen" : "Nicht geladen"
+        );
+
+        // NotificationManager
+        const notifOk = typeof window.notificationManager !== "undefined";
+        addResult(
+          "NotificationManager",
+          notifOk,
+          notifOk ? "Geladen" : "Nicht geladen"
+        );
+
+        // OrderLimitManager
+        const limitOk =
+          typeof OrderLimitManager !== "undefined" && window.orderLimitManager;
+        addResult(
+          "OrderLimitManager",
+          limitOk,
+          limitOk ? "Geladen" : "Nicht geladen"
+        );
+
+        // Template-Daten Test
+        if (templateOk) {
+          try {
+            const testData = {
+              name: "Test",
+              email: "test@example.com",
+              details: { durchmesserCm: 20, tier: "Normal", extras: [] },
+              wunschtermin: { datum: new Date() },
+              gesamtpreis: 55,
+            };
+            const result =
+              window.emailTemplateManager.getOrderEmailJSData(testData);
+            const templateDataOk =
+              result &&
+              result.customer_name === "Test" &&
+              result.header_title === "NEUE BESTELLUNG";
+            addResult(
+              "Template-Daten Generierung",
+              templateDataOk,
+              templateDataOk ? "OK" : "Fehler bei Generierung"
+            );
+          } catch (error) {
+            addResult(
+              "Template-Daten Generierung",
+              false,
+              "Fehler: " + error.message
+            );
+          }
+        }
+
+        // Zusammenfassung
+        const summary = document.createElement("div");
+        summary.style.cssText =
+          "margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 5px; font-weight: bold;";
+        summary.innerHTML = `
+                <h4>📊 Test-Zusammenfassung:</h4>
+                <p>🔍 Alle kritischen Komponenten getestet</p>
+                <p>💡 Bei Fehlern: Browser-Konsole prüfen und Seite neu laden</p>
+                <p>🚀 Vollständige Tests: <a href="tests.html">tests.html</a> öffnen</p>
+            `;
+        resultsDiv.appendChild(summary);
+      }
+
+      // Auto-Start nach 2 Sekunden
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(runQuickTests, 2000);
+      });
+    </script>
+  </body>
+</html>
