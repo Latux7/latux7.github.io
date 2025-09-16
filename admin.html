@@ -1052,7 +1052,9 @@
                 : "-"
             }<br>
             <b>Extras:</b> ${
-              order.details && order.details.extras && order.details.extras.length
+              order.details &&
+              order.details.extras &&
+              order.details.extras.length
                 ? order.details.extras.join(", ")
                 : "keine"
             }<br>
