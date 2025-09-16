@@ -7,3 +7,12 @@ window.firebaseConfig = {
   appId: "1:115340979108:web:70c2c46052045c5e366f31",
   measurementId: "G-R51RPWTCFZ"
 };
+
+// Firebase App initialisieren
+function initializeFirebaseApp() {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(window.firebaseConfig);
+    console.log('Firebase App initialisiert');
+  }
+  return firebase.firestore();
+}

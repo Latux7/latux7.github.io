@@ -21,25 +21,61 @@ class AdminDashboard {
 
     setupEventListeners() {
         // Login-Handler
-        document.getElementById("loginForm").addEventListener("submit", (e) => this.handleLogin(e));
+        const loginForm = document.getElementById("loginForm");
+        if (loginForm) {
+            loginForm.addEventListener("submit", (e) => this.handleLogin(e));
+        }
+
+        // Logout-Handler
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => this.logout());
+        }
 
         // Modal-Handler für Benachrichtigungseinstellungen
-        document.getElementById('showNotificationSettings').addEventListener('click', () => {
-            window.notificationManager.showNotificationSettings();
-        });
+        const notificationSettingsBtn = document.getElementById('notificationSettingsBtn');
+        if (notificationSettingsBtn) {
+            notificationSettingsBtn.addEventListener('click', () => {
+                if (window.notificationManager) {
+                    window.notificationManager.showNotificationSettings();
+                }
+            });
+        }
 
-        document.getElementById('closeNotificationSettings').addEventListener('click', () => {
-            window.notificationManager.closeNotificationSettings();
-        });
+        const cancelNotificationSettings = document.getElementById('cancelNotificationSettings');
+        if (cancelNotificationSettings) {
+            cancelNotificationSettings.addEventListener('click', () => {
+                if (window.notificationManager) {
+                    window.notificationManager.closeNotificationSettings();
+                }
+            });
+        }
 
-        document.getElementById('notificationsEnabled').addEventListener('change', () => {
-            window.notificationManager.toggleNotifications();
-        });
+        const saveNotificationSettings = document.getElementById('saveNotificationSettings');
+        if (saveNotificationSettings) {
+            saveNotificationSettings.addEventListener('click', () => {
+                this.saveNotificationSettings();
+            });
+        }
 
         // Archiv-Toggle
-        document.getElementById('toggleArchiveBtn').addEventListener('click', () => {
-            window.archiveManager.toggleArchive();
-        });
+        const archiveAllFinishedBtn = document.getElementById('archiveAllFinishedBtn');
+        if (archiveAllFinishedBtn) {
+            archiveAllFinishedBtn.addEventListener('click', () => {
+                if (window.archiveManager) {
+                    window.archiveManager.archiveAllFinished();
+                }
+            });
+        }
+
+        const toggleArchiveBtn = document.getElementById('toggleArchiveBtn');
+        if (toggleArchiveBtn) {
+            toggleArchiveBtn.addEventListener('click', () => {
+                if (window.archiveManager) {
+                    window.archiveManager.toggleArchive();
+                }
+            });
+        }
     }
 
     // Login-Handler
@@ -94,14 +130,27 @@ class AdminDashboard {
 
     // Dashboard laden
     loadDashboard() {
-        // Lade Bestellungen
-        window.orderManager.loadOrders();
+        // Lade Bestellungen (nur wenn orderManager verfügbar)
+        if (window.orderManager && typeof window.orderManager.loadOrders === 'function') {
+            window.orderManager.loadOrders();
+        } else {
+            console.warn('OrderManager noch nicht verfügbar');
+            // Retry nach kurzer Verzögerung
+            setTimeout(() => {
+                if (window.orderManager && typeof window.orderManager.loadOrders === 'function') {
+                    window.orderManager.loadOrders();
+                }
+            }, 100);
+        }
 
         // Starte Benachrichtigungen (falls in localStorage aktiviert)
         const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
-        document.getElementById('notificationsEnabled').checked = notificationsEnabled;
+        const notificationsCheckbox = document.getElementById('notificationsEnabled');
+        if (notificationsCheckbox) {
+            notificationsCheckbox.checked = notificationsEnabled;
+        }
 
-        if (notificationsEnabled) {
+        if (notificationsEnabled && window.notificationManager) {
             window.notificationManager.startOrderMonitoring();
         }
     }

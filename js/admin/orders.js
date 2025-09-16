@@ -7,7 +7,16 @@ class OrderManager {
     }
 
     init() {
-        this.db = firebase.firestore();
+        // Firebase App erst initialisieren, dann Firestore verwenden
+        if (typeof initializeFirebaseApp === 'function') {
+            this.db = initializeFirebaseApp();
+        } else {
+            // Fallback: Firebase direkt verwenden falls schon initialisiert
+            if (!firebase.apps.length) {
+                firebase.initializeApp(window.firebaseConfig);
+            }
+            this.db = firebase.firestore();
+        }
     }
 
     // Bestellung löschen

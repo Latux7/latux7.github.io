@@ -50,6 +50,12 @@ function formatDateTime(date) {
 
 // Firebase-Initialisierung (einmalig)
 function initializeFirebase() {
+    // Verwende die neue initializeFirebaseApp Funktion wenn verfügbar
+    if (typeof initializeFirebaseApp === 'function') {
+        return initializeFirebaseApp();
+    }
+
+    // Fallback für alte Implementierung
     if (!firebase.apps.length) {
         firebase.initializeApp(window.firebaseConfig);
     }
