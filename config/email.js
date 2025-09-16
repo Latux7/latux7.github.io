@@ -10,6 +10,8 @@ window.emailConfig = {
         order_status: "template_2eyveh9", // Für alle Status-Änderungen (angenommen/abgelehnt/in-vorbereitung/fertig)
         order_ready: "template_2eyveh9", // Auch für "fertig" - gleiches Template mit Bewertungslink
         new_order_notification: "template_ov1de3n", // Für Admin-Benachrichtigungen bei neuen Bestellungen
+        new_review_notification: "template_ov1de3n", // Für Admin-Benachrichtigungen bei neuen Bewertungen
+        unified_admin: "template_ov1de3n" // Einheitliches Template für alle Admin-Benachrichtigungen
     },
 
     // EmailJS Public Key (von Ihrem EmailJS Account)
