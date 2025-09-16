@@ -99,7 +99,6 @@ class OrderLimitManager {
                 <div class="limit-info available">
                     <div class="limit-icon">✅</div>
                     <div class="limit-content">
-                        <h3>Bestellungen heute verfügbar</h3>
                         <p><strong>${status.remaining} von ${status.limit}</strong> Plätzen noch frei</p>
                         <small>Tägliches Limit: ${status.limit} Torten pro Tag für beste Qualität</small>
                     </div>

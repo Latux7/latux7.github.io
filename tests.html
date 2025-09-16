@@ -285,6 +285,9 @@
     <script src="config/prices.js"></script>
     <script src="config/email.js"></script>
     <script src="js/common.js"></script>
+    <script src="js/order-limits.js"></script>
+    <script src="js/embedded-calendar.js"></script>
+    <script src="js/order.js"></script>
     <script src="js/manual-tests.js"></script>
 
     <script>
@@ -705,6 +708,37 @@
           return typeof AdminDashboard !== "undefined";
         },
         "admin"
+      );
+
+      // Order Limits Tests
+      testSuite.addTest(
+        "Order Limit Manager",
+        async () => {
+          return typeof OrderLimitManager !== "undefined" && window.orderLimitManager;
+        },
+        "order",
+        true
+      );
+
+      testSuite.addTest(
+        "Embedded Calendar Functions",
+        async () => {
+          return typeof showAvailabilityCalendar === "function" && 
+                 typeof hideAvailabilityCalendar === "function" &&
+                 typeof loadEmbeddedCalendar === "function";
+        },
+        "order",
+        true
+      );
+
+      testSuite.addTest(
+        "Calendar Modal Functions",
+        async () => {
+          return typeof showSelectionModal === "function" && 
+                 typeof closeDateSelectionModal === "function" &&
+                 typeof confirmDateSelection === "function";
+        },
+        "order"
       );
 
       // Review Tests

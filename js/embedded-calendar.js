@@ -203,15 +203,17 @@ function selectDateFromCalendar(dateString) {
  */
 function showSelectionModal(dateString) {
     const date = new Date(dateString + 'T12:00:00');
-    const formattedDate = date.toLocaleDateString('de-DE', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+    const formattedDate = date.toLocaleDateString('de-DE', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
     });
-
+    
     const orderCount = ordersCountData[dateString] || 0;
-
+    const available = 5 - orderCount;
+    const isAvailable = orderCount < 5;
+    
     const modalHTML = `
         <div id="dateSelectionModal" style="
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
@@ -220,39 +222,71 @@ function showSelectionModal(dateString) {
         ">
             <div style="
                 background: white; padding: 30px; border-radius: 12px; 
-                box-shadow: var(--shadow-lg); max-width: 400px; width: 90%;
-                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 450px; width: 90%;
+                text-align: center; animation: modalFadeIn 0.3s ease-out;
             ">
-                <div style="font-size: 2rem; margin-bottom: 15px;">📅</div>
-                <h3 style="margin-bottom: 15px; color: var(--clr-accent);">Wunschtermin auswählen</h3>
-                <p style="margin-bottom: 20px; line-height: 1.6;">
-                    Möchten Sie <strong>${formattedDate}</strong> als Ihren Wunschtermin auswählen?
-                </p>
-                <div style="background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-                    <small><strong>Verfügbarkeit:</strong> ${orderCount}/5 Bestellungen</small>
+                <div style="font-size: 3rem; margin-bottom: 15px;">
+                    ${isAvailable ? '📅' : '❌'}
                 </div>
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button onclick="confirmDateSelection('${dateString}')" style="
-                        padding: 12px 24px; background: var(--clr-accent); color: white; 
-                        border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-                    ">
-                        ✓ Auswählen
-                    </button>
+                <h3 style="margin-bottom: 15px; color: var(--clr-accent);">${formattedDate}</h3>
+                
+                <div style="
+                    background: ${isAvailable ? '#e8f5e8' : '#ffebee'}; 
+                    padding: 20px; border-radius: 8px; margin-bottom: 20px;
+                    border-left: 4px solid ${isAvailable ? '#4caf50' : '#f44336'};
+                ">
+                    ${isAvailable ? 
+                        `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
+                         <p style="margin: 0; line-height: 1.5;">
+                             <strong>${available} von 5 Plätzen</strong> noch frei.<br>
+                             Sie können für diesen Tag bestellen.
+                         </p>` :
+                        `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
+                         <p style="margin: 0; line-height: 1.5;">
+                             Dieser Tag ist leider bereits vollständig ausgebucht.<br>
+                             Bitte wählen Sie einen anderen Termin.
+                         </p>`
+                    }
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    ${isAvailable ? 
+                        `<button onclick="selectDateAndContinue('${dateString}')" style="
+                            padding: 12px 24px; background: var(--clr-accent); color: white; 
+                            border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+                            min-width: 120px;
+                        ">
+                            🎂 Auswählen
+                        </button>
+                        <button onclick="openStandaloneCalendar('${dateString}')" style="
+                            padding: 12px 24px; background: #007bff; color: white; 
+                            border: none; border-radius: 6px; cursor: pointer;
+                            min-width: 120px;
+                        ">
+                            📅 Vollansicht
+                        </button>` : 
+                        `<button onclick="openStandaloneCalendar('${dateString}')" style="
+                            padding: 12px 24px; background: #007bff; color: white; 
+                            border: none; border-radius: 6px; cursor: pointer;
+                            min-width: 120px;
+                        ">
+                            📅 Andere Termine ansehen
+                        </button>`
+                    }
                     <button onclick="closeDateSelectionModal()" style="
                         padding: 12px 24px; background: #ddd; color: #333; 
                         border: none; border-radius: 6px; cursor: pointer;
+                        min-width: 120px;
                     ">
-                        Abbrechen
+                        ${isAvailable ? 'Später' : 'Schließen'}
                     </button>
                 </div>
             </div>
         </div>
     `;
-
+    
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-/**
+}/**
  * Modal schließen
  */
 function closeDateSelectionModal() {
@@ -268,37 +302,59 @@ function closeDateSelectionModal() {
 function confirmDateSelection(dateString) {
     // Modal schließen
     closeDateSelectionModal();
-
+    
     // Kalender verstecken
     hideAvailabilityCalendar();
-
+    
     // Datum ins Formular eintragen (beide möglichen Field-Namen prüfen)
     const wunschterminInput = document.getElementById('wunschtermin') || document.getElementById('wunschDatum');
     if (wunschterminInput) {
         wunschterminInput.value = dateString;
-
+        
         // Event-Handler für live Validierung triggern falls vorhanden
         const event = new Event('input', { bubbles: true });
         wunschterminInput.dispatchEvent(event);
-
+        
         // Visuelles Feedback
         wunschterminInput.style.background = '#e8f5e8';
         wunschterminInput.style.borderColor = '#4caf50';
-
+        
         setTimeout(() => {
             wunschterminInput.style.background = '';
             wunschterminInput.style.borderColor = '';
         }, 2000);
     }
-
+    
     // Zur Bestellform scrollen
     scrollToForm();
-
+    
     // Erfolgs-Notification
     showSuccessNotification(`Wunschtermin ${new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE')} ausgewählt!`);
 }
 
 /**
+ * Datum auswählen und direkt im Formular setzen
+ */
+function selectDateAndContinue(dateString) {
+    confirmDateSelection(dateString);
+}
+
+/**
+ * Standalone Kalender in neuem Tab öffnen (als Fallback)
+ */
+function openStandaloneCalendar(dateString) {
+    // Modal schließen
+    closeDateSelectionModal();
+    
+    // Kalender verstecken
+    hideAvailabilityCalendar();
+    
+    // Zum Formular scrollen als Hinweis
+    scrollToForm();
+    
+    // Hinweis geben, dass der eingebettete Kalender die beste Option ist
+    showSuccessNotification('💡 Tipp: Verwenden Sie den Kalender oben für die beste Erfahrung!');
+}/**
  * Erfolgs-Notification anzeigen
  */
 function showSuccessNotification(message) {
@@ -407,3 +463,31 @@ if (!document.querySelector('#embedded-calendar-styles')) {
     `;
     document.head.appendChild(style);
 }
+
+// URL-Parameter beim Laden prüfen (für Weiterleitung von anderen Seiten)
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    const showCalendar = urlParams.get('calendar');
+
+    if (showCalendar === 'true' || dateParam) {
+        // Kalender automatisch anzeigen
+        setTimeout(() => {
+            showAvailabilityCalendar();
+            
+            if (dateParam) {
+                // Zum entsprechenden Monat navigieren
+                const targetDate = new Date(dateParam);
+                if (!isNaN(targetDate.getTime())) {
+                    currentMonth = targetDate.getMonth();
+                    currentYear = targetDate.getFullYear();
+                    
+                    // Kalender neu laden mit korrektem Monat
+                    setTimeout(() => {
+                        loadEmbeddedCalendar();
+                    }, 500);
+                }
+            }
+        }, 500);
+    }
+});

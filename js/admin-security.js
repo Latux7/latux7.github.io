@@ -295,38 +295,10 @@
         // Admin-Login verarbeiten
         handleAdminLogin(enteredCode, errorDiv, input) {
             if (enteredCode === ADMIN_ACCESS_CODE) {
-                // Korrekter Code
+                // Korrekter Code - Admin-Session erstellen und Seite direkt neu laden
                 this.clearLoginAttempts();
                 this.createAdminSession();
-
-                document.body.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: linear-gradient(135deg, #27ae60, #2ecc71);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: 'Poppins', Arial, sans-serif;
-                        text-align: center;
-                        z-index: 999999;
-                    ">
-                        <div>
-                            <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
-                            <h2 style="margin-bottom: 10px;">Admin-Zugang gewährt</h2>
-                            <p>Willkommen im Admin-Panel</p>
-                            <div style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
-                                Dashboard wird geladen...
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                setTimeout(() => window.location.reload(), 1500);
+                window.location.reload();
 
             } else {
                 // Falscher Code

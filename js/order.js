@@ -236,7 +236,7 @@ class OrderManager {
                     ${new Date(dateString).toLocaleDateString('de-DE')} ist bereits ausgebucht 
                     (${status.currentCount}/${status.limit} Bestellungen).
                     <br><small>Bitte wählen Sie ein anderes Datum oder prüfen Sie unseren 
-                    <a href="kalender.html" target="_blank">Kalender</a> für verfügbare Termine.</small>
+                    <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Kalender öffnen</button> für verfügbare Termine.</small>
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning error";

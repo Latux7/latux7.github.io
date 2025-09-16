@@ -205,41 +205,9 @@
             const enteredPassword = input.value.trim();
 
             if (enteredPassword === WEBSITE_PASSWORD) {
-                // Korrektes Passwort - Zugriff gewähren
+                // Korrektes Passwort - Zugriff gewähren und Seite direkt neu laden
                 grantAccess();
-
-                // Erfolgsmeldung anzeigen
-                document.body.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: linear-gradient(135deg, #27ae60, #2ecc71);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: 'Poppins', Arial, sans-serif;
-                        text-align: center;
-                        z-index: 999999;
-                    ">
-                        <div>
-                            <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
-                            <h2 style="margin-bottom: 10px;">Zugang gewährt!</h2>
-                            <p>Willkommen bei Laura's Backstube</p>
-                            <div style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
-                                Seite wird geladen...
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Seite nach kurzer Verzögerung neu laden
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                window.location.reload();
 
             } else {
                 // Falsches Passwort
