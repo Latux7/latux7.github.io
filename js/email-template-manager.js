@@ -341,21 +341,24 @@ class EmailTemplateManager {
         }
     }
 
-    // EmailJS-Daten für Bestellungen
+    // EmailJS-Daten für Bestellungen - Einheitliches Template
     getOrderEmailJSData(orderData) {
         return {
+            // Template-Typ Controls
             template_type: 'new_order',
+            is_order: true,
+            is_review: false,
+
+            // Header-Bereich
             notification_title: 'Neue Bestellung eingegangen',
             header_title: 'NEUE BESTELLUNG',
+            priority_text: 'SOFORT BEARBEITEN',
+
+            // Alert-Bereich
             alert_title: '🎂 Neue Tortenbestellung eingegangen!',
             alert_message: 'Eine neue Bestellung wartet auf Ihre Bearbeitung im Admin-Dashboard.',
 
-            // Bestelldaten
-            customer_name: orderData.name || 'Nicht angegeben',
-            customer_email: orderData.email || 'Nicht angegeben',
-            customer_phone: orderData.telefon || 'Nicht angegeben',
-            customer_address: orderData.adresse || 'Nicht angegeben',
-
+            // Bestelldetails für das Grid
             order_size: orderData.details && orderData.details.durchmesserCm
                 ? `${orderData.details.durchmesserCm} cm (${orderData.details.tier || 'Standard'})`
                 : 'Nicht angegeben',
@@ -371,38 +374,74 @@ class EmailTemplateManager {
             total_price: orderData.gesamtpreis
                 ? parseFloat(orderData.gesamtpreis).toFixed(2)
                 : 'Noch nicht berechnet',
+
+            // Kundendaten
+            customer_name: orderData.name || 'Nicht angegeben',
+            customer_email: orderData.email || 'Nicht angegeben',
+            customer_phone: orderData.telefon || 'Nicht angegeben',
+            customer_address: orderData.adresse || 'Nicht angegeben',
             order_notes: orderData.sonderwunsch || '',
 
+            // Zeitstempel und Dashboard
             order_timestamp: new Date().toLocaleString('de-DE'),
-            admin_dashboard_url: this.adminDashboardUrl
+            admin_dashboard_url: this.adminDashboardUrl,
+
+            // Action-Bereich
+            action_title: 'Jetzt bearbeiten',
+            action_message: 'Öffnen Sie das Admin-Dashboard, um die Bestellung zu bestätigen und den Status zu aktualisieren.',
+            action_button_text: 'Zum Admin-Dashboard'
         };
     }
 
-    // EmailJS-Daten für Bewertungen
+    // EmailJS-Daten für Bewertungen - Einheitliches Template
     getReviewEmailJSData(reviewData) {
         return {
+            // Template-Typ Controls
             template_type: 'new_review',
-            notification_title: 'Neue Bewertung eingegangen',
+            is_order: false,
+            is_review: true,
+
+            // Header-Bereich
+            notification_title: 'Neue Bewertung erhalten',
             header_title: 'NEUE BEWERTUNG',
+            priority_text: 'BEWERTUNG PRÜFEN',
+
+            // Alert-Bereich
             alert_title: '⭐ Neue Kundenbewertung erhalten!',
             alert_message: 'Ein Kunde hat eine neue Bewertung für Laura\'s Backstube abgegeben.',
 
-            // Bewertungsdaten
+            // Bewertungsdetails für das Grid
+            rating_overall: '⭐'.repeat(reviewData.gesamtbewertung || 0) + '☆'.repeat(5 - (reviewData.gesamtbewertung || 0)),
+            rating_geschmack: this.formatRating(reviewData.geschmack || 0),
+            rating_optik: this.formatRating(reviewData.optik || 0),
+            rating_service: this.formatRating(reviewData.service || 0),
+            rating_preis: this.formatRating(reviewData.preisLeistung || 0),
+
+            // Bewertungsinhalt
             customer_name: reviewData.name || 'Anonym',
             customer_email: reviewData.email || 'Nicht angegeben',
-            order_id: reviewData.orderId || 'Nicht verfügbar',
+            review_comment: reviewData.kommentar || '',
+            review_title: reviewData.titel || '',
 
-            rating_overall: reviewData.gesamt || 0,
-            rating_taste: reviewData.geschmack || 0,
-            rating_appearance: reviewData.aussehen || 0,
-            rating_service: reviewData.service || 0,
-            rating_average: this.calculateAverageRating(reviewData).toFixed(1),
-
-            review_comment: reviewData.kommentar || 'Keine zusätzlichen Kommentare',
-
+            // Zeitstempel und Dashboard  
             review_timestamp: new Date().toLocaleString('de-DE'),
-            admin_dashboard_url: this.adminDashboardUrl
+            admin_dashboard_url: this.adminDashboardUrl,
+
+            // Action-Bereich
+            action_title: 'Bewertung verwalten',
+            action_message: 'Öffnen Sie das Admin-Dashboard, um die Bewertung zu moderieren und zu verwalten.',
+            action_button_text: 'Zum Admin-Dashboard',
+
+            // Zusätzliche Daten
+            average_rating: ((reviewData.geschmack || 0) + (reviewData.optik || 0) + (reviewData.service || 0) + (reviewData.preisLeistung || 0)) / 4,
+            rating_count: '4 Kategorien bewertet'
         };
+    }
+
+    // Hilfsfunktion für Sterne-Rating
+    formatRating(rating) {
+        const stars = Math.floor(rating || 0);
+        return '⭐'.repeat(stars) + '☆'.repeat(5 - stars) + ` (${rating || 0}/5)`;
     }
 }
 
