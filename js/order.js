@@ -28,6 +28,23 @@ class OrderManager {
 
         // Initial-Zustand setzen
         this.initializeForm();
+
+        // Bestelllimit-Status anzeigen
+        this.checkOrderLimits();
+    }
+
+    async checkOrderLimits() {
+        // Warten bis OrderLimitManager verfügbar ist
+        if (window.orderLimitManager && typeof window.orderLimitManager.showLimitStatus === 'function') {
+            await window.orderLimitManager.showLimitStatus();
+        } else {
+            // Retry nach kurzer Verzögerung
+            setTimeout(() => {
+                if (window.orderLimitManager && typeof window.orderLimitManager.showLimitStatus === 'function') {
+                    window.orderLimitManager.showLimitStatus();
+                }
+            }, 500);
+        }
     }
 
     loadPrices() {
@@ -213,12 +230,20 @@ class OrderManager {
         const f = e.target;
 
         try {
-            // Validierung
+            // 1. Erst Bestelllimit prüfen
+            if (window.orderLimitManager) {
+                const canOrder = await window.orderLimitManager.validateOrderSubmission();
+                if (!canOrder) {
+                    return; // Bestellung wird durch Limit-Modal blockiert
+                }
+            }
+
+            // 2. Validierung
             if (!this.validateForm(f)) {
                 return;
             }
 
-            // Extras sammeln
+            // 3. Extras sammeln
             const extras = this.collectExtras(f);
 
             // Anzahl Stockwerke erfassen
@@ -258,6 +283,7 @@ class OrderManager {
                     datum: f.wunschDatum.value,
                     uhrzeit: f.wunschUhrzeit.value || null,
                 },
+                anlass: f.occasion ? f.occasion.value : null,
                 gesamtpreis: gesamtpreis,
                 adresse: this.getDeliveryAddress(f),
                 status: "neu",

@@ -281,6 +281,7 @@ class OrderManager {
                     <p><strong>Telefon:</strong> ${escapeHtml(customerData.telefon || "Nicht verfügbar")}</p>
                     <p><strong>Erstellt:</strong> ${created}</p>
                     <p><strong>Wunschtermin:</strong> ${wunschtermin}</p>
+                    ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ""}
                     <p><strong>Größe:</strong> ${size}</p>
                     <p><strong>Extras:</strong> ${extras}</p>
                     <p><strong>Lieferung:</strong> ${liefertext}</p>
@@ -392,6 +393,25 @@ class OrderManager {
             console.error("Fehler beim Aktualisieren des Status:", error);
             showNotification("Fehler beim Speichern des Status", "error");
         }
+    }
+
+    // Anlass-Display-Namen
+    getOccasionDisplayName(occasion) {
+        const occasionNames = {
+            'geburtstag': 'Geburtstag',
+            'hochzeit': 'Hochzeit',
+            'jahrestag': 'Jahrestag / Jubiläum',
+            'taufe': 'Taufe / Kommunion / Konfirmation',
+            'abschluss': 'Abschluss / Erfolg',
+            'firmung': 'Firmung / Geschäftlich',
+            'valentinstag': 'Valentinstag',
+            'muttertag': 'Muttertag / Vatertag',
+            'weihnachten': 'Weihnachten',
+            'ostern': 'Ostern',
+            'party': 'Party / Feier',
+            'sonstiges': 'Sonstiges'
+        };
+        return occasionNames[occasion] || occasion;
     }
 }
 

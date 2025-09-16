@@ -10,7 +10,8 @@
 
     // Prüfen ob Zugriff berechtigt ist
     function checkAccess() {
-        const savedAccess = localStorage.getItem(SESSION_KEY);
+        // WICHTIG: sessionStorage wird bei Tab/Browser-Schließung automatisch gelöscht!
+        const savedAccess = sessionStorage.getItem(SESSION_KEY);
 
         if (savedAccess) {
             try {
@@ -22,11 +23,11 @@
                     return true; // Zugriff berechtigt
                 } else {
                     // Session abgelaufen
-                    localStorage.removeItem(SESSION_KEY);
+                    sessionStorage.removeItem(SESSION_KEY);
                 }
             } catch (e) {
                 // Fehlerhafte Daten - entfernen
-                localStorage.removeItem(SESSION_KEY);
+                sessionStorage.removeItem(SESSION_KEY);
             }
         }
 
@@ -39,7 +40,8 @@
             timestamp: Date.now(),
             granted: true
         };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(accessData));
+        // sessionStorage: Wird automatisch bei Tab/Browser-Schließung gelöscht
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(accessData));
     }
 
     // Passwort-Modal erstellen und anzeigen
@@ -292,7 +294,7 @@
 
     // Session-Verlängerung bei Aktivität
     function extendSession() {
-        const savedAccess = localStorage.getItem(SESSION_KEY);
+        const savedAccess = sessionStorage.getItem(SESSION_KEY);
         if (savedAccess) {
             grantAccess(); // Session erneuern
         }
@@ -311,15 +313,15 @@
 
     // Globale Funktion für Logout (optional)
     window.websiteLogout = function () {
-        localStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(SESSION_KEY);
         window.location.reload();
     };
 
     // Debug-Funktionen (nur für Entwicklung)
     window.debugWebsiteAccess = {
         checkSession: () => checkAccess(),
-        clearSession: () => localStorage.removeItem(SESSION_KEY),
-        getSession: () => localStorage.getItem(SESSION_KEY)
+        clearSession: () => sessionStorage.removeItem(SESSION_KEY),
+        getSession: () => sessionStorage.getItem(SESSION_KEY)
     };
 
 })();

@@ -158,6 +158,30 @@
         </fieldset>
 
         <fieldset>
+          <legend>Anlass (optional)</legend>
+          <label for="occasion">Für welchen Anlass ist die Torte?</label>
+          <select name="occasion" id="occasion">
+            <option value="">-- Bitte wählen --</option>
+            <option value="geburtstag">Geburtstag</option>
+            <option value="hochzeit">Hochzeit</option>
+            <option value="jahrestag">Jahrestag / Jubiläum</option>
+            <option value="taufe">Taufe / Kommunion / Konfirmation</option>
+            <option value="abschluss">Abschluss / Erfolg</option>
+            <option value="firmung">Firmung / Geschäftlich</option>
+            <option value="valentinstag">Valentinstag</option>
+            <option value="muttertag">Muttertag / Vatertag</option>
+            <option value="weihnachten">Weihnachten</option>
+            <option value="ostern">Ostern</option>
+            <option value="party">Party / Feier</option>
+            <option value="sonstiges">Sonstiges</option>
+          </select>
+          <div class="help" style="margin-top: 8px">
+            Diese Information hilft uns bei der optimalen Gestaltung Ihrer
+            Torte.
+          </div>
+        </fieldset>
+
+        <fieldset>
           <legend>Kontaktdaten</legend>
           <label>Name*<br /><input type="text" name="name" required /></label
           ><br />
@@ -209,6 +233,8 @@
       <script src="config/prices.js"></script>
       <script src="config/email.js"></script>
       <script src="js/common.js"></script>
+      <!-- Order-Limits System -->
+      <script src="js/order-limits.js"></script>
       <!-- Zuletzt die App-Scripts -->
       <script src="js/order.js"></script>
     </div>

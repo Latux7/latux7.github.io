@@ -138,6 +138,12 @@ class AdminDashboard {
         // Bewertungen laden
         this.loadReviews();
 
+        // Buchhaltungsdaten laden
+        this.loadAccountingData();
+
+        // Kalender laden
+        this.loadCalendarData();
+
         // Statistiken laden
         this.loadStats();
 
@@ -226,6 +232,38 @@ class AdminDashboard {
             if (reviewsList) {
                 reviewsList.innerHTML = '<div style="color: #f44336;">❌ Fehler beim Laden der Bewertungen</div>';
             }
+        }
+    }
+
+    // Buchhaltungsdaten laden
+    loadAccountingData() {
+        // Lade Buchhaltungsdaten (nur wenn accountingManager verfügbar)
+        if (window.accountingManager && typeof window.accountingManager.loadAccountingData === 'function') {
+            window.accountingManager.loadAccountingData();
+        } else {
+            console.warn('AccountingManager noch nicht verfügbar');
+            // Retry nach kurzer Verzögerung
+            setTimeout(() => {
+                if (window.accountingManager && typeof window.accountingManager.loadAccountingData === 'function') {
+                    window.accountingManager.loadAccountingData();
+                }
+            }, 500);
+        }
+    }
+
+    // Kalender-Daten laden
+    loadCalendarData() {
+        // Lade Kalender-Daten (nur wenn calendarManager verfügbar)
+        if (window.calendarManager && typeof window.calendarManager.loadCalendarData === 'function') {
+            window.calendarManager.loadCalendarData();
+        } else {
+            console.warn('CalendarManager noch nicht verfügbar');
+            // Retry nach kurzer Verzögerung
+            setTimeout(() => {
+                if (window.calendarManager && typeof window.calendarManager.loadCalendarData === 'function') {
+                    window.calendarManager.loadCalendarData();
+                }
+            }, 500);
         }
     }
 

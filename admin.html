@@ -337,6 +337,44 @@
             padding-top: 20px;
           "
         >
+          <h2 style="margin: 0 0 12px 0">💰 Buchhaltung & Umsatz</h2>
+          <div id="accountingStats">Lade Buchhaltungsdaten...</div>
+        </div>
+
+        <div
+          style="
+            margin-top: 32px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 20px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            "
+          >
+            <h2 style="margin: 0">📅 Bestellkalender</h2>
+            <button
+              onclick="window.calendarManager.goToToday()"
+              class="btn btn-small"
+              style="background: var(--clr-accent)"
+            >
+              📍 Heute
+            </button>
+          </div>
+          <div id="calendarView">Lade Kalender...</div>
+        </div>
+
+        <div
+          style="
+            margin-top: 32px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 20px;
+          "
+        >
           <h2 style="margin: 0 0 12px 0">Bewertungen</h2>
           <div id="reviewsList">Lade Bewertungen...</div>
         </div>
@@ -354,6 +392,8 @@
       <script src="js/admin/notifications.js"></script>
       <script src="js/admin/orders.js"></script>
       <script src="js/admin/archive.js"></script>
+      <script src="js/admin/accounting.js"></script>
+      <script src="js/admin/calendar.js"></script>
       <script src="js/admin/admin.js"></script>
 
       <footer class="site-footer">
