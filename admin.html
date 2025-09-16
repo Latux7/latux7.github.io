@@ -12,6 +12,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
+    <!-- Website Passwort-Schutz (muss als erstes geladen werden) -->
+    <script src="js/website-protection.js"></script>
+    <!-- Admin-Sicherheit (zusätzlicher Schutz für Admin-Bereich) -->
+    <script src="js/admin-security.js"></script>
   </head>
   <body>
     <div class="container">
@@ -26,28 +30,24 @@
         <nav>
           <a href="index.html">Startseite</a>
           <a href="bestellen.html">Bestellen</a>
+          <button
+            onclick="adminSecurity.logout()"
+            style="
+              background: #e74c3c;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-size: 14px;
+              margin-left: 10px;
+            "
+          >
+            🔓 Admin Logout
+          </button>
         </nav>
       </header>
-      <div id="adminLogin">
-        <form id="loginForm">
-          <label
-            >Passwort:<br /><input type="password" id="adminPassword" required
-          /></label>
-          <input type="submit" value="Login" />
-        </form>
-        <div
-          id="loginError"
-          style="
-            display: none;
-            color: #d32f2f;
-            font-weight: bold;
-            margin-top: 12px;
-          "
-        >
-          Falsches Passwort!
-        </div>
-      </div>
-      <div id="adminPanel" style="display: none">
+      <div id="adminPanel">
         <!-- Notification Container -->
         <div
           id="adminNotification"
@@ -355,6 +355,14 @@
       <script src="js/admin/orders.js"></script>
       <script src="js/admin/archive.js"></script>
       <script src="js/admin/admin.js"></script>
+
+      <footer class="site-footer">
+        <p>
+          &copy; 2025 Laura's Backstube |
+          <a href="impressum.html">Impressum</a> |
+          <a href="datenschutz.html">Datenschutz</a>
+        </p>
+      </footer>
     </div>
   </body>
 </html>

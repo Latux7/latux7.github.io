@@ -20,26 +20,33 @@ async function loadAndDisplayReviews() {
       const review = doc.data();
       console.log('Review-Daten:', review); // Debug-Ausgabe für Datenstruktur
 
-      // Sichere Feldextraktion mit verschiedenen möglichen Feldnamen
-      const taste = review.taste || review.geschmack || 0;
-      const appearance = review.appearance || review.aussehen || 0;
+      // Sichere Feldextraktion mit verschiedenen möglichen Feldnamen (deutsche Felder bevorzugt)
+      const taste = review.geschmack || review.taste || 0;
+      const appearance = review.aussehen || review.appearance || 0;
       const service = review.service || review.bedienung || 0;
-      const overall = review.overall || review.gesamt || 0;
-      const nps = review.nps || review.weiterempfehlung || 0;
+      const overall = review.gesamt || review.overall || 0;
+      const nps = review.empfehlung || review.nps || review.weiterempfehlung || 0;
 
-      // Sterne für jede Kategorie erstellen (Validierung auf 1-5 Bereich)
-      const tasteStars = '★'.repeat(Math.max(0, Math.min(5, taste))) + '☆'.repeat(5 - Math.max(0, Math.min(5, taste)));
-      const appearanceStars = '★'.repeat(Math.max(0, Math.min(5, appearance))) + '☆'.repeat(5 - Math.max(0, Math.min(5, appearance)));
-      const serviceStars = '★'.repeat(Math.max(0, Math.min(5, service))) + '☆'.repeat(5 - Math.max(0, Math.min(5, service)));
-      const overallStars = '★'.repeat(Math.max(0, Math.min(5, overall))) + '☆'.repeat(5 - Math.max(0, Math.min(5, overall)));
+      // Validierung der Werte (1-5 für Sterne, 1-10 für NPS)
+      const validTaste = Math.max(0, Math.min(5, taste));
+      const validAppearance = Math.max(0, Math.min(5, appearance));
+      const validService = Math.max(0, Math.min(5, service));
+      const validOverall = Math.max(0, Math.min(5, overall));
+      const validNps = Math.max(0, Math.min(10, nps));
 
-      // NPS Score validieren (1-10 Skala)
-      const npsScore = Math.max(0, Math.min(10, nps));
-      const npsColor = npsScore >= 9 ? '#4CAF50' : npsScore >= 7 ? '#FF9800' : '#f44336';
+      // Sterne für jede Kategorie erstellen
+      const tasteStars = '★'.repeat(validTaste) + '☆'.repeat(5 - validTaste);
+      const appearanceStars = '★'.repeat(validAppearance) + '☆'.repeat(5 - validAppearance);
+      const serviceStars = '★'.repeat(validService) + '☆'.repeat(5 - validService);
+      const overallStars = '★'.repeat(validOverall) + '☆'.repeat(5 - validOverall);
+
+      // NPS Score Farbe
+      const npsColor = validNps >= 9 ? '#4CAF50' : validNps >= 7 ? '#FF9800' : '#f44336';
 
       // Datum formatieren (sichere Behandlung von Firestore Timestamps)
       const reviewDate = formatDate(review.created);
 
+      // KEINE Kundeninformationen oder Kommentare auf Homepage anzeigen!
       reviewsHTML += `
         <div class="review-card">
           <div class="review-header">
@@ -50,35 +57,29 @@ async function loadAndDisplayReviews() {
             <div class="rating-item">
               <span class="rating-label">Geschmack:</span>
               <span class="rating-stars">${tasteStars}</span>
-              <span class="rating-value">(${taste}/5)</span>
+              <span class="rating-value">(${validTaste}/5)</span>
             </div>
             <div class="rating-item">
               <span class="rating-label">Aussehen:</span>
               <span class="rating-stars">${appearanceStars}</span>
-              <span class="rating-value">(${appearance}/5)</span>
+              <span class="rating-value">(${validAppearance}/5)</span>
             </div>
             <div class="rating-item">
               <span class="rating-label">Service:</span>
               <span class="rating-stars">${serviceStars}</span>
-              <span class="rating-value">(${service}/5)</span>
+              <span class="rating-value">(${validService}/5)</span>
             </div>
             <div class="rating-item overall">
               <span class="rating-label">Gesamt:</span>
               <span class="rating-stars">${overallStars}</span>
-              <span class="rating-value">(${overall}/5)</span>
+              <span class="rating-value">(${validOverall}/5)</span>
             </div>
           </div>
           
           <div class="review-nps">
             <span class="nps-label">Weiterempfehlung:</span>
-            <span class="nps-score" style="color: ${npsColor}; font-weight: 600;">${npsScore}/10</span>
+            <span class="nps-score" style="color: ${npsColor}; font-weight: 600;">${validNps}/10</span>
           </div>
-          
-          ${review.comment || review.kommentar ? `
-            <div class="review-comment">
-              "${review.comment || review.kommentar}"
-            </div>
-          ` : ''}
         </div>
       `;
     });

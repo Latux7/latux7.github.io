@@ -2,7 +2,6 @@
 
 class AdminDashboard {
     constructor() {
-        this.ADMIN_PW = "tortenadmin2025";
         this.db = null;
         this.refreshInterval = null;
         this.init();
@@ -15,8 +14,8 @@ class AdminDashboard {
         // Event-Listener setzen
         this.setupEventListeners();
 
-        // Login-Status prüfen
-        this.checkLoginStatus();
+        // Admin-Panel direkt anzeigen (Sicherheit wird durch admin-security.js gehandhabt)
+        this.showAdminPanel();
     }
 
     async initializeFirebase() {
@@ -58,18 +57,6 @@ class AdminDashboard {
     }
 
     setupEventListeners() {
-        // Login-Handler
-        const loginForm = document.getElementById("loginForm");
-        if (loginForm) {
-            loginForm.addEventListener("submit", (e) => this.handleLogin(e));
-        }
-
-        // Logout-Handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-            logoutBtn.addEventListener("click", () => this.logout());
-        }
-
         // Modal-Handler für Benachrichtigungseinstellungen
         const notificationSettingsBtn = document.getElementById('notificationSettingsBtn');
         if (notificationSettingsBtn) {
@@ -124,58 +111,13 @@ class AdminDashboard {
         }
     }
 
-    // Login-Handler
-    handleLogin(e) {
-        e.preventDefault();
-
-        const password = document.getElementById("adminPassword").value;
-        if (password === this.ADMIN_PW) {
-            this.login();
-        } else {
-            showNotification("Falsches Passwort!", "error");
-        }
-    }
-
-    // Login ausführen
-    login() {
-        this.showAdminPanel();
-        showNotification("Erfolgreich angemeldet!", "success");
-    }
-
-    // Admin Panel anzeigen (ohne Success-Message)
+    // Admin Panel anzeigen (wird direkt nach erfolgreicher Authentifizierung durch admin-security.js aufgerufen)
     showAdminPanel() {
-        localStorage.setItem("adminLoggedIn", "true");
-        document.getElementById("adminLogin").style.display = "none";
-        document.getElementById("adminPanel").style.display = "block";
-
         // Lade Daten
         this.loadDashboard();
 
         // Starte automatische Aktualisierung
         this.startAutoRefresh();
-    }
-
-    // Logout
-    logout() {
-        localStorage.removeItem("adminLoggedIn");
-        document.getElementById("adminLogin").style.display = "block";
-        document.getElementById("adminPanel").style.display = "none";
-
-        // Stoppe automatische Aktualisierung
-        this.stopAutoRefresh();
-
-        // Stoppe Benachrichtigungen
-        window.notificationManager.stopOrderMonitoring();
-
-        showNotification("Abgemeldet", "success");
-    }
-
-    // Login-Status prüfen
-    checkLoginStatus() {
-        const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-        if (isLoggedIn) {
-            this.showAdminPanel(); // Ohne Success-Message
-        }
     }
 
     // Dashboard laden
@@ -490,10 +432,6 @@ class AdminDashboard {
 }
 
 // Globale Funktionen für HTML-Callbacks
-window.logout = function () {
-    window.adminDashboard.logout();
-};
-
 window.saveNotificationSettings = function () {
     window.adminDashboard.saveNotificationSettings();
 };

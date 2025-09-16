@@ -28,7 +28,7 @@ window.emailConfig = {
         angenommen: {
             header_color: "#8B4513",
             title: "Bestellung angenommen",
-            message: "vielen Dank für Ihre Bestellung! Wir haben sie angenommen und werden sie sorgfältig zubereiten.",
+            message: "Vielen Dank für Ihre Bestellung! Wir haben sie angenommen und werden sie sorgfältig zubereiten.",
             footer_message: "Sie erhalten eine weitere E-Mail, sobald Ihre Bestellung fertig ist."
         },
         "in Vorbereitung": {
@@ -40,7 +40,7 @@ window.emailConfig = {
         abgelehnt: {
             header_color: "#f44336",
             title: "Bestellung abgelehnt",
-            message: "leider müssen wir Ihre Bestellung ablehnen. Es tut uns sehr leid für die Unannehmlichkeiten.",
+            message: "Leider müssen wir Ihre Bestellung ablehnen. Es tut uns sehr leid für die Unannehmlichkeiten.",
             footer_message: "Gerne können Sie eine neue Bestellung aufgeben."
         },
         fertig: {
@@ -53,8 +53,8 @@ window.emailConfig = {
 
     // Lieferoptionen
     deliveryMessages: {
-        abholung: "Ihre Bestellung kann abgeholt werden! Bitte kommen Sie vorbei.",
-        lieferung: "Ihre Bestellung wird in Kürze geliefert! Wir werden uns bald bei Ihnen melden.",
+        abholung: "Ihre Bestellung kann abgeholt werden! <br> Bitte kommen Sie vorbei.",
+        lieferung: "Ihre Bestellung wird in Kürze geliefert! <br> Wir werden uns bald bei Ihnen melden.",
     },
 
     // Admin-Benachrichtigungseinstellungen
