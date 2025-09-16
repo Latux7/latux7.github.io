@@ -79,6 +79,44 @@
           </button>
         </div>
 
+        <!-- Firebase Connection Help -->
+        <div
+          id="connectionHelp"
+          style="
+            display: none;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+          "
+        >
+          <h4 style="margin-top: 0; color: #856404">
+            🚫 Verbindungsproblem erkannt
+          </h4>
+          <p><strong>Adblocker blockiert Firebase:</strong></p>
+          <ul style="margin: 10px 0">
+            <li>Deaktivieren Sie Ihren Adblocker für diese Seite</li>
+            <li>
+              Oder fügen Sie <code>*.googleapis.com</code> zur Whitelist hinzu
+            </li>
+            <li>Browser neu laden nach der Änderung</li>
+          </ul>
+          <button
+            onclick="testFirebaseConnection(); this.parentElement.style.display='none';"
+            style="
+              background: #28a745;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          >
+            🔄 Verbindung erneut testen
+          </button>
+        </div>
+
         <div
           style="
             display: flex;

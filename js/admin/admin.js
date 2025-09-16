@@ -9,14 +9,52 @@ class AdminDashboard {
     }
 
     init() {
-        // Firebase initialisieren
-        this.db = initializeFirebase();
+        // Firebase initialisieren mit Verbindungstest
+        this.initializeFirebase();
 
         // Event-Listener setzen
         this.setupEventListeners();
 
         // Login-Status prüfen
         this.checkLoginStatus();
+    }
+
+    async initializeFirebase() {
+        try {
+            this.db = initializeFirebaseApp();
+            if (!this.db) {
+                throw new Error('Firebase-Initialisierung fehlgeschlagen');
+            }
+
+            // Verbindungstest durchführen
+            const connectionOk = await testFirebaseConnection();
+            if (!connectionOk) {
+                // UI für Offline-Modus vorbereiten
+                this.showOfflineMode();
+            }
+        } catch (error) {
+            console.error('Firebase-Setup Fehler:', error);
+            handleFirestoreError(error, 'Firebase-Initialisierung');
+            this.showOfflineMode();
+        }
+    }
+
+    showOfflineMode() {
+        showNotification('⚠️ Offline-Modus: Einige Funktionen sind nicht verfügbar.', 'warning');
+
+        // Hilfe-Bereich anzeigen
+        const helpDiv = document.getElementById('connectionHelp');
+        if (helpDiv) {
+            helpDiv.style.display = 'block';
+        }
+
+        // Alle Buttons deaktivieren, die Firebase benötigen
+        const firebaseButtons = document.querySelectorAll('.firebase-dependent, button[onclick*="Order"], button[onclick*="Archive"]');
+        firebaseButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.title = 'Nicht verfügbar: Firebase-Verbindung fehlt';
+            btn.style.opacity = '0.5';
+        });
     }
 
     setupEventListeners() {
@@ -155,6 +193,12 @@ class AdminDashboard {
             }, 100);
         }
 
+        // Bewertungen laden
+        this.loadReviews();
+
+        // Statistiken laden
+        this.loadStats();
+
         // Starte Benachrichtigungen (falls in localStorage aktiviert)
         this.loadNotificationSettings();
 
@@ -163,10 +207,77 @@ class AdminDashboard {
         }
     }
 
+    // Bewertungen laden und anzeigen
+    async loadReviews() {
+        try {
+            const reviewsSnapshot = await this.db.collection('reviews')
+                .orderBy('created', 'desc')
+                .limit(10)
+                .get();
+
+            const reviewsList = document.getElementById('reviewsList');
+            if (!reviewsList) return;
+
+            if (reviewsSnapshot.empty) {
+                reviewsList.innerHTML = '<div style="color: #666; font-style: italic;">Noch keine Bewertungen vorhanden.</div>';
+                return;
+            }
+
+            let reviewsHTML = '';
+            reviewsSnapshot.forEach(doc => {
+                const review = doc.data();
+
+                // Sterne für Kategorien
+                const tasteStars = '★'.repeat(review.taste || 0) + '☆'.repeat(5 - (review.taste || 0));
+                const appearanceStars = '★'.repeat(review.appearance || 0) + '☆'.repeat(5 - (review.appearance || 0));
+                const serviceStars = '★'.repeat(review.service || 0) + '☆'.repeat(5 - (review.service || 0));
+                const overallStars = '★'.repeat(review.overall || 0) + '☆'.repeat(5 - (review.overall || 0));
+
+                // NPS Farbe
+                const npsScore = review.nps || 0;
+                const npsColor = npsScore >= 9 ? '#4CAF50' : npsScore >= 7 ? '#FF9800' : '#f44336';
+
+                // Datum formatieren
+                const reviewDate = formatDate(review.created);
+
+                reviewsHTML += `
+                    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: #f9f9f9;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong>${review.customerName || 'Anonym'}</strong>
+                            <span style="color: #666; font-size: 0.9em;">${reviewDate}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                            <div><strong>Geschmack:</strong> <span style="color: #FFD700;">${tasteStars}</span></div>
+                            <div><strong>Aussehen:</strong> <span style="color: #FFD700;">${appearanceStars}</span></div>
+                            <div><strong>Service:</strong> <span style="color: #FFD700;">${serviceStars}</span></div>
+                            <div><strong>Gesamt:</strong> <span style="color: #FFD700;">${overallStars}</span></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>NPS-Score:</strong> 
+                            <span style="background: ${npsColor}; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold;">${npsScore}/10</span>
+                        </div>
+                        ${review.comment ? `<div style="background: white; padding: 10px; border-radius: 3px; font-style: italic;">"${review.comment}"</div>` : ''}
+                        ${review.improvements ? `<div style="margin-top: 8px; color: #666;"><strong>Verbesserungen:</strong> ${review.improvements}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            reviewsList.innerHTML = reviewsHTML;
+            console.log('✅ Bewertungen erfolgreich geladen');
+
+        } catch (error) {
+            console.error('Fehler beim Laden der Bewertungen:', error);
+            const reviewsList = document.getElementById('reviewsList');
+            if (reviewsList) {
+                reviewsList.innerHTML = '<div style="color: #f44336;">❌ Fehler beim Laden der Bewertungen</div>';
+            }
+        }
+    }
+
     // Benachrichtigungseinstellungen laden
     loadNotificationSettings() {
         const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
-        const emailEnabled = localStorage.getItem("emailNotifications") !== "false"; // Default true
+        const emailEnabled = true; // E-Mail-Benachrichtigungen sind IMMER aktiviert
         const smsEnabled = localStorage.getItem("smsNotifications") === "true";
         const soundEnabled = localStorage.getItem("soundNotifications") !== "false"; // Default true
         const checkInterval = localStorage.getItem("checkInterval") || "30";
@@ -181,14 +292,18 @@ class AdminDashboard {
         };
 
         if (elements.notificationsEnabled) elements.notificationsEnabled.checked = notificationsEnabled;
-        if (elements.emailNotifications) elements.emailNotifications.checked = emailEnabled;
+        if (elements.emailNotifications) {
+            elements.emailNotifications.checked = true; // Immer aktiviert
+            elements.emailNotifications.disabled = true; // Nicht änderbar
+            elements.emailNotifications.title = "E-Mail-Benachrichtigungen sind permanent aktiviert";
+        }
         if (elements.smsNotifications) elements.smsNotifications.checked = smsEnabled;
         if (elements.soundNotifications) elements.soundNotifications.checked = soundEnabled;
         if (elements.checkInterval) elements.checkInterval.value = checkInterval;
 
         // EmailConfig aktualisieren
         if (window.emailConfig && window.emailConfig.adminNotifications) {
-            window.emailConfig.adminNotifications.options.email = emailEnabled;
+            window.emailConfig.adminNotifications.options.email = true; // Immer aktiviert
             window.emailConfig.adminNotifications.options.sms = smsEnabled;
             window.emailConfig.adminNotifications.options.sound = soundEnabled;
             window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
@@ -224,21 +339,21 @@ class AdminDashboard {
         }
 
         const enabled = enabledCheckbox.checked;
-        const emailEnabled = document.getElementById('emailNotifications')?.checked || false;
+        const emailEnabled = true; // Email-Benachrichtigungen sind IMMER aktiviert
         const smsEnabled = document.getElementById('smsNotifications')?.checked || false;
         const soundEnabled = document.getElementById('soundNotifications')?.checked || false;
         const checkInterval = document.getElementById('checkInterval')?.value || 30;
 
         // Einstellungen in localStorage speichern
         localStorage.setItem("notificationsEnabled", enabled.toString());
-        localStorage.setItem("emailNotifications", emailEnabled.toString());
+        localStorage.setItem("emailNotifications", "true"); // Immer aktiviert
         localStorage.setItem("smsNotifications", smsEnabled.toString());
         localStorage.setItem("soundNotifications", soundEnabled.toString());
         localStorage.setItem("checkInterval", checkInterval.toString());
 
         // EmailConfig aktualisieren
         if (window.emailConfig && window.emailConfig.adminNotifications) {
-            window.emailConfig.adminNotifications.options.email = emailEnabled;
+            window.emailConfig.adminNotifications.options.email = true; // Immer aktiviert
             window.emailConfig.adminNotifications.options.sms = smsEnabled;
             window.emailConfig.adminNotifications.options.sound = soundEnabled;
             window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
@@ -253,7 +368,7 @@ class AdminDashboard {
         if (window.notificationManager) {
             window.notificationManager.closeNotificationSettings();
         }
-        showNotification("Einstellungen gespeichert", "success");
+        showNotification("Einstellungen gespeichert (E-Mail-Benachrichtigungen sind permanent aktiviert)", "success");
     }
 
     // Test-Benachrichtigung senden

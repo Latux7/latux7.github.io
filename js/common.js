@@ -86,6 +86,58 @@ function showConfirmation(message, onConfirm, onCancel = null) {
     };
 }
 
+// Firebase Connection Test
+async function testFirebaseConnection() {
+    try {
+        const db = initializeFirebaseApp();
+        if (!db) {
+            throw new Error('Firebase konnte nicht initialisiert werden');
+        }
+
+        // Teste mit einem einfachen Read-Request
+        await db.collection('test').limit(1).get();
+        console.log('Firebase-Verbindung erfolgreich');
+
+        // UI wiederherstellen
+        restoreOnlineMode();
+        showNotification('✅ Firebase-Verbindung erfolgreich wiederhergestellt!', 'success');
+        return true;
+    } catch (error) {
+        console.error('Firebase-Verbindungstest fehlgeschlagen:', error);
+
+        if (error.message.includes('ERR_BLOCKED_BY_CLIENT') || error.code === 'unavailable') {
+            showNotification('🚫 Adblocker blockiert Firebase! Bitte deaktivieren Sie Adblocker für diese Seite.', 'error');
+        } else {
+            showNotification('⚠️ Firebase-Verbindung fehlgeschlagen. Prüfen Sie Ihre Internetverbindung.', 'error');
+        }
+        return false;
+    }
+}
+
+// Online-Modus wiederherstellen
+function restoreOnlineMode() {
+    // Hilfe-Bereich ausblenden
+    const helpDiv = document.getElementById('connectionHelp');
+    if (helpDiv) {
+        helpDiv.style.display = 'none';
+    }
+
+    // Buttons wieder aktivieren
+    const disabledButtons = document.querySelectorAll('button[disabled]');
+    disabledButtons.forEach(btn => {
+        if (btn.title.includes('Firebase-Verbindung fehlt')) {
+            btn.disabled = false;
+            btn.title = '';
+            btn.style.opacity = '1';
+        }
+    });
+
+    // Admin-Dashboard neu laden falls verfügbar
+    if (window.adminDashboard && window.adminDashboard.loadDashboard) {
+        window.adminDashboard.loadDashboard();
+    }
+}
+
 // Datum-Utility-Funktionen
 function formatDate(date) {
     if (!date) return 'Unbekannt';

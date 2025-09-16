@@ -85,7 +85,7 @@ window.emailConfig = {
 
         // Benachrichtigungsoptionen
         options: {
-            email: true, // E-Mail-Benachrichtigungen aktiviert
+            email: true, // E-Mail-Benachrichtigungen IMMER aktiviert (nicht steuerbar)
             sms: false,   // SMS vorerst deaktiviert (kann später aktiviert werden)
             sound: true   // Sound-Benachrichtigung im Browser
         }

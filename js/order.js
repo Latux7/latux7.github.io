@@ -11,6 +11,12 @@ class OrderManager {
         // Firebase initialisieren
         this.db = initializeFirebase();
 
+        // EmailJS initialisieren für Admin-Benachrichtigungen
+        if (typeof emailjs !== 'undefined' && window.emailConfig) {
+            emailjs.init(window.emailConfig.publicKey);
+            console.log('EmailJS für Bestellformular initialisiert');
+        }
+
         // Preise aus Konfiguration laden
         this.loadPrices();
 
@@ -259,6 +265,48 @@ class OrderManager {
             };
 
             await this.db.collection("orders").add(order);
+
+            // Admin-Benachrichtigung senden (falls verfügbar)
+            try {
+                if (window.emailjs && window.emailConfig) {
+                    const adminNotification = {
+                        to_email: window.emailConfig.adminNotifications.adminEmail,
+                        to_name: "Admin",
+                        customer_name: order.name || "Unbekannt",
+                        customer_email: order.email || "Nicht angegeben",
+                        customer_phone: order.telefon || "Nicht angegeben",
+                        order_date: new Date().toLocaleString("de-DE"),
+                        cake_size: order.details && order.details.durchmesserCm
+                            ? `${order.details.durchmesserCm} cm`
+                            : "Nicht spezifiziert",
+                        extras: order.details && order.details.extras
+                            ? order.details.extras.join(", ")
+                            : "Keine",
+                        delivery: order.details && order.details.lieferung
+                            ? order.details.lieferung === "abholung"
+                                ? "Abholung"
+                                : `Lieferung: ${order.details.lieferung}`
+                            : "Abholung",
+                        total_price: order.gesamtpreis || "Nicht berechnet",
+                        desired_date: order.wunschtermin && order.wunschtermin.datum
+                            ? new Date(order.wunschtermin.datum).toLocaleDateString("de-DE")
+                            : "Nicht angegeben",
+                    };
+
+                    await emailjs.send(
+                        window.emailConfig.serviceId,
+                        window.emailConfig.templates.new_order_notification,
+                        adminNotification,
+                        window.emailConfig.publicKey
+                    );
+                    console.log("✅ Admin-Email-Benachrichtigung für neue Bestellung gesendet");
+                } else {
+                    console.warn("EmailJS oder Email-Config nicht verfügbar für Admin-Benachrichtigung");
+                }
+            } catch (emailError) {
+                console.error("Fehler beim Senden der Admin-Email:", emailError);
+                // Bestellung wurde trotzdem gespeichert - Email-Fehler nicht kritisch
+            }
 
             this.showSuccess();
             this.resetForm(f);

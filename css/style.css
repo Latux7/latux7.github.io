@@ -965,12 +965,31 @@ details > div {
   font-size: 0.875rem;
   color: var(--clr-text);
   font-weight: 500;
+  flex: 1;
 }
 
 .rating-stars {
   font-size: 1rem;
   color: #ffd700;
   letter-spacing: 1px;
+  margin-right: var(--space-2);
+}
+
+.rating-value {
+  font-size: 0.75rem;
+  color: var(--clr-muted);
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.review-comment {
+  background: rgba(146, 208, 80, 0.05);
+  padding: var(--space-3);
+  border-radius: 8px;
+  margin-top: var(--space-3);
+  font-style: italic;
+  color: var(--clr-text);
+  border-left: 3px solid var(--clr-accent);
 }
 
 .review-nps {
