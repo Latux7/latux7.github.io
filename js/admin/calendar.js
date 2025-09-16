@@ -58,29 +58,56 @@ class CalendarManager {
 
             let orders = [];
 
-            // Hauptmethode: wunschtermin.datum verwenden (das ist das richtige Feld!)
+            // Hauptmethode: wunschtermin.datum verwenden (unterstützt sowohl String als auch Timestamp)
             try {
-                const startDateString = startDate.toISOString().split('T')[0];
-                const endDateString = endDate.toISOString().split('T')[0];
+                // Versuche erst mit Timestamp (wie in embedded-calendar.js)
+                const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
+                const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
 
-                console.log(`CalendarManager: Suche nach wunschtermin.datum zwischen ${startDateString} und ${endDateString}`);
+                console.log(`CalendarManager: Suche nach wunschtermin.datum (Timestamp) zwischen ${startDate.toDateString()} und ${endDate.toDateString()}`);
 
                 const ordersSnapshot1 = await this.db.collection('orders')
-                    .where('wunschtermin.datum', '>=', startDateString)
-                    .where('wunschtermin.datum', '<=', endDateString)
+                    .where('wunschtermin.datum', '>=', startTimestamp)
+                    .where('wunschtermin.datum', '<=', endTimestamp)
                     .get();
 
-                console.log(`CalendarManager: Methode 1 (wunschtermin.datum): ${ordersSnapshot1.size} Bestellungen`);
+                console.log(`CalendarManager: Methode 1 (wunschtermin.datum Timestamp): ${ordersSnapshot1.size} Bestellungen`);
 
                 ordersSnapshot1.forEach(doc => {
                     const orderData = doc.data();
+                    const dateObj = orderData.wunschtermin?.datum?.toDate ? orderData.wunschtermin.datum.toDate() : new Date(orderData.wunschtermin?.datum);
                     orders.push({
                         id: doc.id,
                         ...orderData,
-                        date: orderData.wunschtermin?.datum,
-                        displayDate: orderData.wunschtermin?.datum // Für die Kalender-Anzeige
+                        date: dateObj.toISOString().split('T')[0],
+                        displayDate: dateObj.toLocaleDateString('de-DE')
                     });
                 });
+
+                // Falls keine Treffer mit Timestamp, versuche String-Format
+                if (orders.length === 0) {
+                    const startDateString = startDate.toISOString().split('T')[0];
+                    const endDateString = endDate.toISOString().split('T')[0];
+
+                    console.log(`CalendarManager: Suche nach wunschtermin.datum (String) zwischen ${startDateString} und ${endDateString}`);
+
+                    const ordersSnapshot2 = await this.db.collection('orders')
+                        .where('wunschtermin.datum', '>=', startDateString)
+                        .where('wunschtermin.datum', '<=', endDateString)
+                        .get();
+
+                    console.log(`CalendarManager: Methode 1b (wunschtermin.datum String): ${ordersSnapshot2.size} Bestellungen`);
+
+                    ordersSnapshot2.forEach(doc => {
+                        const orderData = doc.data();
+                        orders.push({
+                            id: doc.id,
+                            ...orderData,
+                            date: orderData.wunschtermin?.datum,
+                            displayDate: orderData.wunschtermin?.datum
+                        });
+                    });
+                }
             } catch (error) {
                 console.warn('CalendarManager: wunschtermin.datum Abfrage fehlgeschlagen:', error);
             }
@@ -235,8 +262,9 @@ class CalendarManager {
         let html = '';
         orders.slice(0, 3).forEach(order => { // Max 3 anzeigen
             const statusClass = `status-${order.status || 'neu'}`;
+            const orderSize = order.details && order.details.durchmesserCm ? `${order.details.durchmesserCm}cm` : 'Unbekannt';
             html += `
-                <div class="day-order ${statusClass}" title="${order.name || 'Unbekannt'} - ${order.size || 'Unbekannt'}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
+                <div class="day-order ${statusClass}" title="${order.name || 'Unbekannt'} - ${orderSize}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
                     <span class="order-name">${(order.name || 'Unbekannt').substring(0, 8)}...</span>
                 </div>
             `;
@@ -343,9 +371,14 @@ class CalendarManager {
                             <p><strong>Kunde:</strong> ${order.name || 'Unbekannt'}</p>
                             <p><strong>E-Mail:</strong> ${order.email || 'Unbekannt'}</p>
                             <p><strong>Telefon:</strong> ${order.telefon || 'Nicht angegeben'}</p>
-                            <p><strong>Wunschtermin:</strong> ${order.wunschDatum || 'Nicht angegeben'}</p>
+                            <p><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum 
+                                ? new Date(order.wunschtermin.datum.toDate ? order.wunschtermin.datum.toDate() : order.wunschtermin.datum).toLocaleDateString('de-DE')
+                                : 'Nicht angegeben'}</p>
+                            <p><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</p>
                             ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ''}
-                            <p><strong>Größe:</strong> ${order.size || 'Unbekannt'}</p>
+                            <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm 
+                                ? `${order.details.durchmesserCm} cm (${order.details.tier || 'Unbekannt'})`
+                                : 'Unbekannt'}</p>
                             <p><strong>Status:</strong> <span style="
                                 padding: 4px 8px;
                                 border-radius: 4px;
@@ -353,9 +386,10 @@ class CalendarManager {
                                 color: white;
                                 font-weight: 600;
                             ">${order.status || 'neu'}</span></p>
-                            <p><strong>Preis:</strong> ${order.price ? parseFloat(order.price).toFixed(2) + '€' : 'Nicht berechnet'}</p>
-                            ${order.extras && order.extras.length > 0 ? `<p><strong>Extras:</strong> ${order.extras.join(', ')}</p>` : ''}
+                            <p><strong>Preis:</strong> ${order.gesamtpreis ? parseFloat(order.gesamtpreis).toFixed(2) + '€' : 'Nicht berechnet'}</p>
+                            ${order.details && order.details.extras && order.details.extras.length > 0 ? `<p><strong>Extras:</strong> ${order.details.extras.join(', ')}</p>` : ''}
                             ${order.sonderwunsch ? `<p><strong>Sonderwunsch:</strong> ${order.sonderwunsch}</p>` : ''}
+                            ${order.details && order.details.lieferung ? `<p><strong>Lieferung:</strong> ${order.details.lieferung === 'abholung' ? 'Abholung' : order.details.lieferung}</p>` : ''}
                         </div>
                         
                         <div style="margin-top: 25px; display: flex; gap: 10px;">

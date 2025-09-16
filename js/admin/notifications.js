@@ -33,37 +33,32 @@ class NotificationManager {
         try {
             // E-Mail-Benachrichtigung
             if (config.options.email) {
+                // Verwende neues Template-System
+                const templateData = window.emailTemplateManager.getEmailJSTemplateData('newOrder', {
+                    name: customerData.name,
+                    email: customerData.email,
+                    telefon: customerData.telefon,
+                    adresse: customerData.adresse,
+                    details: orderData.details,
+                    wunschtermin: orderData.wunschtermin,
+                    gesamtpreis: orderData.gesamtpreis,
+                    sonderwunsch: orderData.sonderwunsch
+                });
+
+                // Admin-spezifische Daten hinzufügen
                 const emailData = {
+                    ...templateData,
                     to_email: config.adminEmail,
-                    to_name: "Admin",
-                    customer_name: customerData.name || "Unbekannt",
-                    customer_email: customerData.email || "Nicht angegeben",
-                    customer_phone: customerData.telefon || "Nicht angegeben",
-                    order_date: new Date().toLocaleString("de-DE"),
-                    cake_size: orderData.details && orderData.details.durchmesserCm
-                        ? `${orderData.details.durchmesserCm} cm`
-                        : "Nicht spezifiziert",
-                    extras: orderData.details && orderData.details.extras
-                        ? orderData.details.extras.join(", ")
-                        : "Keine",
-                    delivery: orderData.details && orderData.details.lieferung
-                        ? orderData.details.lieferung === ""
-                            ? "Abholung"
-                            : `Lieferung ${orderData.details.lieferung}`
-                        : "Abholung",
-                    total_price: orderData.gesamtpreis || "Nicht berechnet",
-                    desired_date: orderData.wunschtermin && orderData.wunschtermin.datum
-                        ? new Date(orderData.wunschtermin.datum).toLocaleDateString("de-DE")
-                        : "Nicht angegeben",
+                    to_name: "Admin"
                 };
 
                 await emailjs.send(
                     window.emailConfig.serviceId,
-                    window.emailConfig.templates.new_order_notification,
+                    'template_ov1de3n', // Verwendung des einheitlichen Templates
                     emailData,
                     window.emailConfig.publicKey
                 );
-                console.log("Admin E-Mail-Benachrichtigung gesendet");
+                console.log("Admin E-Mail-Benachrichtigung (Bestellung) gesendet");
             }
 
             // Sound-Benachrichtigung im Browser
@@ -95,6 +90,47 @@ class NotificationManager {
             oscillator.stop(audioContext.currentTime + 0.5);
         } catch (error) {
             console.error("Fehler beim Abspielen des Benachrichtigungssounds:", error);
+        }
+    }
+
+    // Admin-Benachrichtigung für neue Bewertung senden
+    async sendReviewNotification(reviewData) {
+        const config = window.emailConfig.adminNotifications;
+
+        if (!config.options.email) {
+            return; // Keine Benachrichtigungen aktiviert
+        }
+
+        try {
+            // E-Mail-Benachrichtigung für Bewertung
+            if (config.options.email) {
+                // Verwende neues Template-System
+                const templateData = window.emailTemplateManager.getEmailJSTemplateData('newReview', reviewData);
+
+                // Admin-spezifische Daten hinzufügen
+                const emailData = {
+                    ...templateData,
+                    to_email: config.adminEmail,
+                    to_name: "Admin"
+                };
+
+                await emailjs.send(
+                    window.emailConfig.serviceId,
+                    'template_ov1de3n', // Verwendung des einheitlichen Templates
+                    emailData,
+                    window.emailConfig.publicKey
+                );
+                console.log("Admin E-Mail-Benachrichtigung (Bewertung) gesendet");
+            }
+
+            // Sound-Benachrichtigung im Browser
+            if (config.options.sound) {
+                this.playNotificationSound();
+            }
+
+            showNotification("Admin-Benachrichtigung für neue Bewertung gesendet!", "success");
+        } catch (error) {
+            console.error("Fehler beim Senden der Bewertungsbenachrichtigung:", error);
         }
     }
 

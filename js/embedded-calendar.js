@@ -145,7 +145,8 @@ function renderEmbeddedCalendar() {
         if (isPast) {
             dayStyle += 'background: #f0f0f0; color: #999; cursor: not-allowed;';
         } else if (!isAvailable) {
-            dayStyle += 'background: #ffebee; color: #c62828; cursor: not-allowed;';
+            dayStyle += 'background: #ffebee; color: #c62828; cursor: pointer;';
+            clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
         } else {
             dayStyle += 'background: #e8f5e8; color: #2e7d32; border-color: #4caf50;';
             clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
@@ -257,21 +258,8 @@ function showSelectionModal(dateString) {
                             min-width: 120px;
                         ">
                             🎂 Auswählen
-                        </button>
-                        <button onclick="openStandaloneCalendar('${dateString}')" style="
-                            padding: 12px 24px; background: #007bff; color: white; 
-                            border: none; border-radius: 6px; cursor: pointer;
-                            min-width: 120px;
-                        ">
-                            📅 Vollansicht
                         </button>` :
-            `<button onclick="openStandaloneCalendar('${dateString}')" style="
-                            padding: 12px 24px; background: #007bff; color: white; 
-                            border: none; border-radius: 6px; cursor: pointer;
-                            min-width: 120px;
-                        ">
-                            📅 Andere Termine ansehen
-                        </button>`
+            `<p style="margin: 10px 0; color: #666;">Bitte wählen Sie einen anderen verfügbaren Termin.</p>`
         }
                     <button onclick="closeDateSelectionModal()" style="
                         padding: 12px 24px; background: #ddd; color: #333; 

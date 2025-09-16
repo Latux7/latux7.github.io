@@ -323,9 +323,14 @@
       <!-- Firebase Bibliotheken ZUERST laden -->
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
       <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+      <!-- EmailJS für Admin-Benachrichtigungen -->
+      <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
       <!-- Dann Firebase Config und andere Configs -->
       <script src="config/firebase.js"></script>
+      <script src="config/email.js"></script>
       <script src="js/common.js"></script>
+      <script src="js/email-template-manager.js"></script>
+      <script src="js/admin/notifications.js"></script>
       <script>
         // Firebase wird bereits in config/firebase.js initialisiert
         const db = initializeFirebaseApp();
@@ -442,6 +447,27 @@
             };
             try {
               await db.collection("reviews").add(review);
+              
+              // Admin-Benachrichtigung für neue Bewertung senden
+              try {
+                if (window.emailTemplateManager && window.notificationManager) {
+                  await window.notificationManager.sendReviewNotification({
+                    name: customerName || 'Anonym',
+                    email: review.customerEmail || '',
+                    orderId: review.orderId || '',
+                    geschmack: parseInt(review.geschmack) || 0,
+                    aussehen: parseInt(review.aussehen) || 0,
+                    service: parseInt(review.service) || 0,
+                    gesamt: parseInt(review.gesamt) || 0,
+                    kommentar: review.text || ''
+                  });
+                  console.log("Admin-Benachrichtigung für Bewertung gesendet");
+                }
+              } catch (notificationError) {
+                console.warn("Fehler beim Senden der Admin-Benachrichtigung:", notificationError);
+                // Bewertung wurde trotzdem gespeichert, daher weiter fortfahren
+              }
+              
               // Direkt zur Startseite weiterleiten ohne Success-Nachricht
               window.location.href = "index.html";
             } catch (error) {
