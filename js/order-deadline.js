@@ -1,4 +1,5 @@
 // order-deadline.js - Mindest-Vorlaufzeit-System für Bestellungen
+console.log('🔄 OrderDeadlineManager wird geladen - Version 2024');
 
 class OrderDeadlineManager {
     constructor() {

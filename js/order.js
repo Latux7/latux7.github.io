@@ -237,7 +237,7 @@ class OrderManager {
                 dateWarning.innerHTML = `
                     <strong>⚠️ Zu kurzfristig:</strong> 
                     ${new Date(dateString).toLocaleDateString('de-DE')} ist zu früh. 
-                    Mindestens ${window.orderLimitManager.minimumLeadDays} Tage Vorlaufzeit erforderlich.
+                    Mindestens 7 Tage Vorlaufzeit erforderlich.
                     <br><small>Frühestmöglicher Termin: <strong>${new Date(status.minimumDate).toLocaleDateString('de-DE')}</strong>
                     <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Kalender öffnen</button></small>
                 `;
@@ -247,19 +247,8 @@ class OrderManager {
                 // Datum ist verfügbar
                 wunschDatumInput.style.borderColor = "#4caf50";
                 dateWarning.innerHTML = `
-                    <strong>📅 Wenige Plätze verfügbar:</strong> 
-                    Für ${new Date(dateString).toLocaleDateString('de-DE')} sind noch 
-                    ${status.remaining} von ${status.limit} Plätzen frei.
-                `;
-                dateWarning.style.display = "block";
-                dateWarning.className = "date-warning warning";
-            } else {
-                // Datum ist verfügbar
-                wunschDatumInput.style.borderColor = "#4caf50";
-                dateWarning.innerHTML = `
                     <strong>✅ Datum verfügbar:</strong> 
-                    ${new Date(dateString).toLocaleDateString('de-DE')} ist verfügbar 
-                    (${status.remaining} von ${status.limit} Plätzen frei).
+                    ${new Date(dateString).toLocaleDateString('de-DE')} ist verfügbar.
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning success";
@@ -271,6 +260,15 @@ class OrderManager {
                         wunschDatumInput.style.borderColor = "";
                     }
                 }, 3000);
+            } else {
+                // Fallback für andere Probleme
+                wunschDatumInput.style.borderColor = "#f44336";
+                dateWarning.innerHTML = `
+                    <strong>⚠️ Datum nicht verfügbar:</strong> 
+                    ${status.reason || 'Unbekannter Fehler'}
+                `;
+                dateWarning.style.display = "block";
+                dateWarning.className = "date-warning error";
             }
         } catch (error) {
             console.error("Fehler bei Datumsprüfung:", error);
