@@ -53,8 +53,8 @@ window.emailConfig = {
 
     // Lieferoptionen
     deliveryMessages: {
-        abholung: "und kann abgeholt werden! Bitte kommen Sie vorbei.",
-        lieferung: "und wird in Kürze geliefert! Halten Sie sich bitte bereit."
+        abholung: "Ihre Bestellung kann abgeholt werden! Bitte kommen Sie vorbei.",
+        lieferung: "Ihre Bestellung wird in Kürze geliefert! Wir werden uns bald bei Ihnen melden.",
     },
 
     // Admin-Benachrichtigungseinstellungen
@@ -66,7 +66,7 @@ window.emailConfig = {
         smsSettings: {
             enabled: true,
             // Telefonnummer für SMS (wird als E-Mail versendet)
-            phoneNumber: "+49176xxxxx", // Ihre Handynummer
+            phoneNumber: "+49152545566388", // Ihre Handynummer
 
             // E-Mail-to-SMS Gateways (kostenlos)
             gateways: {

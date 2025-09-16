@@ -276,22 +276,43 @@ class OrderManager {
                         customer_email: order.email || "Nicht angegeben",
                         customer_phone: order.telefon || "Nicht angegeben",
                         order_date: new Date().toLocaleString("de-DE"),
+                        order_timestamp: new Date().toLocaleString("de-DE"),
+                        order_size: order.details && order.details.durchmesserCm
+                            ? `${order.details.durchmesserCm} cm`
+                            : "Nicht spezifiziert",
                         cake_size: order.details && order.details.durchmesserCm
                             ? `${order.details.durchmesserCm} cm`
                             : "Nicht spezifiziert",
+                        order_extras: order.details && order.details.extras
+                            ? order.details.extras.join(", ")
+                            : "Keine",
                         extras: order.details && order.details.extras
                             ? order.details.extras.join(", ")
                             : "Keine",
+                        delivery_type: order.details && order.details.lieferung
+                            ? order.details.lieferung === "abholung"
+                                ? "Abholung"
+                                : `Lieferung: ${order.details.lieferung}`
+                            : "Abholung",
                         delivery: order.details && order.details.lieferung
                             ? order.details.lieferung === "abholung"
                                 ? "Abholung"
                                 : `Lieferung: ${order.details.lieferung}`
                             : "Abholung",
-                        total_price: order.gesamtpreis || "Nicht berechnet",
+                        total_price: order.gesamtpreis ? `${order.gesamtpreis}` : "Nicht berechnet",
+                        wunschtermin: order.wunschtermin && order.wunschtermin.datum
+                            ? new Date(order.wunschtermin.datum).toLocaleDateString("de-DE")
+                            : "Nicht angegeben",
                         desired_date: order.wunschtermin && order.wunschtermin.datum
                             ? new Date(order.wunschtermin.datum).toLocaleDateString("de-DE")
                             : "Nicht angegeben",
+                        customer_address: this.getDeliveryAddressString(f) || "Abholung",
+                        order_notes: "", // Kein Notizen-Feld im Formular
+                        admin_dashboard_url: window.location.origin + "/admin.html",
+                        order_id: new Date().getTime().toString() // Temporäre ID
                     };
+
+                    console.log("📧 Admin-Benachrichtigung wird gesendet mit folgenden Daten:", adminNotification);
 
                     await emailjs.send(
                         window.emailConfig.serviceId,
@@ -383,6 +404,19 @@ class OrderManager {
             };
         }
         return null;
+    }
+
+    getDeliveryAddressString(f) {
+        if (f.lieferung.value !== "" && f.lieferung.value !== "abholung") {
+            const street = f.strasse?.value || "";
+            const plz = f.plz?.value || "";
+            const city = f.ort?.value || "";
+
+            if (street || plz || city) {
+                return `${street}, ${plz} ${city}`.replace(/^,\s*/, '').replace(/\s*,\s*$/, '');
+            }
+        }
+        return "Abholung";
     }
 
     showSuccess() {
