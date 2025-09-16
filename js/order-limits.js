@@ -25,35 +25,43 @@ class OrderLimitManager {
         return today.toISOString().split('T')[0]; // YYYY-MM-DD
     }
 
-    // Bestellungen für ein bestimmtes Datum zählen
+    // Bestellungen für ein bestimmtes Wunschtermin-Datum zählen
     async countOrdersForDate(dateString) {
         try {
+            console.log(`OrderLimitManager: Zähle Bestellungen für Wunschtermin: ${dateString}`);
+            
             if (!this.db) {
-                console.warn('Firebase noch nicht initialisiert');
+                console.warn('OrderLimitManager: Firebase noch nicht initialisiert');
                 return 0;
             }
 
-            // Start und Ende des Tages
-            const startOfDay = new Date(dateString + 'T00:00:00.000Z');
-            const endOfDay = new Date(dateString + 'T23:59:59.999Z');
-
+            // Zähle Bestellungen die dieses Datum als Wunschtermin haben
             const ordersSnapshot = await this.db.collection('orders')
-                .where('created', '>=', startOfDay.toISOString())
-                .where('created', '<=', endOfDay.toISOString())
+                .where('wunschtermin.datum', '==', dateString)
                 .get();
+
+            console.log(`OrderLimitManager: ${ordersSnapshot.size} Bestellungen für Wunschtermin ${dateString} gefunden`);
+
+            // Debug: Zeige welche Bestellungen gefunden wurden
+            ordersSnapshot.forEach(doc => {
+                const order = doc.data();
+                console.log(`OrderLimitManager: Bestellung ${doc.id} - Wunschtermin: ${order.wunschtermin?.datum}, Status: ${order.status}`);
+            });
 
             return ordersSnapshot.size;
 
         } catch (error) {
-            console.error('Fehler beim Zählen der Bestellungen:', error);
+            console.error('OrderLimitManager: Fehler beim Zählen der Bestellungen:', error);
             return 0;
         }
     }
 
-    // Prüfen ob heute noch Bestellungen angenommen werden können
+    // Prüfen ob für einen Wunschtermin noch Bestellungen angenommen werden können
     async canAcceptOrder(dateString = null) {
         const targetDate = dateString || this.getTodayString();
         const currentCount = await this.countOrdersForDate(targetDate);
+
+        console.log(`OrderLimitManager: Wunschtermin ${targetDate} - ${currentCount}/${this.dailyLimit} Bestellungen`);
 
         return {
             canAccept: currentCount < this.dailyLimit,
@@ -166,9 +174,20 @@ class OrderLimitManager {
         }
     }
 
-    // Bestellung vor dem Absenden prüfen
+    // Bestellung vor dem Absenden prüfen (prüft den gewählten Wunschtermin)
     async validateOrderSubmission() {
-        const status = await this.canAcceptOrder();
+        const form = document.getElementById("orderForm");
+        const wunschDatumInput = document.getElementById("wunschDatum");
+        
+        if (!wunschDatumInput || !wunschDatumInput.value) {
+            showNotification("Bitte wählen Sie einen Wunschtermin aus", "error");
+            return false;
+        }
+
+        const wunschDatum = wunschDatumInput.value;
+        console.log(`OrderLimitManager: Validiere Bestellung für Wunschtermin: ${wunschDatum}`);
+        
+        const status = await this.canAcceptOrder(wunschDatum);
 
         if (!status.canAccept) {
             // Modal mit Limit-Erreicht-Nachricht anzeigen
@@ -176,6 +195,7 @@ class OrderLimitManager {
             return false;
         }
 
+        console.log(`OrderLimitManager: Bestellung für ${wunschDatum} freigegeben (${status.currentCount}/${status.limit})`);
         return true;
     }
 

@@ -200,6 +200,7 @@ class OrderManager {
 
     setupEventListeners() {
         const orderForm = document.getElementById("orderForm");
+        const wunschDatumInput = document.getElementById("wunschDatum");
 
         // Form change events
         orderForm.addEventListener("change", (e) => {
@@ -207,11 +208,115 @@ class OrderManager {
             if (e.target.id === "diameter") this.updateSizeUI();
             if (e.target.id === "mehrstoeckigCheckbox") this.toggleTiersSelection();
             if (e.target.id === "numberOfTiers") this.calculateSum();
+            if (e.target.id === "wunschDatum") this.checkDateAvailability(e.target.value);
             this.calculateSum();
         });
 
         // Form submit
         orderForm.addEventListener("submit", (e) => this.handleSubmit(e));
+    }
+
+    // Verfügbarkeit des gewählten Datums prüfen
+    async checkDateAvailability(dateString) {
+        if (!dateString || !window.orderLimitManager) return;
+
+        console.log(`OrderManager: Prüfe Verfügbarkeit für ${dateString}`);
+        
+        try {
+            const status = await window.orderLimitManager.canAcceptOrder(dateString);
+            
+            const wunschDatumInput = document.getElementById("wunschDatum");
+            const dateWarning = document.getElementById("dateWarning") || this.createDateWarningElement();
+
+            if (!status.canAccept) {
+                // Datum ist ausgebucht
+                wunschDatumInput.style.borderColor = "#f44336";
+                dateWarning.innerHTML = `
+                    <strong>⚠️ Datum nicht verfügbar:</strong> 
+                    ${new Date(dateString).toLocaleDateString('de-DE')} ist bereits ausgebucht 
+                    (${status.currentCount}/${status.limit} Bestellungen).
+                    <br><small>Bitte wählen Sie ein anderes Datum oder prüfen Sie unseren 
+                    <a href="kalender.html" target="_blank">Kalender</a> für verfügbare Termine.</small>
+                `;
+                dateWarning.style.display = "block";
+                dateWarning.className = "date-warning error";
+            } else if (status.remaining <= 2) {
+                // Datum hat nur noch wenige Plätze
+                wunschDatumInput.style.borderColor = "#ff9800";
+                dateWarning.innerHTML = `
+                    <strong>📅 Wenige Plätze verfügbar:</strong> 
+                    Für ${new Date(dateString).toLocaleDateString('de-DE')} sind noch 
+                    ${status.remaining} von ${status.limit} Plätzen frei.
+                `;
+                dateWarning.style.display = "block";
+                dateWarning.className = "date-warning warning";
+            } else {
+                // Datum ist verfügbar
+                wunschDatumInput.style.borderColor = "#4caf50";
+                dateWarning.innerHTML = `
+                    <strong>✅ Datum verfügbar:</strong> 
+                    ${new Date(dateString).toLocaleDateString('de-DE')} ist verfügbar 
+                    (${status.remaining} von ${status.limit} Plätzen frei).
+                `;
+                dateWarning.style.display = "block";
+                dateWarning.className = "date-warning success";
+                
+                // Nach 3 Sekunden ausblenden wenn alles okay ist
+                setTimeout(() => {
+                    if (dateWarning.className === "date-warning success") {
+                        dateWarning.style.display = "none";
+                        wunschDatumInput.style.borderColor = "";
+                    }
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Fehler bei Datumsprüfung:", error);
+        }
+    }
+
+    // Erstelle Warning-Element für Datumsfeedback
+    createDateWarningElement() {
+        const wunschDatumInput = document.getElementById("wunschDatum");
+        const dateWarning = document.createElement("div");
+        dateWarning.id = "dateWarning";
+        dateWarning.style.cssText = `
+            margin-top: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: none;
+        `;
+        
+        // Nach dem Datum-Input einfügen
+        wunschDatumInput.parentNode.insertBefore(dateWarning, wunschDatumInput.nextSibling);
+        
+        // CSS für verschiedene Warning-Typen
+        const style = document.createElement("style");
+        style.textContent = `
+            .date-warning.error {
+                background: #ffebee;
+                border: 1px solid #f44336;
+                color: #c62828;
+            }
+            .date-warning.warning {
+                background: #fff3e0;
+                border: 1px solid #ff9800;
+                color: #e65100;
+            }
+            .date-warning.success {
+                background: #e8f5e8;
+                border: 1px solid #4caf50;
+                color: #2e7d32;
+            }
+            .date-warning a {
+                color: inherit;
+                text-decoration: underline;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        return dateWarning;
     }
 
     initializeForm() {

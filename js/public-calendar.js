@@ -47,7 +47,7 @@ class PublicCalendarManager {
     async loadOrdersCountForMonth(year, month) {
         try {
             console.log(`PublicCalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
-
+            
             if (!this.db) {
                 console.error('PublicCalendarManager: Firebase nicht initialisiert');
                 return {};
@@ -58,60 +58,42 @@ class PublicCalendarManager {
 
             console.log(`PublicCalendarManager: Datumbereich: ${startDate.toDateString()} bis ${endDate.toDateString()}`);
 
-            // Versuche verschiedene Datumformate in der Datenbank
-            console.log('PublicCalendarManager: Teste verschiedene Datumabfragen...');
+            // Hauptmethode: Zähle nach wunschtermin.datum (das ist was wir wollen!)
+            const orderCounts = {};
+            
+            // Alle Bestellungen für diesen Monat laden (basierend auf Wunschtermin)
+            console.log('PublicCalendarManager: Lade Bestellungen nach wunschtermin.datum...');
+            
+            // Da wir einen Bereich abfragen müssen, erstellen wir die Datumstrings für den Monat
+            const startDateString = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            const endDateString = endDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            console.log(`PublicCalendarManager: Suche wunschtermin.datum zwischen ${startDateString} und ${endDateString}`);
 
-            // Methode 1: wunschtermin.datum als String (YYYY-MM-DD)
-            const ordersSnapshot1 = await this.db.collection('orders')
-                .where('wunschtermin.datum', '>=', startDate.toISOString().split('T')[0])
-                .where('wunschtermin.datum', '<=', endDate.toISOString().split('T')[0])
+            const ordersSnapshot = await this.db.collection('orders')
+                .where('wunschtermin.datum', '>=', startDateString)
+                .where('wunschtermin.datum', '<=', endDateString)
                 .get();
 
-            console.log(`PublicCalendarManager: Methode 1 (wunschtermin.datum String): ${ordersSnapshot1.size} Bestellungen`);
-
-            // Wenn keine Daten gefunden wurden, versuche andere Formate
-            let ordersSnapshot = ordersSnapshot1;
-            if (ordersSnapshot1.empty) {
-                // Methode 2: created-Feld verwenden
-                const ordersSnapshot2 = await this.db.collection('orders')
-                    .where('created', '>=', startDate.toISOString())
-                    .where('created', '<=', endDate.toISOString())
-                    .get();
-
-                console.log(`PublicCalendarManager: Methode 2 (created-Feld): ${ordersSnapshot2.size} Bestellungen`);
-                ordersSnapshot = ordersSnapshot2;
-            }
-
-            const orderCounts = {};
+            console.log(`PublicCalendarManager: ${ordersSnapshot.size} Bestellungen mit Wunschtermin gefunden`);
 
             ordersSnapshot.forEach(doc => {
                 const order = doc.data();
-                console.log(`PublicCalendarManager: Verarbeite Bestellung ${doc.id}:`, order);
-
-                // Versuche verschiedene Datumfelder
-                let wunschDatum = order.wunschtermin?.datum;
-
-                if (!wunschDatum && order.created) {
-                    // Fallback: created-Datum verwenden
-                    const createdDate = new Date(order.created);
-                    wunschDatum = createdDate.toISOString().split('T')[0];
-                }
-
+                const wunschDatum = order.wunschtermin?.datum;
+                
                 if (wunschDatum) {
-                    console.log(`PublicCalendarManager: Füge Bestellung für ${wunschDatum} hinzu`);
+                    console.log(`PublicCalendarManager: Bestellung ${doc.id} für Wunschtermin ${wunschDatum}`);
                     orderCounts[wunschDatum] = (orderCounts[wunschDatum] || 0) + 1;
                 }
             });
 
-            console.log('PublicCalendarManager: Bestellzahlen pro Tag:', orderCounts);
+            console.log('PublicCalendarManager: Bestellzahlen pro Wunschtermin:', orderCounts);
             return orderCounts;
         } catch (error) {
             console.error('PublicCalendarManager: Fehler beim Laden der Bestellzahlen:', error);
             return {};
         }
-    }
-
-    // Kalender-HTML generieren
+    }    // Kalender-HTML generieren
     async generateCalendarHTML(year, month) {
         const orderCounts = await this.loadOrdersCountForMonth(year, month);
 

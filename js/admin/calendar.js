@@ -44,7 +44,7 @@ class CalendarManager {
     async loadOrdersForMonth(year, month) {
         try {
             console.log(`CalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
-
+            
             if (!this.db) {
                 console.error('CalendarManager: Firebase noch nicht initialisiert');
                 return [];
@@ -56,57 +56,64 @@ class CalendarManager {
 
             console.log(`CalendarManager: Datumbereich: ${startDate.toDateString()} bis ${endDate.toDateString()}`);
 
-            // Versuche verschiedene Datumfelder und Formate
             let orders = [];
 
-            // Methode 1: wunschtermin.datum als String
+            // Hauptmethode: wunschtermin.datum verwenden (das ist das richtige Feld!)
             try {
+                const startDateString = startDate.toISOString().split('T')[0];
+                const endDateString = endDate.toISOString().split('T')[0];
+                
+                console.log(`CalendarManager: Suche nach wunschtermin.datum zwischen ${startDateString} und ${endDateString}`);
+                
                 const ordersSnapshot1 = await this.db.collection('orders')
-                    .where('wunschtermin.datum', '>=', startDate.toISOString().split('T')[0])
-                    .where('wunschtermin.datum', '<=', endDate.toISOString().split('T')[0])
+                    .where('wunschtermin.datum', '>=', startDateString)
+                    .where('wunschtermin.datum', '<=', endDateString)
                     .get();
-
+                
                 console.log(`CalendarManager: Methode 1 (wunschtermin.datum): ${ordersSnapshot1.size} Bestellungen`);
-
+                
                 ordersSnapshot1.forEach(doc => {
                     const orderData = doc.data();
                     orders.push({
                         id: doc.id,
                         ...orderData,
-                        date: orderData.wunschtermin?.datum
+                        date: orderData.wunschtermin?.datum,
+                        displayDate: orderData.wunschtermin?.datum // Für die Kalender-Anzeige
                     });
                 });
             } catch (error) {
-                console.warn('CalendarManager: Methode 1 fehlgeschlagen:', error);
+                console.warn('CalendarManager: wunschtermin.datum Abfrage fehlgeschlagen:', error);
             }
 
-            // Wenn keine Daten, versuche created-Feld
+            // Fallback: Wenn keine Wunschtermine gefunden wurden, versuche created-Feld
             if (orders.length === 0) {
                 try {
                     const ordersSnapshot2 = await this.db.collection('orders')
                         .where('created', '>=', startDate.toISOString())
                         .where('created', '<=', endDate.toISOString())
                         .get();
-
-                    console.log(`CalendarManager: Methode 2 (created): ${ordersSnapshot2.size} Bestellungen`);
-
+                    
+                    console.log(`CalendarManager: Fallback (created): ${ordersSnapshot2.size} Bestellungen`);
+                    
                     ordersSnapshot2.forEach(doc => {
                         const orderData = doc.data();
                         const createdDate = new Date(orderData.created);
                         orders.push({
                             id: doc.id,
                             ...orderData,
-                            date: createdDate.toISOString().split('T')[0]
+                            date: createdDate.toISOString().split('T')[0],
+                            displayDate: createdDate.toISOString().split('T')[0] + ' (Erstellt)',
+                            isFallback: true // Markierung dass dies ein Fallback ist
                         });
                     });
                 } catch (error) {
-                    console.warn('CalendarManager: Methode 2 fehlgeschlagen:', error);
+                    console.warn('CalendarManager: created Fallback fehlgeschlagen:', error);
                 }
             }
 
             console.log(`CalendarManager: Gesamt gefundene Bestellungen: ${orders.length}`);
             orders.forEach(order => {
-                console.log(`CalendarManager: Bestellung ${order.id} für ${order.date}`);
+                console.log(`CalendarManager: Bestellung ${order.id} für ${order.displayDate}${order.isFallback ? ' (Fallback)' : ''}`);
             });
 
             return orders;
@@ -115,9 +122,7 @@ class CalendarManager {
             console.error('CalendarManager: Fehler beim Laden der Kalender-Bestellungen:', error);
             return [];
         }
-    }
-
-    // Kalender-HTML generieren
+    }    // Kalender-HTML generieren
     async generateCalendarHTML(year, month) {
         const orders = await this.loadOrdersForMonth(year, month);
 
