@@ -714,7 +714,9 @@
       testSuite.addTest(
         "Order Limit Manager",
         async () => {
-          return typeof OrderLimitManager !== "undefined" && window.orderLimitManager;
+          return (
+            typeof OrderLimitManager !== "undefined" && window.orderLimitManager
+          );
         },
         "order",
         true
@@ -723,9 +725,11 @@
       testSuite.addTest(
         "Embedded Calendar Functions",
         async () => {
-          return typeof showAvailabilityCalendar === "function" && 
-                 typeof hideAvailabilityCalendar === "function" &&
-                 typeof loadEmbeddedCalendar === "function";
+          return (
+            typeof showAvailabilityCalendar === "function" &&
+            typeof hideAvailabilityCalendar === "function" &&
+            typeof loadEmbeddedCalendar === "function"
+          );
         },
         "order",
         true
@@ -734,9 +738,11 @@
       testSuite.addTest(
         "Calendar Modal Functions",
         async () => {
-          return typeof showSelectionModal === "function" && 
-                 typeof closeDateSelectionModal === "function" &&
-                 typeof confirmDateSelection === "function";
+          return (
+            typeof showSelectionModal === "function" &&
+            typeof closeDateSelectionModal === "function" &&
+            typeof confirmDateSelection === "function"
+          );
         },
         "order"
       );

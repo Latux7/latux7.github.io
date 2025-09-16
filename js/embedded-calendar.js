@@ -203,17 +203,17 @@ function selectDateFromCalendar(dateString) {
  */
 function showSelectionModal(dateString) {
     const date = new Date(dateString + 'T12:00:00');
-    const formattedDate = date.toLocaleDateString('de-DE', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    const formattedDate = date.toLocaleDateString('de-DE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
-    
+
     const orderCount = ordersCountData[dateString] || 0;
     const available = 5 - orderCount;
     const isAvailable = orderCount < 5;
-    
+
     const modalHTML = `
         <div id="dateSelectionModal" style="
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
@@ -235,23 +235,23 @@ function showSelectionModal(dateString) {
                     padding: 20px; border-radius: 8px; margin-bottom: 20px;
                     border-left: 4px solid ${isAvailable ? '#4caf50' : '#f44336'};
                 ">
-                    ${isAvailable ? 
-                        `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
+                    ${isAvailable ?
+            `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
                          <p style="margin: 0; line-height: 1.5;">
                              <strong>${available} von 5 Plätzen</strong> noch frei.<br>
                              Sie können für diesen Tag bestellen.
                          </p>` :
-                        `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
+            `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
                          <p style="margin: 0; line-height: 1.5;">
                              Dieser Tag ist leider bereits vollständig ausgebucht.<br>
                              Bitte wählen Sie einen anderen Termin.
                          </p>`
-                    }
+        }
                 </div>
                 
                 <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    ${isAvailable ? 
-                        `<button onclick="selectDateAndContinue('${dateString}')" style="
+                    ${isAvailable ?
+            `<button onclick="selectDateAndContinue('${dateString}')" style="
                             padding: 12px 24px; background: var(--clr-accent); color: white; 
                             border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
                             min-width: 120px;
@@ -264,15 +264,15 @@ function showSelectionModal(dateString) {
                             min-width: 120px;
                         ">
                             📅 Vollansicht
-                        </button>` : 
-                        `<button onclick="openStandaloneCalendar('${dateString}')" style="
+                        </button>` :
+            `<button onclick="openStandaloneCalendar('${dateString}')" style="
                             padding: 12px 24px; background: #007bff; color: white; 
                             border: none; border-radius: 6px; cursor: pointer;
                             min-width: 120px;
                         ">
                             📅 Andere Termine ansehen
                         </button>`
-                    }
+        }
                     <button onclick="closeDateSelectionModal()" style="
                         padding: 12px 24px; background: #ddd; color: #333; 
                         border: none; border-radius: 6px; cursor: pointer;
@@ -284,7 +284,7 @@ function showSelectionModal(dateString) {
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }/**
  * Modal schließen
@@ -302,32 +302,32 @@ function closeDateSelectionModal() {
 function confirmDateSelection(dateString) {
     // Modal schließen
     closeDateSelectionModal();
-    
+
     // Kalender verstecken
     hideAvailabilityCalendar();
-    
+
     // Datum ins Formular eintragen (beide möglichen Field-Namen prüfen)
     const wunschterminInput = document.getElementById('wunschtermin') || document.getElementById('wunschDatum');
     if (wunschterminInput) {
         wunschterminInput.value = dateString;
-        
+
         // Event-Handler für live Validierung triggern falls vorhanden
         const event = new Event('input', { bubbles: true });
         wunschterminInput.dispatchEvent(event);
-        
+
         // Visuelles Feedback
         wunschterminInput.style.background = '#e8f5e8';
         wunschterminInput.style.borderColor = '#4caf50';
-        
+
         setTimeout(() => {
             wunschterminInput.style.background = '';
             wunschterminInput.style.borderColor = '';
         }, 2000);
     }
-    
+
     // Zur Bestellform scrollen
     scrollToForm();
-    
+
     // Erfolgs-Notification
     showSuccessNotification(`Wunschtermin ${new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE')} ausgewählt!`);
 }
@@ -345,13 +345,13 @@ function selectDateAndContinue(dateString) {
 function openStandaloneCalendar(dateString) {
     // Modal schließen
     closeDateSelectionModal();
-    
+
     // Kalender verstecken
     hideAvailabilityCalendar();
-    
+
     // Zum Formular scrollen als Hinweis
     scrollToForm();
-    
+
     // Hinweis geben, dass der eingebettete Kalender die beste Option ist
     showSuccessNotification('💡 Tipp: Verwenden Sie den Kalender oben für die beste Erfahrung!');
 }/**
@@ -474,14 +474,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Kalender automatisch anzeigen
         setTimeout(() => {
             showAvailabilityCalendar();
-            
+
             if (dateParam) {
                 // Zum entsprechenden Monat navigieren
                 const targetDate = new Date(dateParam);
                 if (!isNaN(targetDate.getTime())) {
                     currentMonth = targetDate.getMonth();
                     currentYear = targetDate.getFullYear();
-                    
+
                     // Kalender neu laden mit korrektem Monat
                     setTimeout(() => {
                         loadEmbeddedCalendar();
