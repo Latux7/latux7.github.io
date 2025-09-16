@@ -92,6 +92,43 @@
         </div>
         <div id="ordersList">Lade Bestellungen...</div>
 
+        <!-- Archiv Bereich -->
+        <div
+          style="
+            margin-top: 32px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 20px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 20px;
+            "
+          >
+            <h2 style="margin: 0">📦 Archiv</h2>
+            <div>
+              <button
+                id="refreshArchiveBtn"
+                class="btn-small"
+                style="background: #92d050; margin-right: 8px"
+              >
+                🔄 Aktualisieren
+              </button>
+              <button
+                id="autoArchiveBtn"
+                class="btn-small"
+                style="background: #ff9800"
+              >
+                ⏰ Auto-Archivierung (7+ Tage)
+              </button>
+            </div>
+          </div>
+          <div id="archivesList">Lade Archiv...</div>
+        </div>
+
         <div
           style="
             margin-top: 32px;
@@ -415,12 +452,231 @@
           }
         };
 
+        // ==================== ARCHIV FUNKTIONEN ====================
+
+        // Bestellung archivieren (global verfügbar)
+        window.archiveOrder = async function (orderId) {
+          if (!confirm("Diese Bestellung ins Archiv verschieben?")) {
+            return;
+          }
+
+          try {
+            // 1. Bestellung aus orders lesen
+            const orderDoc = await db.collection("orders").doc(orderId).get();
+            if (!orderDoc.exists) {
+              showNotification("Bestellung nicht gefunden!", "error");
+              return;
+            }
+
+            const orderData = orderDoc.data();
+
+            // 2. Archiv-Eintrag erstellen mit Archivierungsdatum
+            const archiveData = {
+              ...orderData,
+              archivedAt: new Date().toISOString(),
+              originalOrderId: orderId,
+            };
+
+            // 3. In archived_orders speichern
+            await db
+              .collection("archived_orders")
+              .doc(orderId)
+              .set(archiveData);
+
+            // 4. Aus orders löschen
+            await db.collection("orders").doc(orderId).delete();
+
+            showNotification("Bestellung erfolgreich archiviert!", "success");
+            loadOrders(); // Bestellungen neu laden
+            loadArchives(); // Archiv neu laden
+          } catch (error) {
+            console.error("Fehler beim Archivieren:", error);
+            showNotification(
+              "Fehler beim Archivieren der Bestellung!",
+              "error"
+            );
+          }
+        };
+
+        // Automatische Archivierung für alte fertige Bestellungen
+        window.autoArchiveOldOrders = async function () {
+          if (
+            !confirm(
+              "Alle fertigen Bestellungen älter als 7 Tage automatisch archivieren?"
+            )
+          ) {
+            return;
+          }
+
+          try {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const oldOrdersSnap = await db
+              .collection("orders")
+              .where("status", "==", "fertig")
+              .where("created", "<", sevenDaysAgo.getTime())
+              .get();
+
+            let archivedCount = 0;
+            const batch = db.batch();
+
+            for (const doc of oldOrdersSnap.docs) {
+              const orderData = doc.data();
+              const archiveData = {
+                ...orderData,
+                archivedAt: new Date().toISOString(),
+                originalOrderId: doc.id,
+                autoArchived: true,
+              };
+
+              // Zu Archiv hinzufügen
+              batch.set(
+                db.collection("archived_orders").doc(doc.id),
+                archiveData
+              );
+              // Aus orders entfernen
+              batch.delete(db.collection("orders").doc(doc.id));
+              archivedCount++;
+            }
+
+            await batch.commit();
+            showNotification(
+              `${archivedCount} Bestellungen automatisch archiviert!`,
+              "success"
+            );
+            loadOrders();
+            loadArchives();
+          } catch (error) {
+            console.error("Fehler bei Auto-Archivierung:", error);
+            showNotification(
+              "Fehler bei der automatischen Archivierung!",
+              "error"
+            );
+          }
+        };
+
+        // Archiv laden und anzeigen
+        async function loadArchives() {
+          try {
+            const archiveSnap = await db
+              .collection("archived_orders")
+              .orderBy("archivedAt", "desc")
+              .get();
+
+            let html = "";
+            if (archiveSnap.empty) {
+              html =
+                '<div style="margin:2em 0;color:#666;">Keine archivierten Bestellungen vorhanden.</div>';
+            } else {
+              // Gruppierung nach Monat/Jahr
+              const groupedByMonth = {};
+
+              archiveSnap.forEach((doc) => {
+                const order = doc.data();
+                const archivedDate = new Date(order.archivedAt);
+                const monthKey = `${archivedDate.getFullYear()}-${String(
+                  archivedDate.getMonth() + 1
+                ).padStart(2, "0")}`;
+                const monthLabel = archivedDate.toLocaleDateString("de-DE", {
+                  year: "numeric",
+                  month: "long",
+                });
+
+                if (!groupedByMonth[monthKey]) {
+                  groupedByMonth[monthKey] = { label: monthLabel, orders: [] };
+                }
+                groupedByMonth[monthKey].orders.push({ doc, order });
+              });
+
+              // Archiv-Accordion erstellen
+              Object.keys(groupedByMonth)
+                .sort()
+                .reverse()
+                .forEach((monthKey) => {
+                  const month = groupedByMonth[monthKey];
+                  html += `
+                  <details style="margin-bottom:12px;">
+                    <summary style="font-size:1.1em;font-weight:600;color:#666;cursor:pointer;">
+                      📅 ${month.label} (${month.orders.length} Bestellungen)
+                    </summary>
+                    <div style="margin-left:20px;margin-top:10px;">
+                `;
+
+                  month.orders.forEach(({ doc, order }) => {
+                    html += renderArchivedOrder(doc, order);
+                  });
+
+                  html += `</div></details>`;
+                });
+            }
+
+            document.getElementById("archivesList").innerHTML = html;
+          } catch (error) {
+            console.error("Fehler beim Laden des Archivs:", error);
+            document.getElementById("archivesList").innerHTML =
+              "Fehler beim Laden des Archivs.";
+          }
+        }
+
+        // Archivierte Bestellung rendern (vereinfachte Version)
+        function renderArchivedOrder(doc, order) {
+          const archivedDate = new Date(order.archivedAt).toLocaleDateString(
+            "de-DE"
+          );
+          const createdDate = order.created
+            ? new Date(order.created).toLocaleDateString("de-DE")
+            : "-";
+
+          return `
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-bottom:16px;background:#f9f9f9;">
+              <div style="font-size:0.95em;color:#666;margin-bottom:8px;">
+                <strong>Archiviert am:</strong> ${archivedDate} | <strong>Erstellt am:</strong> ${createdDate}
+                ${
+                  order.autoArchived
+                    ? ' | <span style="color:#ff9800;">Auto-archiviert</span>'
+                    : ""
+                }
+              </div>
+              <div style="font-size:1em;font-weight:600;color:#333;">
+                Bestellung #${doc.id.substr(-6)}
+              </div>
+              <div style="margin:4px 0;">
+                <strong>Kunde:</strong> ${order.customerId || "Unbekannt"} | 
+                <strong>Status:</strong> ${order.status || "Unbekannt"} |
+                <strong>Wert:</strong> ${
+                  order.gesamtpreis || "nicht berechnet"
+                } €
+              </div>
+              <div style="margin:4px 0;color:#666;">
+                <strong>Größe:</strong> ${
+                  order.details && order.details.durchmesserCm
+                    ? `${order.details.durchmesserCm} cm`
+                    : order.details && order.details.groesse
+                    ? order.details.groesse
+                    : "-"
+                } | 
+                <strong>Extras:</strong> ${
+                  order.details &&
+                  order.details.extras &&
+                  order.details.extras.length
+                    ? order.details.extras.join(", ")
+                    : "keine"
+                }
+              </div>
+            </div>
+          `;
+        }
+
+        // ==================== ENDE ARCHIV FUNKTIONEN ====================
+
         // Prüfe beim Laden, ob bereits angemeldet
         function checkLoginStatus() {
           if (localStorage.getItem("adminLoggedIn") === "true") {
             document.getElementById("adminLogin").style.display = "none";
             document.getElementById("adminPanel").style.display = "block";
             loadOrders();
+            loadArchives();
             loadReviews();
           }
         }
@@ -435,6 +691,7 @@
               document.getElementById("adminLogin").style.display = "none";
               document.getElementById("adminPanel").style.display = "block";
               loadOrders();
+              loadArchives();
               loadReviews();
             } else {
               document.getElementById("loginError").style.display = "block";
@@ -459,6 +716,14 @@
           document
             .getElementById("logoutBtn")
             .addEventListener("click", logout);
+
+          // Archiv Event-Listener hinzufügen
+          document
+            .getElementById("refreshArchiveBtn")
+            .addEventListener("click", loadArchives);
+          document
+            .getElementById("autoArchiveBtn")
+            .addEventListener("click", autoArchiveOldOrders);
         });
 
         // Hilfsfunktion: Bestellungshistorie für Kunden ermitteln (nach E-Mail gruppiert)
@@ -727,81 +992,108 @@
             `;
           }
 
-          return `<div style="border:1px solid #dbeedb;border-radius:16px;padding:18px 16px;margin-bottom:24px;box-shadow:0 1px 8px #e6f4ea;">
-        <div style="font-size:1.1em;font-weight:600;color:#92d050;display:flex;align-items:center;flex-wrap:wrap;">
-          <span>Bestellung vom ${
+          return `
+      <details style="margin-bottom:16px;">
+        <summary style="
+          cursor: pointer; 
+          padding: 12px 16px; 
+          background: #f8fdf8; 
+          border: 1px solid #dbeedb; 
+          border-radius: 16px; 
+          font-size: 1em; 
+          font-weight: 600; 
+          color: #92d050;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          box-shadow: 0 1px 4px rgba(146, 208, 80, 0.1);
+        ">
+          <span style="display: flex; align-items: center; flex-wrap: wrap;">
+            <span>📋 ${cust.name || "Unbekannt"} - ${
             order.created
-              ? new Date(order.created).toLocaleString("de-DE")
+              ? new Date(order.created).toLocaleDateString("de-DE")
               : "-"
           }</span>
-          ${orderHistoryBadge}
-        </div>
-        <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || "-"}<br>
-          <b>E-Mail:</b> <a href="mailto:${cust.email || ""}">${
+            ${orderHistoryBadge}
+          </span>
+          <span style="
+            font-size: 0.9em; 
+            color: #666; 
+            font-weight: normal;
+            margin-left: 8px;
+          ">
+            ${order.gesamtpreis || "nicht berechnet"} € | ${order.status}
+          </span>
+        </summary>
+        
+        <div style="border:1px solid #dbeedb;border-top:none;border-radius:0 0 16px 16px;padding:18px 16px;background:#ffffff;box-shadow:0 1px 8px #e6f4ea;">
+          <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || "-"}<br>
+            <b>E-Mail:</b> <a href="mailto:${cust.email || ""}">${
             cust.email || ""
           }</a><br>
-          <b>Telefon:</b> ${cust.telefon || ""}
-        </div>
-        <div style="margin:8px 0 0 0;"><b>Adresse:</b> ${
-          order.adresse
-            ? `${order.adresse.street || "-"}, ${order.adresse.plz || ""} ${
-                order.adresse.city || ""
-              }`
-            : cust.street
-            ? `${cust.street || "-"}, ${cust.plz || ""} ${cust.city || ""}`
-            : "Keine Adresse (Abholung)"
-        }</div>
-        <div style="margin:8px 0 0 0;">
-          <b>Tortengröße:</b> ${
-            order.details && order.details.durchmesserCm
-              ? `${order.details.durchmesserCm} cm`
-              : order.details && order.details.groesse
-              ? order.details.groesse
-              : "-"
-          }<br>
-          <b>Extras:</b> ${
-            order.details && order.details.extras && order.details.extras.length
-              ? order.details.extras.join(", ")
-              : "keine"
-          }<br>
-          <b>Lieferung:</b> ${
-            order.details && order.details.lieferung
-              ? order.details.lieferung === ""
-                ? "Abholung"
-                : order.details.lieferung === "20km"
-                ? "bis 20 km"
-                : "bis 40 km"
-              : "Abholung"
-          }<br>
-          <b>Gewünschter Termin:</b> ${
-            order.wunschtermin && order.wunschtermin.datum
-              ? `${new Date(order.wunschtermin.datum).toLocaleDateString(
-                  "de-DE"
-                )}${
-                  order.wunschtermin.uhrzeit
-                    ? ` um ${order.wunschtermin.uhrzeit}`
-                    : ""
+            <b>Telefon:</b> ${cust.telefon || ""}
+          </div>
+          <div style="margin:8px 0 0 0;"><b>Adresse:</b> ${
+            order.adresse
+              ? `${order.adresse.street || "-"}, ${order.adresse.plz || ""} ${
+                  order.adresse.city || ""
                 }`
-              : "Nicht angegeben"
-          }
-        </div>
-        <div style="margin:8px 0 0 0;"><b>Gesamtwert:</b> <span style="font-weight:600;color:#d32f2f;">${
-          order.gesamtpreis || "nicht berechnet"
-        } €</span></div>
-        <div style="margin:8px 0 0 0;"><b>Status:</b> <select data-id="${
-          doc.id
-        }" class="statusSel" style="font-size:1em;padding:4px 10px;border-radius:8px;">
-          ${statusOptions
-            .map(
-              (opt) =>
-                `<option value="${opt}"${
-                  order.status === opt ? " selected" : ""
-                }>${opt}</option>`
-            )
-            .join("")}
-        </select></div>
-        <div style="margin:8px 0 0 0;"><b>Aktion:</b> 
-          <button onclick="sendStatusEmail('${doc.id}', '${
+              : cust.street
+              ? `${cust.street || "-"}, ${cust.plz || ""} ${cust.city || ""}`
+              : "Keine Adresse (Abholung)"
+          }</div>
+          <div style="margin:8px 0 0 0;">
+            <b>Tortengröße:</b> ${
+              order.details && order.details.durchmesserCm
+                ? `${order.details.durchmesserCm} cm`
+                : order.details && order.details.groesse
+                ? order.details.groesse
+                : "-"
+            }<br>
+            <b>Extras:</b> ${
+              order.details && order.details.extras && order.details.extras.length
+                ? order.details.extras.join(", ")
+                : "keine"
+            }<br>
+            <b>Lieferung:</b> ${
+              order.details && order.details.lieferung
+                ? order.details.lieferung === ""
+                  ? "Abholung"
+                  : order.details.lieferung === "20km"
+                  ? "bis 20 km"
+                  : "bis 40 km"
+                : "Abholung"
+            }<br>
+            <b>Gewünschter Termin:</b> ${
+              order.wunschtermin && order.wunschtermin.datum
+                ? `${new Date(order.wunschtermin.datum).toLocaleDateString(
+                    "de-DE"
+                  )}${
+                    order.wunschtermin.uhrzeit
+                      ? ` um ${order.wunschtermin.uhrzeit}`
+                      : ""
+                  }`
+                : "Nicht angegeben"
+            }
+          </div>
+          <div style="margin:8px 0 0 0;"><b>Gesamtwert:</b> <span style="font-weight:600;color:#d32f2f;">${
+            order.gesamtpreis || "nicht berechnet"
+          } €</span></div>
+          <div style="margin:8px 0 0 0;"><b>Status:</b> <select data-id="${
+            doc.id
+          }" class="statusSel" style="font-size:1em;padding:4px 10px;border-radius:8px;">
+            ${statusOptions
+              .map(
+                (opt) =>
+                  `<option value="${opt}"${
+                    order.status === opt ? " selected" : ""
+                  }>${opt}</option>`
+              )
+              .join("")}
+          </select></div>
+          <div style="margin:8px 0 0 0;"><b>Aktion:</b> 
+            <button onclick="sendStatusEmail('${doc.id}', '${
             cust.email || ""
           }', '${cust.name || ""}', '${order.status}', '${
             order.details && order.details.durchmesserCm
@@ -814,12 +1106,18 @@
               ? order.details.extras.join(", ")
               : "keine"
           }', '${order.gesamtpreis || "nicht berechnet"}')" 
-                  class="btn-small" style="background:#4CAF50;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9em;margin-right:8px;">Status-Mail senden</button>
-          <button onclick="deleteOrder('${
-            doc.id
-          }')" class="btn-small btn-danger" style="border-radius:6px;">Löschen</button>
+                    class="btn-small" style="background:#4CAF50;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9em;margin-right:8px;">Status-Mail senden</button>
+            ${
+              order.status === "fertig"
+                ? `<button onclick="archiveOrder('${doc.id}')" class="btn-small" style="background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9em;margin-right:8px;">📦 Archivieren</button>`
+                : ""
+            }
+            <button onclick="deleteOrder('${
+              doc.id
+            }')" class="btn-small btn-danger" style="border-radius:6px;">Löschen</button>
+          </div>
         </div>
-      </div>`;
+      </details>`;
         }
 
         // Bewertung löschen (global verfügbar)
