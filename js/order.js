@@ -221,10 +221,10 @@ class OrderManager {
         if (!dateString || !window.orderLimitManager) return;
 
         console.log(`OrderManager: Prüfe Verfügbarkeit für ${dateString}`);
-        
+
         try {
             const status = await window.orderLimitManager.canAcceptOrder(dateString);
-            
+
             const wunschDatumInput = document.getElementById("wunschDatum");
             const dateWarning = document.getElementById("dateWarning") || this.createDateWarningElement();
 
@@ -260,7 +260,7 @@ class OrderManager {
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning success";
-                
+
                 // Nach 3 Sekunden ausblenden wenn alles okay ist
                 setTimeout(() => {
                     if (dateWarning.className === "date-warning success") {
@@ -287,10 +287,10 @@ class OrderManager {
             line-height: 1.4;
             display: none;
         `;
-        
+
         // Nach dem Datum-Input einfügen
         wunschDatumInput.parentNode.insertBefore(dateWarning, wunschDatumInput.nextSibling);
-        
+
         // CSS für verschiedene Warning-Typen
         const style = document.createElement("style");
         style.textContent = `
@@ -315,7 +315,7 @@ class OrderManager {
             }
         `;
         document.head.appendChild(style);
-        
+
         return dateWarning;
     }
 

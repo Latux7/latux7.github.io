@@ -29,7 +29,7 @@ class OrderLimitManager {
     async countOrdersForDate(dateString) {
         try {
             console.log(`OrderLimitManager: Zähle Bestellungen für Wunschtermin: ${dateString}`);
-            
+
             if (!this.db) {
                 console.warn('OrderLimitManager: Firebase noch nicht initialisiert');
                 return 0;
@@ -178,7 +178,7 @@ class OrderLimitManager {
     async validateOrderSubmission() {
         const form = document.getElementById("orderForm");
         const wunschDatumInput = document.getElementById("wunschDatum");
-        
+
         if (!wunschDatumInput || !wunschDatumInput.value) {
             showNotification("Bitte wählen Sie einen Wunschtermin aus", "error");
             return false;
@@ -186,7 +186,7 @@ class OrderLimitManager {
 
         const wunschDatum = wunschDatumInput.value;
         console.log(`OrderLimitManager: Validiere Bestellung für Wunschtermin: ${wunschDatum}`);
-        
+
         const status = await this.canAcceptOrder(wunschDatum);
 
         if (!status.canAccept) {

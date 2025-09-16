@@ -44,7 +44,7 @@ class CalendarManager {
     async loadOrdersForMonth(year, month) {
         try {
             console.log(`CalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
-            
+
             if (!this.db) {
                 console.error('CalendarManager: Firebase noch nicht initialisiert');
                 return [];
@@ -62,16 +62,16 @@ class CalendarManager {
             try {
                 const startDateString = startDate.toISOString().split('T')[0];
                 const endDateString = endDate.toISOString().split('T')[0];
-                
+
                 console.log(`CalendarManager: Suche nach wunschtermin.datum zwischen ${startDateString} und ${endDateString}`);
-                
+
                 const ordersSnapshot1 = await this.db.collection('orders')
                     .where('wunschtermin.datum', '>=', startDateString)
                     .where('wunschtermin.datum', '<=', endDateString)
                     .get();
-                
+
                 console.log(`CalendarManager: Methode 1 (wunschtermin.datum): ${ordersSnapshot1.size} Bestellungen`);
-                
+
                 ordersSnapshot1.forEach(doc => {
                     const orderData = doc.data();
                     orders.push({
@@ -92,9 +92,9 @@ class CalendarManager {
                         .where('created', '>=', startDate.toISOString())
                         .where('created', '<=', endDate.toISOString())
                         .get();
-                    
+
                     console.log(`CalendarManager: Fallback (created): ${ordersSnapshot2.size} Bestellungen`);
-                    
+
                     ordersSnapshot2.forEach(doc => {
                         const orderData = doc.data();
                         const createdDate = new Date(orderData.created);

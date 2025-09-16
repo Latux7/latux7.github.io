@@ -47,7 +47,7 @@ class PublicCalendarManager {
     async loadOrdersCountForMonth(year, month) {
         try {
             console.log(`PublicCalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
-            
+
             if (!this.db) {
                 console.error('PublicCalendarManager: Firebase nicht initialisiert');
                 return {};
@@ -60,14 +60,14 @@ class PublicCalendarManager {
 
             // Hauptmethode: Zähle nach wunschtermin.datum (das ist was wir wollen!)
             const orderCounts = {};
-            
+
             // Alle Bestellungen für diesen Monat laden (basierend auf Wunschtermin)
             console.log('PublicCalendarManager: Lade Bestellungen nach wunschtermin.datum...');
-            
+
             // Da wir einen Bereich abfragen müssen, erstellen wir die Datumstrings für den Monat
             const startDateString = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
             const endDateString = endDate.toISOString().split('T')[0]; // YYYY-MM-DD
-            
+
             console.log(`PublicCalendarManager: Suche wunschtermin.datum zwischen ${startDateString} und ${endDateString}`);
 
             const ordersSnapshot = await this.db.collection('orders')
@@ -80,7 +80,7 @@ class PublicCalendarManager {
             ordersSnapshot.forEach(doc => {
                 const order = doc.data();
                 const wunschDatum = order.wunschtermin?.datum;
-                
+
                 if (wunschDatum) {
                     console.log(`PublicCalendarManager: Bestellung ${doc.id} für Wunschtermin ${wunschDatum}`);
                     orderCounts[wunschDatum] = (orderCounts[wunschDatum] || 0) + 1;
@@ -215,19 +215,103 @@ class PublicCalendarManager {
             day: 'numeric'
         });
 
-        let message = '';
         let available = 5 - orderCount;
+        let isAvailable = orderCount < 5;
 
-        if (orderCount >= 5) {
-            message = `❌ Dieser Tag ist leider bereits ausgebucht.\n\nWählen Sie bitte einen anderen Termin.`;
-        } else {
-            message = `✅ Verfügbar!\n\n${available} von 5 Plätzen noch frei.\n\nSie können für diesen Tag bestellen.`;
+        this.showDateModal(dateString, formattedDate, orderCount, available, isAvailable);
+    }
+
+    // Modal für Datumsinfo anzeigen
+    showDateModal(dateString, formattedDate, orderCount, available, isAvailable) {
+        const modalHTML = `
+            <div id="dateInfoModal" style="
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+                justify-content: center; z-index: 1000;
+            ">
+                <div style="
+                    background: white; padding: 30px; border-radius: 12px; 
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 450px; width: 90%;
+                    text-align: center; animation: modalFadeIn 0.3s ease-out;
+                ">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">
+                        ${isAvailable ? '📅' : '❌'}
+                    </div>
+                    <h3 style="margin-bottom: 15px; color: var(--clr-accent);">${formattedDate}</h3>
+                    
+                    <div style="
+                        background: ${isAvailable ? '#e8f5e8' : '#ffebee'}; 
+                        padding: 20px; border-radius: 8px; margin-bottom: 20px;
+                        border-left: 4px solid ${isAvailable ? '#4caf50' : '#f44336'};
+                    ">
+                        ${isAvailable ?
+                `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
+                             <p style="margin: 0; line-height: 1.5;">
+                                 <strong>${available} von 5 Plätzen</strong> noch frei.<br>
+                                 Sie können für diesen Tag bestellen.
+                             </p>` :
+                `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
+                             <p style="margin: 0; line-height: 1.5;">
+                                 Dieser Tag ist leider bereits vollständig ausgebucht.<br>
+                                 Bitte wählen Sie einen anderen Termin.
+                             </p>`
+            }
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        ${isAvailable ?
+                `<button onclick="publicCalendar.redirectToOrder('${dateString}')" style="
+                                padding: 12px 24px; background: var(--clr-accent); color: white; 
+                                border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+                                min-width: 120px;
+                            ">
+                                🎂 Jetzt bestellen
+                            </button>` : ''
+            }
+                        <button onclick="publicCalendar.closeDateModal()" style="
+                            padding: 12px 24px; background: #ddd; color: #333; 
+                            border: none; border-radius: 6px; cursor: pointer;
+                            min-width: 120px;
+                        ">
+                            ${isAvailable ? 'Später' : 'Schließen'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // CSS für Animation hinzufügen falls noch nicht vorhanden
+        if (!document.querySelector('#calendar-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'calendar-modal-styles';
+            style.textContent = `
+                @keyframes modalFadeIn {
+                    from { transform: scale(0.9) translateY(-20px); opacity: 0; }
+                    to { transform: scale(1) translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
         }
+    }
 
-        if (confirm(`${formattedDate}\n\n${message}\n\nMöchten Sie jetzt bestellen?`)) {
-            // Weiterleitung zur Bestellseite mit vorausgewähltem Datum
+    // Modal schließen
+    closeDateModal() {
+        const modal = document.getElementById('dateInfoModal');
+        if (modal) {
+            modal.style.animation = 'modalFadeOut 0.2s ease-out';
+            setTimeout(() => modal.remove(), 200);
+        }
+    }
+
+    // Zur Bestellseite weiterleiten
+    redirectToOrder(dateString) {
+        this.closeDateModal();
+        // Kurze Verzögerung für bessere UX
+        setTimeout(() => {
             window.location.href = `bestellen.html?date=${dateString}`;
-        }
+        }, 150);
     }
 
     // Hilfsfunktionen

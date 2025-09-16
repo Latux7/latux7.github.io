@@ -36,8 +36,20 @@
           Stellen Sie Ihre Wunschtorte zusammen und wählen Sie optional
           Lieferung.
         </p>
-        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
-          <button type="button" onclick="showAvailabilityCalendar()" class="btn btn-outline">
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+          "
+        >
+          <button
+            type="button"
+            onclick="showAvailabilityCalendar()"
+            class="btn btn-outline"
+          >
             � Verfügbarkeit prüfen
           </button>
           <button type="button" onclick="scrollToForm()" class="btn">
@@ -47,23 +59,63 @@
       </section>
 
       <!-- Eingebetteter Kalender (standardmäßig versteckt) -->
-      <div id="embeddedCalendar" style="display: none; margin: 20px 0;">
-        <div style="background: white; border: 2px solid var(--clr-accent); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-md);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: var(--clr-accent);">📅 Wählen Sie Ihren Wunschtermin</h3>
-            <button type="button" onclick="hideAvailabilityCalendar()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--clr-muted);">×</button>
+      <div id="embeddedCalendar" style="display: none; margin: 20px 0">
+        <div
+          style="
+            background: white;
+            border: 2px solid var(--clr-accent);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 15px;
+            "
+          >
+            <h3 style="margin: 0; color: var(--clr-accent)">
+              📅 Wählen Sie Ihren Wunschtermin
+            </h3>
+            <button
+              type="button"
+              onclick="hideAvailabilityCalendar()"
+              style="
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--clr-muted);
+              "
+            >
+              ×
+            </button>
           </div>
-          
+
           <!-- Kalender wird hier eingebettet -->
           <div id="embeddedCalendarContent">
-            <div style="text-align: center; padding: 40px; color: var(--clr-muted);">
-              <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+            <div
+              style="text-align: center; padding: 40px; color: var(--clr-muted)"
+            >
+              <div style="font-size: 2rem; margin-bottom: 10px">⏳</div>
               <p>Kalender wird geladen...</p>
             </div>
           </div>
-          
-          <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 8px; font-size: 0.9rem;">
-            <strong>💡 Tipp:</strong> Klicken Sie auf ein verfügbares Datum (grün), um es automatisch als Wunschtermin zu übernehmen.
+
+          <div
+            style="
+              margin-top: 15px;
+              padding: 10px;
+              background: #e8f5e8;
+              border-radius: 8px;
+              font-size: 0.9rem;
+            "
+          >
+            <strong>💡 Tipp:</strong> Klicken Sie auf ein verfügbares Datum
+            (grün), um es automatisch als Wunschtermin zu übernehmen.
           </div>
         </div>
       </div>
@@ -266,6 +318,8 @@
       <script src="js/common.js"></script>
       <!-- Order-Limits System -->
       <script src="js/order-limits.js"></script>
+      <!-- Embedded Calendar für bessere UX -->
+      <script src="js/embedded-calendar.js"></script>
       <!-- Zuletzt die App-Scripts -->
       <script src="js/order.js"></script>
     </div>
