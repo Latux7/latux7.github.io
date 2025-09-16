@@ -649,8 +649,8 @@
         ) {
           // Bestellungshistorie-Badge erstellen
           let orderHistoryBadge = "";
-          if (isFirstOrder && totalOrders === 1) {
-            // Erste Bestellung überhaupt - sehr deutlich hervorheben
+          if (orderNumber === 1) {
+            // Erste Bestellung dieses Kunden - sehr deutlich hervorheben
             orderHistoryBadge = `
               <div style="
                 display: inline-block; 
@@ -674,22 +674,6 @@
                   100% { transform: scale(1); }
                 }
               </style>
-            `;
-          } else if (isFirstOrder) {
-            // Erste Bestellung von einem Stammkunden
-            orderHistoryBadge = `
-              <div style="
-                display: inline-block; 
-                background: #4CAF50; 
-                color: white; 
-                padding: 6px 12px; 
-                border-radius: 15px; 
-                font-weight: bold; 
-                font-size: 0.9em; 
-                margin-left: 12px;
-              ">
-                🌟 Erste Bestellung (hat insgesamt ${totalOrders})
-              </div>
             `;
           } else {
             // Wiederholungsbestellung
