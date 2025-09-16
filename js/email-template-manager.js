@@ -99,12 +99,12 @@ class EmailTemplateManager {
     // Erstelle Email-HTML für neue Bestellung
     generateNewOrderEmail(orderData) {
         const template = this.templates.newOrder;
-        
+
         // Content-Items für die Bestellung
         const contentItems = [
             {
                 label: 'Tortengröße',
-                value: orderData.details && orderData.details.durchmesserCm 
+                value: orderData.details && orderData.details.durchmesserCm
                     ? `${orderData.details.durchmesserCm} cm (${orderData.details.tier || 'Standard'})`
                     : 'Nicht angegeben'
             },
@@ -165,7 +165,7 @@ class EmailTemplateManager {
         const templateData = {
             ...template,
             content_items: contentItems,
-            highlight_content: orderData.gesamtpreis 
+            highlight_content: orderData.gesamtpreis
                 ? `💰 Gesamtpreis: ${parseFloat(orderData.gesamtpreis).toFixed(2)}€`
                 : '💰 Preis: Noch nicht berechnet',
             info_items: infoItems,
@@ -283,7 +283,7 @@ class EmailTemplateManager {
     renderTemplate(data) {
         // Hier würde normalerweise das HTML-Template geladen und mit den Daten gefüllt
         // Für EmailJS verwenden wir die template_ov1de3n ID und übergeben die Daten
-        
+
         // Generiere einen HTML-String für die Vorschau/Debug
         return `
 <!DOCTYPE html>
@@ -331,7 +331,7 @@ class EmailTemplateManager {
 
     // Erstelle EmailJS-kompatible Template-Daten
     getEmailJSTemplateData(type, data) {
-        switch(type) {
+        switch (type) {
             case 'newOrder':
                 return this.getOrderEmailJSData(data);
             case 'newReview':
@@ -349,14 +349,14 @@ class EmailTemplateManager {
             header_title: 'NEUE BESTELLUNG',
             alert_title: '🎂 Neue Tortenbestellung eingegangen!',
             alert_message: 'Eine neue Bestellung wartet auf Ihre Bearbeitung im Admin-Dashboard.',
-            
+
             // Bestelldaten
             customer_name: orderData.name || 'Nicht angegeben',
             customer_email: orderData.email || 'Nicht angegeben',
             customer_phone: orderData.telefon || 'Nicht angegeben',
             customer_address: orderData.adresse || 'Nicht angegeben',
-            
-            order_size: orderData.details && orderData.details.durchmesserCm 
+
+            order_size: orderData.details && orderData.details.durchmesserCm
                 ? `${orderData.details.durchmesserCm} cm (${orderData.details.tier || 'Standard'})`
                 : 'Nicht angegeben',
             order_extras: orderData.details && orderData.details.extras && orderData.details.extras.length > 0
@@ -368,11 +368,11 @@ class EmailTemplateManager {
             delivery_type: orderData.details && orderData.details.lieferung
                 ? orderData.details.lieferung === 'abholung' ? 'Abholung' : `Lieferung: ${orderData.details.lieferung}`
                 : 'Abholung',
-            total_price: orderData.gesamtpreis 
+            total_price: orderData.gesamtpreis
                 ? parseFloat(orderData.gesamtpreis).toFixed(2)
                 : 'Noch nicht berechnet',
             order_notes: orderData.sonderwunsch || '',
-            
+
             order_timestamp: new Date().toLocaleString('de-DE'),
             admin_dashboard_url: this.adminDashboardUrl
         };
@@ -386,20 +386,20 @@ class EmailTemplateManager {
             header_title: 'NEUE BEWERTUNG',
             alert_title: '⭐ Neue Kundenbewertung erhalten!',
             alert_message: 'Ein Kunde hat eine neue Bewertung für Laura\'s Backstube abgegeben.',
-            
+
             // Bewertungsdaten
             customer_name: reviewData.name || 'Anonym',
             customer_email: reviewData.email || 'Nicht angegeben',
             order_id: reviewData.orderId || 'Nicht verfügbar',
-            
+
             rating_overall: reviewData.gesamt || 0,
             rating_taste: reviewData.geschmack || 0,
             rating_appearance: reviewData.aussehen || 0,
             rating_service: reviewData.service || 0,
             rating_average: this.calculateAverageRating(reviewData).toFixed(1),
-            
+
             review_comment: reviewData.kommentar || 'Keine zusätzlichen Kommentare',
-            
+
             review_timestamp: new Date().toLocaleString('de-DE'),
             admin_dashboard_url: this.adminDashboardUrl
         };

@@ -371,14 +371,14 @@ class CalendarManager {
                             <p><strong>Kunde:</strong> ${order.name || 'Unbekannt'}</p>
                             <p><strong>E-Mail:</strong> ${order.email || 'Unbekannt'}</p>
                             <p><strong>Telefon:</strong> ${order.telefon || 'Nicht angegeben'}</p>
-                            <p><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum 
-                                ? new Date(order.wunschtermin.datum.toDate ? order.wunschtermin.datum.toDate() : order.wunschtermin.datum).toLocaleDateString('de-DE')
-                                : 'Nicht angegeben'}</p>
+                            <p><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum
+                    ? new Date(order.wunschtermin.datum.toDate ? order.wunschtermin.datum.toDate() : order.wunschtermin.datum).toLocaleDateString('de-DE')
+                    : 'Nicht angegeben'}</p>
                             <p><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</p>
                             ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ''}
-                            <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm 
-                                ? `${order.details.durchmesserCm} cm (${order.details.tier || 'Unbekannt'})`
-                                : 'Unbekannt'}</p>
+                            <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
+                    ? `${order.details.durchmesserCm} cm (${order.details.tier || 'Unbekannt'})`
+                    : 'Unbekannt'}</p>
                             <p><strong>Status:</strong> <span style="
                                 padding: 4px 8px;
                                 border-radius: 4px;
