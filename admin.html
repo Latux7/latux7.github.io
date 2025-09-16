@@ -461,6 +461,38 @@
             .addEventListener("click", logout);
         });
 
+        // Hilfsfunktion: Bestellungshistorie für Kunden ermitteln
+        async function getCustomerOrderHistory() {
+          const orderHistory = {};
+          try {
+            // Alle Bestellungen laden, sortiert nach Erstellungsdatum
+            const allOrdersSnap = await db
+              .collection("orders")
+              .orderBy("created", "asc")
+              .get();
+
+            allOrdersSnap.forEach((doc, index) => {
+              const order = doc.data();
+              const customerId = order.customerId;
+
+              if (!orderHistory[customerId]) {
+                orderHistory[customerId] = {
+                  totalOrders: 0,
+                  orderNumbers: {},
+                };
+              }
+
+              orderHistory[customerId].totalOrders++;
+              orderHistory[customerId].orderNumbers[doc.id] =
+                orderHistory[customerId].totalOrders;
+            });
+          } catch (error) {
+            console.error("Fehler beim Laden der Bestellungshistorie:", error);
+          }
+
+          return orderHistory;
+        }
+
         async function loadOrders() {
           const statusOptions = [
             "neu",
@@ -471,6 +503,9 @@
           ];
           let html = "";
           try {
+            // Bestellungshistorie laden
+            const orderHistory = await getCustomerOrderHistory();
+
             const snap = await db
               .collection("orders")
               .orderBy("created", "desc")
@@ -519,7 +554,21 @@
               } else {
                 grouped.neu.forEach(({ doc, order }) => {
                   const cust = customers[order.customerId] || {};
-                  html += renderOrder(doc, order, cust, statusOptions);
+                  const orderInfo = orderHistory[order.customerId] || {
+                    totalOrders: 1,
+                    orderNumbers: {},
+                  };
+                  const orderNumber = orderInfo.orderNumbers[doc.id] || 1;
+                  const isFirstOrder = orderNumber === 1;
+                  html += renderOrder(
+                    doc,
+                    order,
+                    cust,
+                    statusOptions,
+                    orderInfo.totalOrders,
+                    orderNumber,
+                    isFirstOrder
+                  );
                 });
               }
               html += `</details>`;
@@ -540,7 +589,21 @@
                 } else {
                   grouped[st].forEach(({ doc, order }) => {
                     const cust = customers[order.customerId] || {};
-                    html += renderOrder(doc, order, cust, statusOptions);
+                    const orderInfo = orderHistory[order.customerId] || {
+                      totalOrders: 1,
+                      orderNumbers: {},
+                    };
+                    const orderNumber = orderInfo.orderNumbers[doc.id] || 1;
+                    const isFirstOrder = orderNumber === 1;
+                    html += renderOrder(
+                      doc,
+                      order,
+                      cust,
+                      statusOptions,
+                      orderInfo.totalOrders,
+                      orderNumber,
+                      isFirstOrder
+                    );
                   });
                 }
                 html += `</details>`;
@@ -575,11 +638,86 @@
         }
 
         // Hilfsfunktion für Bestell-HTML
-        function renderOrder(doc, order, cust, statusOptions) {
+        function renderOrder(
+          doc,
+          order,
+          cust,
+          statusOptions,
+          totalOrders,
+          orderNumber,
+          isFirstOrder
+        ) {
+          // Bestellungshistorie-Badge erstellen
+          let orderHistoryBadge = "";
+          if (isFirstOrder && totalOrders === 1) {
+            // Erste Bestellung überhaupt - sehr deutlich hervorheben
+            orderHistoryBadge = `
+              <div style="
+                display: inline-block; 
+                background: linear-gradient(135deg, #ff6b6b, #ee5a24); 
+                color: white; 
+                padding: 8px 16px; 
+                border-radius: 20px; 
+                font-weight: bold; 
+                font-size: 0.95em; 
+                box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+                animation: pulse 2s infinite;
+                margin-left: 12px;
+                border: 2px solid #fff;
+              ">
+                🎉 ERSTE BESTELLUNG JEMALS! 🎉
+              </div>
+              <style>
+                @keyframes pulse {
+                  0% { transform: scale(1); }
+                  50% { transform: scale(1.05); }
+                  100% { transform: scale(1); }
+                }
+              </style>
+            `;
+          } else if (isFirstOrder) {
+            // Erste Bestellung von einem Stammkunden
+            orderHistoryBadge = `
+              <div style="
+                display: inline-block; 
+                background: #4CAF50; 
+                color: white; 
+                padding: 6px 12px; 
+                border-radius: 15px; 
+                font-weight: bold; 
+                font-size: 0.9em; 
+                margin-left: 12px;
+              ">
+                🌟 Erste Bestellung (hat insgesamt ${totalOrders})
+              </div>
+            `;
+          } else {
+            // Wiederholungsbestellung
+            orderHistoryBadge = `
+              <div style="
+                display: inline-block; 
+                background: #2196F3; 
+                color: white; 
+                padding: 6px 12px; 
+                border-radius: 15px; 
+                font-weight: bold; 
+                font-size: 0.9em; 
+                margin-left: 12px;
+              ">
+                📋 Bestellung #${orderNumber} von ${totalOrders}
+              </div>
+            `;
+          }
+
           return `<div style="border:1px solid #dbeedb;border-radius:16px;padding:18px 16px;margin-bottom:24px;box-shadow:0 1px 8px #e6f4ea;">
-        <div style="font-size:1.1em;font-weight:600;color:#92d050;">Bestellung vom ${
-          order.created ? new Date(order.created).toLocaleString("de-DE") : "-"
-        }</div>
+        <div style="font-size:1.1em;font-weight:600;color:#92d050;display:flex;align-items:center;flex-wrap:wrap;">
+          <span>Bestellung vom ${
+            order.created
+              ? new Date(order.created).toLocaleString("de-DE")
+              : "-"
+          }</span>
+          ${orderHistoryBadge}
+        </div>
         <div style="margin:8px 0 0 0;"><b>Kunde:</b> ${cust.name || "-"}<br>
           <b>E-Mail:</b> <a href="mailto:${cust.email || ""}">${
             cust.email || ""
