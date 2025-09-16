@@ -487,13 +487,40 @@ class OrderManager {
     }
 
     validateForm(f) {
-        // Datum validieren
-        const wunschDatum = f.wunschDatum.value;
-        const heute = new Date().toISOString().split("T")[0];
+        console.log('🔍 Validiere Formular...');
 
+        // Name validieren
+        if (!f.name.value.trim()) {
+            showNotification("Bitte geben Sie Ihren Namen ein.", "error");
+            return false;
+        }
+
+        // Wunschtermin validieren (WICHTIG!)
+        const wunschDatum = f.wunschDatum.value;
+        console.log('🗓️ Validiere Wunschtermin:', wunschDatum);
+
+        if (!wunschDatum || wunschDatum.trim() === '') {
+            console.log('❌ Kein Wunschtermin eingegeben');
+            showNotification("Bitte wählen Sie einen Wunschtermin aus.", "error");
+            return false;
+        }
+
+        // Datum in der Vergangenheit prüfen
+        const heute = new Date().toISOString().split("T")[0];
         if (wunschDatum < heute) {
+            console.log('❌ Datum in der Vergangenheit');
             showNotification("Das gewünschte Datum kann nicht in der Vergangenheit liegen.", "error");
             return false;
+        }
+
+        // Vorlaufzeit prüfen (7 Tage)
+        if (window.orderLimitManager && typeof window.orderLimitManager.isDateTooEarly === 'function') {
+            const istZuFrueh = window.orderLimitManager.isDateTooEarly(wunschDatum);
+            if (istZuFrueh) {
+                console.log('❌ Zu kurzfristig - weniger als 7 Tage Vorlaufzeit');
+                showNotification("Bestellungen sind nur mit mindestens 7 Tagen Vorlaufzeit möglich.", "error");
+                return false;
+            }
         }
 
         // E-Mail validieren
@@ -508,6 +535,7 @@ class OrderManager {
             return false;
         }
 
+        console.log('✅ Formular-Validierung erfolgreich');
         return true;
     }
 

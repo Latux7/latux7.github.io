@@ -24,21 +24,30 @@ class OrderDeadlineManager {
     getMinimumOrderDate() {
         const minDate = new Date();
         minDate.setDate(minDate.getDate() + this.minimumLeadDays);
-        return minDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        // Zeitzone-sichere Konvertierung - lokales Datum verwenden
+        const year = minDate.getFullYear();
+        const month = String(minDate.getMonth() + 1).padStart(2, '0');
+        const day = String(minDate.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`; // YYYY-MM-DD
     }
 
     // Prüfen ob ein Datum mindestens 7 Tage in der Zukunft liegt
     isDateTooEarly(dateString) {
-        const selectedDate = new Date(dateString);
+        const selectedDate = new Date(dateString + 'T12:00:00'); // Mittags um Zeitzone-Probleme zu vermeiden
         const minDate = new Date();
         minDate.setDate(minDate.getDate() + this.minimumLeadDays);
-        minDate.setHours(0, 0, 0, 0);
+        
+        // Beide Daten auf Mitternacht lokale Zeit setzen
         selectedDate.setHours(0, 0, 0, 0);
+        minDate.setHours(0, 0, 0, 0);
 
-        return selectedDate < minDate;
-    }
-
-    // Prüfen ob ein Datum für Bestellungen gültig ist (mindestens 7 Tage Vorlaufzeit)
+        const isEarly = selectedDate < minDate;
+        console.log(`🗓️ Datum-Validierung: Gewählt=${dateString}, Minimum=${this.getMinimumOrderDate()}, Zu früh=${isEarly}`);
+        
+        return isEarly;
+    }    // Prüfen ob ein Datum für Bestellungen gültig ist (mindestens 7 Tage Vorlaufzeit)
     async canAcceptOrder(dateString = null) {
         if (!dateString) {
             console.warn('OrderDeadlineManager: Kein Datum angegeben');
@@ -84,13 +93,17 @@ class OrderDeadlineManager {
         const infoContainer = document.getElementById('orderDeadlineInfo');
         if (!infoContainer) return;
 
+        // Datum korrekt formatieren ohne Zeitzone-Probleme
+        const minDateParts = minimumDate.split('-'); // [YYYY, MM, DD]
+        const formattedDate = `${minDateParts[2]}.${minDateParts[1]}.${minDateParts[0]}`;
+
         infoContainer.innerHTML = `
             <div class="deadline-info">
                 <div class="deadline-icon">📅</div>
                 <div class="deadline-content">
                     <h3>Wichtiger Hinweis zur Bestellzeit</h3>
                     <p><strong>Bestellungen sind nur mit mindestens ${this.minimumLeadDays} Tagen Vorlaufzeit möglich.</strong></p>
-                    <p>Frühestmöglicher Wunschtermin: <strong>${new Date(minimumDate).toLocaleDateString('de-DE')}</strong></p>
+                    <p>Frühestmöglicher Wunschtermin: <strong>${formattedDate}</strong></p>
                     <small>So können wir die beste Qualität und Frische Ihrer Torte garantieren! 🍰</small>
                 </div>
             </div>
@@ -101,12 +114,14 @@ class OrderDeadlineManager {
     // Datum vor der Bestellung validieren
     async validateOrderSubmission(selectedDate = null) {
         if (!selectedDate) {
-            // Versuche Datum aus dem Formular zu lesen
-            const dateInput = document.getElementById('wunschtermin');
+            // Versuche Datum aus dem Formular zu lesen - korrekte ID verwenden
+            const dateInput = document.getElementById('wunschDatum'); // KORRIGIERT: wunschDatum statt wunschtermin
             selectedDate = dateInput ? dateInput.value : null;
+            console.log('🔍 Datum aus Formular gelesen:', selectedDate);
         }
 
-        if (!selectedDate) {
+        if (!selectedDate || selectedDate.trim() === '') {
+            console.log('❌ Kein Datum gefunden - zeige Modal');
             this.showDateRequiredModal();
             return false;
         }
@@ -114,6 +129,7 @@ class OrderDeadlineManager {
         const validation = await this.canAcceptOrder(selectedDate);
 
         if (!validation.canAccept) {
+            console.log('❌ Datum zu früh - zeige Modal');
             this.showDateTooEarlyModal(validation);
             return false;
         }
@@ -194,11 +210,13 @@ class OrderDeadlineManager {
 
     // Kalender-Mindestdatum setzen
     setCalendarMinDate() {
-        const dateInput = document.getElementById('wunschtermin');
+        const dateInput = document.getElementById('wunschDatum'); // KORRIGIERT: wunschDatum statt wunschtermin
         if (dateInput) {
             const minDate = this.getMinimumOrderDate();
             dateInput.setAttribute('min', minDate);
-            console.log(`OrderDeadlineManager: Kalendar Mindestdatum gesetzt auf: ${minDate}`);
+            console.log(`OrderDeadlineManager: Kalender Mindestdatum gesetzt auf: ${minDate}`);
+        } else {
+            console.warn('OrderDeadlineManager: Datum-Input mit ID "wunschDatum" nicht gefunden');
         }
     }
 
