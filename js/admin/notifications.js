@@ -8,6 +8,14 @@ class NotificationManager {
     }
 
     init() {
+        // EmailJS initialisieren
+        if (typeof emailjs !== 'undefined' && window.emailConfig) {
+            emailjs.init(window.emailConfig.publicKey);
+            console.log('EmailJS initialisiert');
+        } else {
+            console.warn('EmailJS oder emailConfig nicht verfügbar');
+        }
+
         // Browser-Benachrichtigungen anfordern
         if (Notification.permission === "default") {
             Notification.requestPermission();

@@ -23,38 +23,41 @@ class ArchiveManager {
 
     // Einzelne Bestellung archivieren
     async archiveOrder(orderId) {
-        if (!confirm("Bestellung archivieren?")) return;
+        showConfirmation(
+            "Bestellung archivieren?",
+            async () => {
+                try {
+                    const orderDoc = await this.db.collection("orders").doc(orderId).get();
 
-        try {
-            const orderDoc = await this.db.collection("orders").doc(orderId).get();
+                    if (!orderDoc.exists) {
+                        showNotification("Bestellung nicht gefunden!", "error");
+                        return;
+                    }
 
-            if (!orderDoc.exists) {
-                showNotification("Bestellung nicht gefunden!", "error");
-                return;
+                    const orderData = orderDoc.data();
+                    const archiveData = {
+                        ...orderData,
+                        archivedAt: new Date().toISOString(),
+                        originalOrderId: orderId,
+                        manualArchived: true,
+                    };
+
+                    // Batch-Operation für Atomarität
+                    const batch = this.db.batch();
+                    batch.set(this.db.collection("archived_orders").doc(orderId), archiveData);
+                    batch.delete(this.db.collection("orders").doc(orderId));
+
+                    await batch.commit();
+
+                    showNotification("Bestellung archiviert!", "success");
+                    window.orderManager.loadOrders(); // Bestellliste neu laden
+                    this.loadArchives(); // Archiv neu laden
+                } catch (error) {
+                    console.error("Fehler beim Archivieren:", error);
+                    showNotification("Fehler beim Archivieren der Bestellung", "error");
+                }
             }
-
-            const orderData = orderDoc.data();
-            const archiveData = {
-                ...orderData,
-                archivedAt: new Date().toISOString(),
-                originalOrderId: orderId,
-                manualArchived: true,
-            };
-
-            // Batch-Operation für Atomarität
-            const batch = this.db.batch();
-            batch.set(this.db.collection("archived_orders").doc(orderId), archiveData);
-            batch.delete(this.db.collection("orders").doc(orderId));
-
-            await batch.commit();
-
-            showNotification("Bestellung archiviert!", "success");
-            window.orderManager.loadOrders(); // Bestellliste neu laden
-            this.loadArchives(); // Archiv neu laden
-        } catch (error) {
-            console.error("Fehler beim Archivieren:", error);
-            showNotification("Fehler beim Archivieren der Bestellung", "error");
-        }
+        );
     }
 
     // Automatische Archivierung für alte fertige Bestellungen
@@ -116,49 +119,50 @@ class ArchiveManager {
 
     // Alle fertigen Bestellungen archivieren (Button-Funktion)
     async archiveAllFinished() {
-        if (!confirm("Alle fertigen Bestellungen sofort archivieren?")) {
-            return;
-        }
+        showConfirmation(
+            "Alle fertigen Bestellungen sofort archivieren?",
+            async () => {
+                try {
+                    // Hole alle fertigen Bestellungen
+                    const finishedOrdersSnap = await this.db
+                        .collection("orders")
+                        .where("status", "==", "fertig")
+                        .get();
 
-        try {
-            // Hole alle fertigen Bestellungen
-            const finishedOrdersSnap = await this.db
-                .collection("orders")
-                .where("status", "==", "fertig")
-                .get();
+                    let archivedCount = 0;
+                    const batch = this.db.batch();
 
-            let archivedCount = 0;
-            const batch = this.db.batch();
+                    for (const doc of finishedOrdersSnap.docs) {
+                        const orderData = doc.data();
+                        const archiveData = {
+                            ...orderData,
+                            archivedAt: new Date().toISOString(),
+                            originalOrderId: doc.id,
+                            manualArchived: true,
+                        };
 
-            for (const doc of finishedOrdersSnap.docs) {
-                const orderData = doc.data();
-                const archiveData = {
-                    ...orderData,
-                    archivedAt: new Date().toISOString(),
-                    originalOrderId: doc.id,
-                    manualArchived: true,
-                };
+                        // Zu Archiv hinzufügen
+                        batch.set(this.db.collection("archived_orders").doc(doc.id), archiveData);
+                        // Aus orders entfernen
+                        batch.delete(this.db.collection("orders").doc(doc.id));
+                        archivedCount++;
+                    }
 
-                // Zu Archiv hinzufügen
-                batch.set(this.db.collection("archived_orders").doc(doc.id), archiveData);
-                // Aus orders entfernen
-                batch.delete(this.db.collection("orders").doc(doc.id));
-                archivedCount++;
+                    if (archivedCount > 0) {
+                        await batch.commit();
+                        showNotification(`${archivedCount} fertige Bestellungen archiviert!`, "success");
+                    } else {
+                        showNotification("Keine fertigen Bestellungen zum Archivieren vorhanden.", "success");
+                    }
+
+                    window.orderManager.loadOrders();
+                    this.loadArchives();
+                } catch (error) {
+                    console.error("Fehler beim Archivieren fertiger Bestellungen:", error);
+                    showNotification("Fehler beim Archivieren!", "error");
+                }
             }
-
-            if (archivedCount > 0) {
-                await batch.commit();
-                showNotification(`${archivedCount} fertige Bestellungen archiviert!`, "success");
-            } else {
-                showNotification("Keine fertigen Bestellungen zum Archivieren vorhanden.", "success");
-            }
-
-            window.orderManager.loadOrders();
-            this.loadArchives();
-        } catch (error) {
-            console.error("Fehler beim Archivieren fertiger Bestellungen:", error);
-            showNotification("Fehler beim Archivieren!", "error");
-        }
+        );
     }
 
     // Archiv laden und anzeigen

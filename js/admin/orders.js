@@ -21,16 +21,19 @@ class OrderManager {
 
     // Bestellung löschen
     async deleteOrder(orderId) {
-        if (!confirm("Bestellung wirklich löschen?")) return;
-
-        try {
-            await this.db.collection("orders").doc(orderId).delete();
-            showNotification("Bestellung gelöscht!", "success");
-            this.loadOrders(); // Liste neu laden
-        } catch (error) {
-            console.error("Fehler beim Löschen:", error);
-            showNotification("Fehler beim Löschen der Bestellung", "error");
-        }
+        showConfirmation(
+            "Bestellung wirklich löschen?",
+            async () => {
+                try {
+                    await this.db.collection("orders").doc(orderId).delete();
+                    showNotification("Bestellung gelöscht!", "success");
+                    this.loadOrders(); // Liste neu laden
+                } catch (error) {
+                    console.error("Fehler beim Löschen:", error);
+                    showNotification("Fehler beim Löschen der Bestellung", "error");
+                }
+            }
+        );
     }
 
     // E-Mail Templates basierend auf Status

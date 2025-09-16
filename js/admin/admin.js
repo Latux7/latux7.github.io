@@ -76,6 +76,14 @@ class AdminDashboard {
                 }
             });
         }
+
+        // Test-Notification Button
+        const testNotificationBtn = document.getElementById('testNotificationBtn');
+        if (testNotificationBtn) {
+            testNotificationBtn.addEventListener('click', () => {
+                this.testNotifications();
+            });
+        }
     }
 
     // Login-Handler
@@ -92,11 +100,15 @@ class AdminDashboard {
 
     // Login ausführen
     login() {
+        this.showAdminPanel();
+        showNotification("Erfolgreich angemeldet!", "success");
+    }
+
+    // Admin Panel anzeigen (ohne Success-Message)
+    showAdminPanel() {
         localStorage.setItem("adminLoggedIn", "true");
         document.getElementById("adminLogin").style.display = "none";
         document.getElementById("adminPanel").style.display = "block";
-
-        showNotification("Erfolgreich angemeldet!", "success");
 
         // Lade Daten
         this.loadDashboard();
@@ -124,7 +136,7 @@ class AdminDashboard {
     checkLoginStatus() {
         const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
         if (isLoggedIn) {
-            this.login();
+            this.showAdminPanel(); // Ohne Success-Message
         }
     }
 
@@ -144,14 +156,42 @@ class AdminDashboard {
         }
 
         // Starte Benachrichtigungen (falls in localStorage aktiviert)
-        const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
-        const notificationsCheckbox = document.getElementById('notificationsEnabled');
-        if (notificationsCheckbox) {
-            notificationsCheckbox.checked = notificationsEnabled;
-        }
+        this.loadNotificationSettings();
 
-        if (notificationsEnabled && window.notificationManager) {
+        if (localStorage.getItem("notificationsEnabled") === "true" && window.notificationManager) {
             window.notificationManager.startOrderMonitoring();
+        }
+    }
+
+    // Benachrichtigungseinstellungen laden
+    loadNotificationSettings() {
+        const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
+        const emailEnabled = localStorage.getItem("emailNotifications") !== "false"; // Default true
+        const smsEnabled = localStorage.getItem("smsNotifications") === "true";
+        const soundEnabled = localStorage.getItem("soundNotifications") !== "false"; // Default true
+        const checkInterval = localStorage.getItem("checkInterval") || "30";
+
+        // Checkboxen setzen
+        const elements = {
+            notificationsEnabled: document.getElementById('notificationsEnabled'),
+            emailNotifications: document.getElementById('emailNotifications'),
+            smsNotifications: document.getElementById('smsNotifications'),
+            soundNotifications: document.getElementById('soundNotifications'),
+            checkInterval: document.getElementById('checkInterval')
+        };
+
+        if (elements.notificationsEnabled) elements.notificationsEnabled.checked = notificationsEnabled;
+        if (elements.emailNotifications) elements.emailNotifications.checked = emailEnabled;
+        if (elements.smsNotifications) elements.smsNotifications.checked = smsEnabled;
+        if (elements.soundNotifications) elements.soundNotifications.checked = soundEnabled;
+        if (elements.checkInterval) elements.checkInterval.value = checkInterval;
+
+        // EmailConfig aktualisieren
+        if (window.emailConfig && window.emailConfig.adminNotifications) {
+            window.emailConfig.adminNotifications.options.email = emailEnabled;
+            window.emailConfig.adminNotifications.options.sms = smsEnabled;
+            window.emailConfig.adminNotifications.options.sound = soundEnabled;
+            window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
         }
     }
 
@@ -176,17 +216,79 @@ class AdminDashboard {
 
     // Benachrichtigungseinstellungen speichern
     saveNotificationSettings() {
-        const enabled = document.getElementById('notificationsEnabled').checked;
-        localStorage.setItem("notificationsEnabled", enabled.toString());
+        const enabledCheckbox = document.getElementById('notificationsEnabled');
+        if (!enabledCheckbox) {
+            console.error('Notifications-Checkbox nicht gefunden');
+            showNotification("Fehler beim Speichern der Einstellungen", "error");
+            return;
+        }
 
-        if (enabled) {
+        const enabled = enabledCheckbox.checked;
+        const emailEnabled = document.getElementById('emailNotifications')?.checked || false;
+        const smsEnabled = document.getElementById('smsNotifications')?.checked || false;
+        const soundEnabled = document.getElementById('soundNotifications')?.checked || false;
+        const checkInterval = document.getElementById('checkInterval')?.value || 30;
+
+        // Einstellungen in localStorage speichern
+        localStorage.setItem("notificationsEnabled", enabled.toString());
+        localStorage.setItem("emailNotifications", emailEnabled.toString());
+        localStorage.setItem("smsNotifications", smsEnabled.toString());
+        localStorage.setItem("soundNotifications", soundEnabled.toString());
+        localStorage.setItem("checkInterval", checkInterval.toString());
+
+        // EmailConfig aktualisieren
+        if (window.emailConfig && window.emailConfig.adminNotifications) {
+            window.emailConfig.adminNotifications.options.email = emailEnabled;
+            window.emailConfig.adminNotifications.options.sms = smsEnabled;
+            window.emailConfig.adminNotifications.options.sound = soundEnabled;
+            window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
+        }
+
+        if (enabled && window.notificationManager) {
             window.notificationManager.startOrderMonitoring();
-        } else {
+        } else if (window.notificationManager) {
             window.notificationManager.stopOrderMonitoring();
         }
 
-        window.notificationManager.closeNotificationSettings();
+        if (window.notificationManager) {
+            window.notificationManager.closeNotificationSettings();
+        }
         showNotification("Einstellungen gespeichert", "success");
+    }
+
+    // Test-Benachrichtigung senden
+    async testNotifications() {
+        try {
+            showNotification("Sende Test-Benachrichtigung...", "info");
+
+            const testOrderData = {
+                details: {
+                    durchmesserCm: 20,
+                    extras: ["Schokoboden", "Vanillecreme"],
+                    lieferung: ""
+                },
+                gesamtpreis: "55€",
+                wunschtermin: {
+                    datum: new Date().toISOString()
+                }
+            };
+
+            const testCustomerData = {
+                name: "Test Kunde",
+                email: window.emailConfig?.adminNotifications?.adminEmail || "admin@example.com",
+                telefon: "+49123456789"
+            };
+
+            if (window.notificationManager) {
+                await window.notificationManager.sendAdminNotification(testOrderData, testCustomerData);
+                showNotification("Test-Benachrichtigung gesendet! Prüfen Sie Ihre E-Mails.", "success");
+            } else {
+                showNotification("NotificationManager nicht verfügbar", "error");
+            }
+        } catch (error) {
+            console.error("Test-Benachrichtigung Fehler:", error);
+            showNotification("Fehler beim Senden der Test-Benachrichtigung: " + error.message, "error");
+        }
     }
 
     // Dashboard-Statistiken laden (optional)

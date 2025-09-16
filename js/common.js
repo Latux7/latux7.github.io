@@ -2,23 +2,88 @@
 
 // Notification-Funktionen (anstatt alerts)
 function showNotification(message, type = "success") {
-    const notification = document.getElementById('notification');
+    // Verschiedene mögliche Notification-Container suchen
+    let notification = document.getElementById('notification') ||
+        document.getElementById('adminNotification');
+
     if (notification) {
         notification.className = `alert ${type}`;
-        notification.textContent = message;
         notification.style.display = 'block';
+
+        // Text-Content setzen (entweder direkt oder in child-span)
+        const textSpan = notification.querySelector('#notificationText');
+        if (textSpan) {
+            textSpan.textContent = message;
+        } else {
+            notification.textContent = message;
+        }
+
+        // Automatisch ausblenden nach 5 Sekunden
         setTimeout(() => hideNotification(), 5000);
     } else {
-        // Fallback zu alert wenn kein notification-Element vorhanden
-        alert(message);
+        // Fallback zu console.log statt alert
+        console.warn('Notification:', message);
     }
 }
 
 function hideNotification() {
-    const notification = document.getElementById('notification');
+    const notification = document.getElementById('notification') ||
+        document.getElementById('adminNotification');
     if (notification) {
         notification.style.display = 'none';
     }
+}
+
+// Elegante Bestätigungs-Modal Alternative zu confirm()
+function showConfirmation(message, onConfirm, onCancel = null) {
+    // Prüfen ob bereits eine Confirmation existiert
+    let existingModal = document.getElementById('confirmationModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Modal erstellen
+    const modal = document.createElement('div');
+    modal.id = 'confirmationModal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: white; padding: 30px; border-radius: 10px;
+        max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    `;
+
+    dialog.innerHTML = `
+        <p style="margin-bottom: 20px; font-size: 16px;">${message}</p>
+        <button id="confirmYes" style="background: #dc3545; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer;">Ja</button>
+        <button id="confirmNo" style="background: #6c757d; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer;">Abbrechen</button>
+    `;
+
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+
+    // Event Listeners
+    document.getElementById('confirmYes').onclick = () => {
+        modal.remove();
+        if (onConfirm) onConfirm();
+    };
+
+    document.getElementById('confirmNo').onclick = () => {
+        modal.remove();
+        if (onCancel) onCancel();
+    };
+
+    // Click outside to cancel
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+            if (onCancel) onCancel();
+        }
+    };
 }
 
 // Datum-Utility-Funktionen
