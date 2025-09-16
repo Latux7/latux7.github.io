@@ -461,10 +461,21 @@
             .addEventListener("click", logout);
         });
 
-        // Hilfsfunktion: Bestellungshistorie für Kunden ermitteln
+        // Hilfsfunktion: Bestellungshistorie für Kunden ermitteln (nach E-Mail gruppiert)
         async function getCustomerOrderHistory() {
           const orderHistory = {};
+          const customerEmailMap = {}; // customerId -> email mapping
+
           try {
+            // Zuerst alle Kunden laden um E-Mail-Adressen zu bekommen
+            const customersSnap = await db.collection("customers").get();
+            customersSnap.forEach((doc) => {
+              const customer = doc.data();
+              if (customer.email) {
+                customerEmailMap[doc.id] = customer.email.toLowerCase();
+              }
+            });
+
             // Alle Bestellungen laden, sortiert nach Erstellungsdatum
             const allOrdersSnap = await db
               .collection("orders")
@@ -474,17 +485,28 @@
             allOrdersSnap.forEach((doc, index) => {
               const order = doc.data();
               const customerId = order.customerId;
+              const customerEmail = customerEmailMap[customerId];
 
-              if (!orderHistory[customerId]) {
-                orderHistory[customerId] = {
+              if (!customerEmail) {
+                console.warn(
+                  `Keine E-Mail für customerId ${customerId} gefunden`
+                );
+                return;
+              }
+
+              // Gruppierung nach E-Mail-Adresse statt customerId
+              if (!orderHistory[customerEmail]) {
+                orderHistory[customerEmail] = {
                   totalOrders: 0,
                   orderNumbers: {},
+                  customerIds: new Set(), // Sammle alle customerIds für diese E-Mail
                 };
               }
 
-              orderHistory[customerId].totalOrders++;
-              orderHistory[customerId].orderNumbers[doc.id] =
-                orderHistory[customerId].totalOrders;
+              orderHistory[customerEmail].totalOrders++;
+              orderHistory[customerEmail].orderNumbers[doc.id] =
+                orderHistory[customerEmail].totalOrders;
+              orderHistory[customerEmail].customerIds.add(customerId);
             });
           } catch (error) {
             console.error("Fehler beim Laden der Bestellungshistorie:", error);
@@ -554,10 +576,16 @@
               } else {
                 grouped.neu.forEach(({ doc, order }) => {
                   const cust = customers[order.customerId] || {};
-                  const orderInfo = orderHistory[order.customerId] || {
-                    totalOrders: 1,
-                    orderNumbers: {},
-                  };
+                  const customerEmail = cust.email
+                    ? cust.email.toLowerCase()
+                    : null;
+                  const orderInfo =
+                    customerEmail && orderHistory[customerEmail]
+                      ? orderHistory[customerEmail]
+                      : {
+                          totalOrders: 1,
+                          orderNumbers: { [doc.id]: 1 },
+                        };
                   const orderNumber = orderInfo.orderNumbers[doc.id] || 1;
                   const isFirstOrder = orderNumber === 1;
                   html += renderOrder(
@@ -589,10 +617,16 @@
                 } else {
                   grouped[st].forEach(({ doc, order }) => {
                     const cust = customers[order.customerId] || {};
-                    const orderInfo = orderHistory[order.customerId] || {
-                      totalOrders: 1,
-                      orderNumbers: {},
-                    };
+                    const customerEmail = cust.email
+                      ? cust.email.toLowerCase()
+                      : null;
+                    const orderInfo =
+                      customerEmail && orderHistory[customerEmail]
+                        ? orderHistory[customerEmail]
+                        : {
+                            totalOrders: 1,
+                            orderNumbers: { [doc.id]: 1 },
+                          };
                     const orderNumber = orderInfo.orderNumbers[doc.id] || 1;
                     const isFirstOrder = orderNumber === 1;
                     html += renderOrder(
