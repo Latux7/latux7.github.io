@@ -341,14 +341,11 @@ class EmailTemplateManager {
         }
     }
 
-    // EmailJS-Daten für Bestellungen - Einheitliches Template
+    // EmailJS-Daten für Bestellungen - Vereinfacht für garantierte Kompatibilität
     getOrderEmailJSData(orderData) {
-        return {
-            // Template-Typ Controls
-            template_type: 'new_order',
-            is_order: true,
-            is_review: false,
+        console.log('EmailTemplateManager: Verarbeite Bestellungsdaten:', orderData);
 
+        return {
             // Header-Bereich
             notification_title: 'Neue Bestellung eingegangen',
             header_title: 'NEUE BESTELLUNG',
@@ -358,29 +355,29 @@ class EmailTemplateManager {
             alert_title: '🎂 Neue Tortenbestellung eingegangen!',
             alert_message: 'Eine neue Bestellung wartet auf Ihre Bearbeitung im Admin-Dashboard.',
 
-            // Bestelldetails für das Grid
+            // Bestelldetails - Sichere Extraktion
             order_size: orderData.details && orderData.details.durchmesserCm
-                ? `${orderData.details.durchmesserCm} cm (${orderData.details.tier || 'Standard'})`
+                ? `${orderData.details.durchmesserCm} cm ${orderData.details.tier ? `(${orderData.details.tier})` : ''}`
                 : 'Nicht angegeben',
             order_extras: orderData.details && orderData.details.extras && orderData.details.extras.length > 0
                 ? orderData.details.extras.join(', ')
                 : 'Keine',
             wunschtermin: orderData.wunschtermin && orderData.wunschtermin.datum
-                ? new Date(orderData.wunschtermin.datum.toDate ? orderData.wunschtermin.datum.toDate() : orderData.wunschtermin.datum).toLocaleDateString('de-DE')
+                ? this.formatDate(orderData.wunschtermin.datum)
                 : 'Nicht angegeben',
             delivery_type: orderData.details && orderData.details.lieferung
                 ? orderData.details.lieferung === 'abholung' ? 'Abholung' : `Lieferung: ${orderData.details.lieferung}`
                 : 'Abholung',
-            total_price: orderData.gesamtpreis
+            total_price: orderData.gesamtpreis && parseFloat(orderData.gesamtpreis)
                 ? parseFloat(orderData.gesamtpreis).toFixed(2)
                 : 'Noch nicht berechnet',
 
-            // Kundendaten
+            // Kundendaten - Sichere Extraktion
             customer_name: orderData.name || 'Nicht angegeben',
             customer_email: orderData.email || 'Nicht angegeben',
             customer_phone: orderData.telefon || 'Nicht angegeben',
             customer_address: orderData.adresse || 'Nicht angegeben',
-            order_notes: orderData.sonderwunsch || '',
+            order_notes: orderData.sonderwunsch || 'Keine besonderen Wünsche',
 
             // Zeitstempel und Dashboard
             order_timestamp: new Date().toLocaleString('de-DE'),
@@ -393,7 +390,26 @@ class EmailTemplateManager {
         };
     }
 
-    // EmailJS-Daten für Bewertungen - Einheitliches Template
+    // Hilfsfunktion für Datumsformatierung
+    formatDate(dateValue) {
+        try {
+            let date;
+            if (dateValue && dateValue.toDate) {
+                // Firebase Timestamp
+                date = dateValue.toDate();
+            } else if (dateValue instanceof Date) {
+                date = dateValue;
+            } else if (typeof dateValue === 'string') {
+                date = new Date(dateValue);
+            } else {
+                return 'Nicht angegeben';
+            }
+            return date.toLocaleDateString('de-DE');
+        } catch (error) {
+            console.error('Fehler beim Formatieren des Datums:', error);
+            return 'Nicht angegeben';
+        }
+    }    // EmailJS-Daten für Bewertungen - Einheitliches Template
     getReviewEmailJSData(reviewData) {
         return {
             // Template-Typ Controls

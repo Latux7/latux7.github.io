@@ -62,7 +62,7 @@ window.emailConfig = {
     // Admin-Benachrichtigungseinstellungen
     adminNotifications: {
         // E-Mail-Adresse für Admin-Benachrichtigungen
-        adminEmail: "lauratustean@gmail.com",
+        adminEmail: "hosseinrezai9@gmail.com",
 
         // Benachrichtigungsintervall (wie oft nach neuen Bestellungen suchen)
         checkInterval: 10000, // 10 Sekunden

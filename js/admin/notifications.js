@@ -33,8 +33,8 @@ class NotificationManager {
         try {
             // E-Mail-Benachrichtigung
             if (config.options.email) {
-                // Verwende neues Template-System
-                const templateData = window.emailTemplateManager.getEmailJSTemplateData('newOrder', {
+                // Kombiniere Bestellungs- und Kundendaten richtig für das Template
+                const combinedOrderData = {
                     name: customerData.name,
                     email: customerData.email,
                     telefon: customerData.telefon,
@@ -43,7 +43,12 @@ class NotificationManager {
                     wunschtermin: orderData.wunschtermin,
                     gesamtpreis: orderData.gesamtpreis,
                     sonderwunsch: orderData.sonderwunsch
-                });
+                };
+
+                console.log('Sende Admin-Benachrichtigung mit Daten:', combinedOrderData);
+
+                // Verwende direkt die getOrderEmailJSData Funktion
+                const templateData = window.emailTemplateManager.getOrderEmailJSData(combinedOrderData);
 
                 // Admin-spezifische Daten hinzufügen
                 const emailData = {
@@ -51,6 +56,8 @@ class NotificationManager {
                     to_email: config.adminEmail,
                     to_name: "Admin"
                 };
+
+                console.log('EmailJS Template-Daten:', emailData);
 
                 await emailjs.send(
                     window.emailConfig.serviceId,

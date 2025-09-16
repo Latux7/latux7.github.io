@@ -288,6 +288,8 @@
     <script src="js/order-limits.js"></script>
     <script src="js/embedded-calendar.js"></script>
     <script src="js/order.js"></script>
+    <script src="js/email-template-manager.js"></script>
+    <script src="js/admin/notifications.js"></script>
     <script src="js/manual-tests.js"></script>
     <!-- Test-Fixes für kritische Probleme -->
     <script src="js/test-fixes.js"></script>
@@ -693,6 +695,297 @@
         "email"
       );
 
+      testSuite.addTest(
+        "EmailTemplateManager geladen",
+        async () => {
+          return typeof window.emailTemplateManager !== "undefined";
+        },
+        "email"
+      );
+
+      testSuite.addTest(
+        "NotificationManager geladen",
+        async () => {
+          return typeof window.notificationManager !== "undefined";
+        },
+        "email"
+      );
+
+      testSuite.addTest(
+        "Template-Daten für Bestellungen generieren",
+        async () => {
+          const testOrderData = {
+            name: "Test Kunde",
+            email: "test@example.com",
+            telefon: "+49 123 456789",
+            adresse: "Teststraße 123",
+            details: {
+              durchmesserCm: 20,
+              tier: "Normal",
+              extras: ["Schokolade"],
+            },
+            wunschtermin: { datum: new Date() },
+            gesamtpreis: 55.0,
+            sonderwunsch: "Test-Wunsch",
+          };
+
+          const templateData =
+            window.emailTemplateManager.getOrderEmailJSData(testOrderData);
+          return (
+            templateData &&
+            templateData.customer_name === "Test Kunde" &&
+            templateData.header_title === "NEUE BESTELLUNG" &&
+            templateData.order_size === "20 cm Normal"
+          );
+        },
+        "email"
+      );
+
+      testSuite.addTest(
+        "Template-Daten für Bewertungen generieren",
+        async () => {
+          const testReviewData = {
+            name: "Test Bewerter",
+            email: "bewerter@example.com",
+            titel: "Test Bewertung",
+            kommentar: "Sehr gut!",
+            gesamtbewertung: 5,
+            geschmack: 5,
+            optik: 4,
+            service: 5,
+            preisLeistung: 4,
+          };
+
+          const templateData =
+            window.emailTemplateManager.getReviewEmailJSData(testReviewData);
+          return (
+            templateData &&
+            templateData.customer_name === "Test Bewerter" &&
+            templateData.header_title === "NEUE BEWERTUNG" &&
+            templateData.review_comment === "Sehr gut!"
+          );
+        },
+        "email"
+      );
+
+      testSuite.addTest(
+        "Admin Email Konfiguration",
+        async () => {
+          return (
+            window.emailConfig.adminNotifications &&
+            window.emailConfig.adminNotifications.adminEmail &&
+            window.emailConfig.adminNotifications.options.email
+          );
+        },
+        "email"
+      );
+
+      // Manuelle Email-Tests (erfordern Benutzerinteraktion)
+      testSuite.addTest(
+        "🔧 TEST: Admin-Email für Bestellung senden",
+        async () => {
+          // Dieser Test erfordert manuelle Ausführung
+          return new Promise((resolve) => {
+            const button = document.createElement("button");
+            button.textContent = "Admin-Email für Bestellung testen";
+            button.style.cssText =
+              "padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;";
+            button.onclick = async () => {
+              try {
+                const testOrderData = {
+                  name: "Max Mustermann",
+                  email: "max.mustermann@example.com",
+                  telefon: "+49 123 456789",
+                  adresse: "Musterstraße 123, 12345 Musterstadt",
+                  details: {
+                    durchmesserCm: 24,
+                    tier: "Groß",
+                    extras: ["Schokolade", "Erdbeeren", "Dekoration"],
+                  },
+                  wunschtermin: { datum: new Date("2025-09-25") },
+                  gesamtpreis: 75.5,
+                  sonderwunsch: "Bitte mit Herzform und Happy Birthday Schrift",
+                };
+
+                await window.notificationManager.sendAdminNotification(
+                  testOrderData,
+                  {
+                    name: testOrderData.name,
+                    email: testOrderData.email,
+                    telefon: testOrderData.telefon,
+                    adresse: testOrderData.adresse,
+                  }
+                );
+
+                button.textContent = "✅ Email gesendet! Prüfe Postfach.";
+                button.style.background = "#28a745";
+                resolve(true);
+              } catch (error) {
+                button.textContent = "❌ Fehler beim Senden";
+                button.style.background = "#dc3545";
+                console.error("Email-Test Fehler:", error);
+                resolve(false);
+              }
+            };
+
+            const testContainer = document.getElementById("emailTests");
+            if (testContainer) {
+              testContainer.appendChild(button);
+            }
+
+            // Test als "pending" markieren, bis Button geklickt wird
+            setTimeout(() => resolve("pending"), 1000);
+          });
+        },
+        "email",
+        false, // nicht automatisch ausführen
+        true // manueller Test
+      );
+
+      testSuite.addTest(
+        "🔧 TEST: Admin-Email für Bewertung senden",
+        async () => {
+          return new Promise((resolve) => {
+            const button = document.createElement("button");
+            button.textContent = "Admin-Email für Bewertung testen";
+            button.style.cssText =
+              "padding: 10px 15px; margin: 5px; background: #ffc107; color: black; border: none; border-radius: 5px; cursor: pointer;";
+            button.onclick = async () => {
+              try {
+                const testReviewData = {
+                  name: "Anna Schmidt",
+                  email: "anna.schmidt@example.com",
+                  titel: "Traumhafte Torte!",
+                  kommentar:
+                    "Die Torte war einfach perfekt. Geschmack, Aussehen und Service - alles top!",
+                  gesamtbewertung: 5,
+                  geschmack: 5,
+                  optik: 5,
+                  service: 4,
+                  preisLeistung: 5,
+                };
+
+                await window.notificationManager.sendReviewNotification(
+                  testReviewData
+                );
+
+                button.textContent = "✅ Email gesendet! Prüfe Postfach.";
+                button.style.background = "#28a745";
+                button.style.color = "white";
+                resolve(true);
+              } catch (error) {
+                button.textContent = "❌ Fehler beim Senden";
+                button.style.background = "#dc3545";
+                button.style.color = "white";
+                console.error("Email-Test Fehler:", error);
+                resolve(false);
+              }
+            };
+
+            const testContainer = document.getElementById("emailTests");
+            if (testContainer) {
+              testContainer.appendChild(button);
+            }
+
+            setTimeout(() => resolve("pending"), 1000);
+          });
+        },
+        "email",
+        false, // nicht automatisch ausführen
+        true // manueller Test
+      );
+
+      testSuite.addTest(
+        "🔧 DEBUG: Template-Daten anzeigen",
+        async () => {
+          return new Promise((resolve) => {
+            const button = document.createElement("button");
+            button.textContent = "Template-Daten anzeigen";
+            button.style.cssText =
+              "padding: 10px 15px; margin: 5px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;";
+            button.onclick = () => {
+              try {
+                const testOrderData = {
+                  name: "Debug Kunde",
+                  email: "debug@example.com",
+                  telefon: "+49 123 456789",
+                  details: {
+                    durchmesserCm: 20,
+                    tier: "Normal",
+                    extras: ["Test"],
+                  },
+                  wunschtermin: { datum: new Date() },
+                  gesamtpreis: 55.0,
+                };
+
+                const testReviewData = {
+                  name: "Debug Bewerter",
+                  email: "debug-review@example.com",
+                  titel: "Debug Bewertung",
+                  kommentar: "Test Kommentar",
+                  gesamtbewertung: 4,
+                  geschmack: 4,
+                  optik: 4,
+                  service: 4,
+                  preisLeistung: 4,
+                };
+
+                const orderTemplateData =
+                  window.emailTemplateManager.getOrderEmailJSData(
+                    testOrderData
+                  );
+                const reviewTemplateData =
+                  window.emailTemplateManager.getReviewEmailJSData(
+                    testReviewData
+                  );
+
+                const debugInfo = document.createElement("div");
+                debugInfo.style.cssText =
+                  "margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;";
+                debugInfo.innerHTML = `
+                  <strong>🛒 Bestellungs-Template-Daten:</strong><br>
+                  <pre>${JSON.stringify(orderTemplateData, null, 2)}</pre>
+                  <br>
+                  <strong>⭐ Bewertungs-Template-Daten:</strong><br>
+                  <pre>${JSON.stringify(reviewTemplateData, null, 2)}</pre>
+                `;
+
+                const testContainer = document.getElementById("emailTests");
+                if (testContainer) {
+                  // Entferne vorherige Debug-Info
+                  const existing = testContainer.querySelector(
+                    ".debug-template-data"
+                  );
+                  if (existing) existing.remove();
+
+                  debugInfo.className = "debug-template-data";
+                  testContainer.appendChild(debugInfo);
+                }
+
+                button.textContent = "✅ Daten angezeigt";
+                button.style.background = "#28a745";
+                resolve(true);
+              } catch (error) {
+                button.textContent = "❌ Fehler bei Anzeige";
+                button.style.background = "#dc3545";
+                console.error("Template-Debug Fehler:", error);
+                resolve(false);
+              }
+            };
+
+            const testContainer = document.getElementById("emailTests");
+            if (testContainer) {
+              testContainer.appendChild(button);
+            }
+
+            setTimeout(() => resolve("pending"), 1000);
+          });
+        },
+        "email",
+        false, // nicht automatisch ausführen
+        true // manueller Test
+      );
+
       // Admin Tests
       testSuite.addTest(
         "Admin Login Formular",
@@ -939,6 +1232,12 @@
 
       // Initialize
       document.addEventListener("DOMContentLoaded", () => {
+        // EmailJS initialisieren für Email-Tests
+        if (typeof emailjs !== "undefined" && window.emailConfig) {
+          emailjs.init(window.emailConfig.publicKey);
+          console.log("✅ EmailJS für Tests initialisiert");
+        }
+
         testSuite.updateSummary();
       });
     </script>
