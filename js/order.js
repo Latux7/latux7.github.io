@@ -29,19 +29,22 @@ class OrderManager {
         // Initial-Zustand setzen
         this.initializeForm();
 
-        // Bestelllimit-Status anzeigen
-        this.checkOrderLimits();
+        // Vorlaufzeit-Info anzeigen
+        this.checkOrderDeadline();
     }
 
-    async checkOrderLimits() {
-        // Warten bis OrderLimitManager verfügbar ist
-        if (window.orderLimitManager && typeof window.orderLimitManager.showLimitStatus === 'function') {
-            await window.orderLimitManager.showLimitStatus();
+    async checkOrderDeadline() {
+        // Warten bis OrderDeadlineManager verfügbar ist
+        if (window.orderLimitManager && typeof window.orderLimitManager.showDeadlineInfo === 'function') {
+            await window.orderLimitManager.showDeadlineInfo();
+            // Kalender-Mindestdatum setzen
+            window.orderLimitManager.setCalendarMinDate();
         } else {
             // Retry nach kurzer Verzögerung
             setTimeout(() => {
-                if (window.orderLimitManager && typeof window.orderLimitManager.showLimitStatus === 'function') {
-                    window.orderLimitManager.showLimitStatus();
+                if (window.orderLimitManager && typeof window.orderLimitManager.showDeadlineInfo === 'function') {
+                    window.orderLimitManager.showDeadlineInfo();
+                    window.orderLimitManager.setCalendarMinDate();
                 }
             }, 500);
         }
@@ -220,7 +223,7 @@ class OrderManager {
     async checkDateAvailability(dateString) {
         if (!dateString || !window.orderLimitManager) return;
 
-        console.log(`OrderManager: Prüfe Verfügbarkeit für ${dateString}`);
+        console.log(`OrderManager: Prüfe Vorlaufzeit für ${dateString}`);
 
         try {
             const status = await window.orderLimitManager.canAcceptOrder(dateString);
@@ -228,21 +231,21 @@ class OrderManager {
             const wunschDatumInput = document.getElementById("wunschDatum");
             const dateWarning = document.getElementById("dateWarning") || this.createDateWarningElement();
 
-            if (!status.canAccept) {
-                // Datum ist ausgebucht
+            if (!status.canAccept && status.isDateTooEarly) {
+                // Datum ist zu früh (weniger als 7 Tage Vorlaufzeit)
                 wunschDatumInput.style.borderColor = "#f44336";
                 dateWarning.innerHTML = `
-                    <strong>⚠️ Datum nicht verfügbar:</strong> 
-                    ${new Date(dateString).toLocaleDateString('de-DE')} ist bereits ausgebucht 
-                    (${status.currentCount}/${status.limit} Bestellungen).
-                    <br><small>Bitte wählen Sie ein anderes Datum oder prüfen Sie unseren 
-                    <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Kalender öffnen</button> für verfügbare Termine.</small>
+                    <strong>⚠️ Zu kurzfristig:</strong> 
+                    ${new Date(dateString).toLocaleDateString('de-DE')} ist zu früh. 
+                    Mindestens ${window.orderLimitManager.minimumLeadDays} Tage Vorlaufzeit erforderlich.
+                    <br><small>Frühestmöglicher Termin: <strong>${new Date(status.minimumDate).toLocaleDateString('de-DE')}</strong>
+                    <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Kalender öffnen</button></small>
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning error";
-            } else if (status.remaining <= 2) {
-                // Datum hat nur noch wenige Plätze
-                wunschDatumInput.style.borderColor = "#ff9800";
+            } else if (status.canAccept) {
+                // Datum ist verfügbar
+                wunschDatumInput.style.borderColor = "#4caf50";
                 dateWarning.innerHTML = `
                     <strong>📅 Wenige Plätze verfügbar:</strong> 
                     Für ${new Date(dateString).toLocaleDateString('de-DE')} sind noch 
@@ -347,11 +350,11 @@ class OrderManager {
         const f = e.target;
 
         try {
-            // 1. Erst Bestelllimit prüfen
+            // 1. Erst Vorlaufzeit prüfen
             if (window.orderLimitManager) {
                 const canOrder = await window.orderLimitManager.validateOrderSubmission();
                 if (!canOrder) {
-                    return; // Bestellung wird durch Limit-Modal blockiert
+                    return; // Bestellung wird durch Vorlaufzeit-Modal blockiert
                 }
             }
 
@@ -389,6 +392,10 @@ class OrderManager {
             // Bestellung speichern
             const order = {
                 customerId,
+                // Kundendaten direkt in die Bestellung für Admin-Kalender
+                name: customerData.name,
+                email: customerData.email,
+                telefon: customerData.telefon,
                 details: {
                     durchmesserCm: cm,
                     kategorie: tier,
@@ -415,9 +422,9 @@ class OrderManager {
                     const adminNotification = {
                         to_email: window.emailConfig.adminNotifications.adminEmail,
                         to_name: "Admin",
-                        customer_name: order.name || "Unbekannt",
-                        customer_email: order.email || "Nicht angegeben",
-                        customer_phone: order.telefon || "Nicht angegeben",
+                        customer_name: customerData.name || "Unbekannt",
+                        customer_email: customerData.email || "Nicht angegeben",
+                        customer_phone: customerData.telefon || "Nicht angegeben",
                         order_date: new Date().toLocaleString("de-DE"),
                         order_timestamp: new Date().toLocaleString("de-DE"),
                         order_size: order.details && order.details.durchmesserCm

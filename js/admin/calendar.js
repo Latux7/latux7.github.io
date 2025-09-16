@@ -262,10 +262,20 @@ class CalendarManager {
         let html = '';
         orders.slice(0, 3).forEach(order => { // Max 3 anzeigen
             const statusClass = `status-${order.status || 'neu'}`;
-            const orderSize = order.details && order.details.durchmesserCm ? `${order.details.durchmesserCm}cm` : 'Unbekannt';
+
+            // Name und Größe extrahieren
+            const customerName = order.name || 'Unbekannt';
+            let orderSize = 'Unbekannt';
+
+            if (order.details && order.details.durchmesserCm) {
+                const cm = order.details.durchmesserCm;
+                const kategorie = order.details.kategorie || this.deriveTierFromCm(cm);
+                orderSize = `${cm} cm (${kategorie})`;
+            }
+
             html += `
-                <div class="day-order ${statusClass}" title="${order.name || 'Unbekannt'} - ${orderSize}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
-                    <span class="order-name">${(order.name || 'Unbekannt').substring(0, 8)}...</span>
+                <div class="day-order ${statusClass}" title="${customerName} - ${orderSize}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
+                    <span class="order-name">${customerName.substring(0, 8)}...</span>
                 </div>
             `;
         });
@@ -275,6 +285,13 @@ class CalendarManager {
         }
 
         return html;
+    }
+
+    // Hilfsfunktion: Kategorie aus cm ableiten
+    deriveTierFromCm(cm) {
+        if (cm <= 14) return 'Mini';
+        if (cm <= 20) return 'Normal';
+        return 'Groß';
     }
 
     // Hilfsfunktionen
@@ -332,6 +349,11 @@ class CalendarManager {
             }
 
             const order = orderDoc.data();
+
+            // Daten sind jetzt direkt in der Bestellung verfügbar
+            const customerName = order.name || 'Unbekannt';
+            const customerEmail = order.email || 'Unbekannt';
+            const customerPhone = order.telefon || 'Nicht angegeben';
             const modalHTML = `
                 <div id="orderDetailsModal" style="
                     position: fixed;
@@ -368,16 +390,16 @@ class CalendarManager {
                         </div>
                         
                         <div style="line-height: 1.6;">
-                            <p><strong>Kunde:</strong> ${order.name || 'Unbekannt'}</p>
-                            <p><strong>E-Mail:</strong> ${order.email || 'Unbekannt'}</p>
-                            <p><strong>Telefon:</strong> ${order.telefon || 'Nicht angegeben'}</p>
+                            <p><strong>Kunde:</strong> ${customerName}</p>
+                            <p><strong>E-Mail:</strong> ${customerEmail}</p>
+                            <p><strong>Telefon:</strong> ${customerPhone}</p>
                             <p><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum
                     ? new Date(order.wunschtermin.datum.toDate ? order.wunschtermin.datum.toDate() : order.wunschtermin.datum).toLocaleDateString('de-DE')
                     : 'Nicht angegeben'}</p>
                             <p><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</p>
                             ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ''}
                             <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
-                    ? `${order.details.durchmesserCm} cm (${order.details.tier || 'Unbekannt'})`
+                    ? `${order.details.durchmesserCm} cm (${order.details.kategorie || this.deriveTierFromCm(order.details.durchmesserCm)})`
                     : 'Unbekannt'}</p>
                             <p><strong>Status:</strong> <span style="
                                 padding: 4px 8px;

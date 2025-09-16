@@ -247,22 +247,14 @@ class OrderManager {
     // Einzelne Bestellung rendern
     async renderOrder(doc, order) {
         const orderId = doc.id;
-        let customerData = {};
 
-        // Kundendaten laden
-        if (order.customerId) {
-            try {
-                const customerDoc = await this.db.collection("customers").doc(order.customerId).get();
-                if (customerDoc.exists) {
-                    customerData = customerDoc.data();
-                }
-            } catch (error) {
-                console.error("Fehler beim Laden der Kundendaten:", error);
-            }
-        }
+        // Kundendaten sind jetzt direkt in der Bestellung
+        const customerName = order.name || "Unbekannt";
+        const customerEmail = order.email || "Nicht verfügbar";
+        const customerPhone = order.telefon || "Nicht verfügbar";
 
         // Erstbestellung-Status prüfen
-        const orderCount = await this.getCustomerOrderHistory(customerData.email || "");
+        const orderCount = await this.getCustomerOrderHistory(customerEmail);
         const isFirstTime = orderCount <= 1;
 
         const size = order.details?.durchmesserCm ? `${order.details.durchmesserCm} cm` : "Unbekannt";
@@ -283,12 +275,12 @@ class OrderManager {
         return `
             <details style="margin-bottom:16px;">
                 <summary style="cursor: pointer; font-weight: bold; padding: 8px; background: #f5f5f5; border-radius: 4px;">
-                    Bestellung ${orderId.substr(-6)} - ${customerData.name || "Unbekannter Kunde"}${customerBadge} - ${price}€ - <span style="color: ${this.getStatusColor(order.status)}">${order.status}</span>
+                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <span style="color: ${this.getStatusColor(order.status)}">${order.status}</span>
                 </summary>
                 <div style="padding: 16px; border: 1px solid #ddd; border-top: none;">
-                    <p><strong>Kunde:</strong> ${escapeHtml(customerData.name || "Unbekannt")}</p>
-                    <p><strong>E-Mail:</strong> ${escapeHtml(customerData.email || "Nicht verfügbar")}</p>
-                    <p><strong>Telefon:</strong> ${escapeHtml(customerData.telefon || "Nicht verfügbar")}</p>
+                    <p><strong>Kunde:</strong> ${escapeHtml(customerName)}</p>
+                    <p><strong>E-Mail:</strong> ${escapeHtml(customerEmail)}</p>
+                    <p><strong>Telefon:</strong> ${escapeHtml(customerPhone)}</p>
                     <p><strong>Erstellt:</strong> ${created}</p>
                     <p><strong>Wunschtermin:</strong> ${wunschtermin}</p>
                     ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ""}
@@ -309,7 +301,7 @@ class OrderManager {
                     </p>
                     <div style="margin-top: 12px;">
                         <button class="btn-small" onclick="archiveOrder('${orderId}')">Archivieren</button>
-                        <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerData.email}', '${escapeHtml(customerData.name)}', '${order.status}', '${size}', '${extras}', '${price}')" ${!customerData.email ? "disabled" : ""}>E-Mail senden</button>
+                        <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${order.status}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
                         <button class="btn-small btn-danger" onclick="deleteOrder('${orderId}')">Löschen</button>
                     </div>
                 </div>

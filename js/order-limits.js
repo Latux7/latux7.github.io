@@ -1,9 +1,9 @@
-// order-limits.js - Tägliches Bestelllimit-System
+// order-limits.js - Mindest-Vorlaufzeit-System für Bestellungen
 
 class OrderLimitManager {
     constructor() {
         this.db = null;
-        this.dailyLimit = 5; // Maximum 5 Torten pro Tag
+        this.minimumLeadDays = 7; // Mindestens 7 Tage Vorlaufzeit
         this.init();
     }
 
@@ -19,13 +19,25 @@ class OrderLimitManager {
         }
     }
 
-    // Heutiges Datum als String im Format YYYY-MM-DD
-    getTodayString() {
-        const today = new Date();
-        return today.toISOString().split('T')[0]; // YYYY-MM-DD
+    // Datum in 7 Tagen als String im Format YYYY-MM-DD
+    getMinimumOrderDate() {
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + this.minimumLeadDays);
+        return minDate.toISOString().split('T')[0]; // YYYY-MM-DD
     }
 
-    // Bestellungen für ein bestimmtes Wunschtermin-Datum zählen
+    // Prüfen ob ein Datum mindestens 7 Tage in der Zukunft liegt
+    isDateTooEarly(dateString) {
+        const selectedDate = new Date(dateString);
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + this.minimumLeadDays);
+        minDate.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        return selectedDate < minDate;
+    }
+
+    // Bestellungen für ein bestimmtes Wunschtermin-Datum zählen (optional für Statistiken)
     async countOrdersForDate(dateString) {
         try {
             console.log(`OrderLimitManager: Zähle Bestellungen für Wunschtermin: ${dateString}`);
@@ -41,12 +53,6 @@ class OrderLimitManager {
                 .get();
 
             console.log(`OrderLimitManager: ${ordersSnapshot.size} Bestellungen für Wunschtermin ${dateString} gefunden`);
-
-            // Debug: Zeige welche Bestellungen gefunden wurden
-            ordersSnapshot.forEach(doc => {
-                const order = doc.data();
-                console.log(`OrderLimitManager: Bestellung ${doc.id} - Wunschtermin: ${order.wunschtermin?.datum}, Status: ${order.status}`);
-            });
 
             return ordersSnapshot.size;
 

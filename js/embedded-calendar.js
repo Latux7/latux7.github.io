@@ -135,26 +135,32 @@ function renderEmbeddedCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const orderCount = ordersCountData[dateString] || 0;
-        const isAvailable = orderCount < 5;
+
+        // Prüfe ob Datum zu früh ist (weniger als 7 Tage Vorlaufzeit)
+        const selectedDate = new Date(currentYear, currentMonth, day);
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + 7); // 7 Tage Vorlaufzeit
+        minDate.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        const isTooEarly = selectedDate < minDate;
         const isPast = isDateInPast(currentYear, currentMonth, day);
 
         let dayStyle = 'padding: 12px 8px; text-align: center; border-radius: 6px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;';
         let dayClass = '';
         let clickHandler = '';
 
-        if (isPast) {
+        if (isPast || isTooEarly) {
             dayStyle += 'background: #f0f0f0; color: #999; cursor: not-allowed;';
-        } else if (!isAvailable) {
-            dayStyle += 'background: #ffebee; color: #c62828; cursor: pointer;';
-            clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
+            const reason = isPast ? 'Vergangen' : 'Zu kurzfristig (min. 7 Tage Vorlaufzeit)';
         } else {
             dayStyle += 'background: #e8f5e8; color: #2e7d32; border-color: #4caf50;';
             clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
         }
 
         const statusText = isPast ? 'Vergangen' :
-            !isAvailable ? `Ausgebucht (${orderCount}/5)` :
-                `Verfügbar (${orderCount}/5)`;
+            isTooEarly ? 'Zu kurzfristig (mind. 7 Tage Vorlaufzeit erforderlich)' :
+                `Verfügbar (${orderCount} Bestellung${orderCount === 1 ? '' : 'en'})`;
 
         calendarHTML += `
             <div ${clickHandler} 
@@ -163,7 +169,7 @@ function renderEmbeddedCalendar() {
                  onmouseover="this.style.transform='scale(1.05)'"
                  onmouseout="this.style.transform='scale(1)'">
                 <div style="font-weight: bold; margin-bottom: 2px;">${day}</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">${orderCount}/5</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">${orderCount > 0 ? orderCount : ''}</div>
             </div>
         `;
     }
@@ -172,19 +178,18 @@ function renderEmbeddedCalendar() {
 
     // Legende hinzufügen
     calendarHTML += `
-        <div style="display: flex; justify-content: space-around; font-size: 0.85rem; margin-top: 15px;">
+        <div style="display: flex; justify-content: space-around; font-size: 0.85rem; margin-top: 15px; text-align: center;">
             <div style="display: flex; align-items: center; gap: 5px;">
                 <div style="width: 12px; height: 12px; background: #e8f5e8; border-radius: 3px; border: 1px solid #4caf50;"></div>
                 <span>Verfügbar</span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
-                <div style="width: 12px; height: 12px; background: #ffebee; border-radius: 3px; border: 1px solid #f44336;"></div>
-                <span>Ausgebucht</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 5px;">
                 <div style="width: 12px; height: 12px; background: #f0f0f0; border-radius: 3px;"></div>
-                <span>Vergangen</span>
+                <span>Nicht verfügbar</span>
             </div>
+        </div>
+        <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--clr-muted);">
+            <p><strong>Hinweis:</strong> Bestellungen sind nur mit mindestens 7 Tagen Vorlaufzeit möglich</p>
         </div>
     `;
 

@@ -285,7 +285,7 @@
     <script src="config/prices.js"></script>
     <script src="config/email.js"></script>
     <script src="js/common.js"></script>
-    <script src="js/order-limits.js"></script>
+    <script src="js/order-deadline.js"></script>
     <script src="js/embedded-calendar.js"></script>
     <script src="js/order.js"></script>
     <script src="js/email-template-manager.js"></script>
@@ -1018,16 +1018,63 @@
 
       // Order Limits Tests
       testSuite.addTest(
-        "Order Limit Manager",
+        "Order Deadline Manager",
         async () => {
           try {
             return (
-              typeof OrderLimitManager !== "undefined" &&
+              typeof OrderDeadlineManager !== "undefined" &&
               window.orderLimitManager &&
-              typeof window.orderLimitManager.canAcceptOrder === "function"
+              typeof window.orderLimitManager.canAcceptOrder === "function" &&
+              typeof window.orderLimitManager.isDateTooEarly === "function"
             );
           } catch (error) {
-            console.error("Order Limit Manager Test Fehler:", error);
+            console.error("Order Deadline Manager Test Fehler:", error);
+            return false;
+          }
+        },
+        "order",
+        true
+      );
+
+      // Test für Vorlaufzeit-Validierung
+      testSuite.addTest(
+        "Vorlaufzeit Validierung",
+        async () => {
+          try {
+            if (!window.orderLimitManager) return false;
+
+            // Test 1: Heute (sollte zu früh sein)
+            const today = new Date().toISOString().split("T")[0];
+            const todayResult = await window.orderLimitManager.canAcceptOrder(
+              today
+            );
+            if (todayResult.canAccept || !todayResult.isDateTooEarly) {
+              console.error("Heute sollte zu früh sein");
+              return false;
+            }
+
+            // Test 2: In 10 Tagen (sollte ok sein)
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 10);
+            const futureDateString = futureDate.toISOString().split("T")[0];
+            const futureResult = await window.orderLimitManager.canAcceptOrder(
+              futureDateString
+            );
+            if (!futureResult.canAccept || futureResult.isDateTooEarly) {
+              console.error("Datum in 10 Tagen sollte verfügbar sein");
+              return false;
+            }
+
+            // Test 3: Mindestdatum prüfen
+            const minDate = window.orderLimitManager.getMinimumOrderDate();
+            if (!minDate || minDate.length !== 10) {
+              console.error("Mindestdatum sollte im Format YYYY-MM-DD sein");
+              return false;
+            }
+
+            return true;
+          } catch (error) {
+            console.error("Vorlaufzeit Test Fehler:", error);
             return false;
           }
         },
@@ -1272,7 +1319,7 @@
             !!window.notificationManager
           );
           console.log(
-            "- window.orderLimitManager:",
+            "- window.orderLimitManager (Deadline):",
             !!window.orderLimitManager
           );
           console.log("- emailjs:", typeof emailjs);

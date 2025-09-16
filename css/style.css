@@ -1294,8 +1294,9 @@ details > div {
   }
 }
 
-/* Bestelllimit-System */
-.order-limit-status {
+/* Bestelllimit-System & Vorlaufzeit-System */
+.order-limit-status,
+.order-deadline-info {
   margin: 20px 0;
   border-radius: 12px;
   overflow: hidden;
@@ -1310,7 +1311,12 @@ details > div {
   border: 2px solid #f44336;
 }
 
-.limit-info {
+.order-deadline-info {
+  border: 2px solid #2196f3;
+}
+
+.limit-info,
+.deadline-info {
   display: flex;
   align-items: flex-start;
   gap: 15px;
@@ -1325,28 +1331,37 @@ details > div {
   background: linear-gradient(135deg, #ffebee, #fce4ec);
 }
 
-.limit-icon {
+.deadline-info {
+  background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
+}
+
+.limit-icon,
+.deadline-icon {
   font-size: 2.5rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
-.limit-content {
+.limit-content,
+.deadline-content {
   flex: 1;
 }
 
-.limit-content h3 {
+.limit-content h3,
+.deadline-content h3 {
   margin: 0 0 8px 0;
   font-size: 1.2rem;
   color: var(--clr-text);
 }
 
-.limit-content p {
+.limit-content p,
+.deadline-content p {
   margin: 0 0 8px 0;
   line-height: 1.5;
 }
 
-.limit-content small {
+.limit-content small,
+.deadline-content small {
   color: var(--clr-muted);
   font-size: 0.85rem;
 }
@@ -1376,9 +1391,10 @@ details > div {
   padding: 10px 15px;
 }
 
-/* Responsive für Bestelllimit */
+/* Responsive für Bestelllimit & Vorlaufzeit */
 @media (max-width: 768px) {
-  .limit-info {
+  .limit-info,
+  .deadline-info {
     flex-direction: column;
     text-align: center;
     gap: 10px;
