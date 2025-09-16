@@ -5,12 +5,11 @@ window.emailConfig = {
     // EmailJS Service-ID (kostenlos registrieren auf https://www.emailjs.com/)
     serviceId: "service_acy93wu",
 
-    // EmailJS Template-IDs für verschiedene E-Mail-Typen - max. 2 , da free plan
-    // (kostenloser Plan erlaubt nur 2 verschiedene Templates)
+    // EmailJS Template-IDs für verschiedene E-Mail-Typen
     templates: {
-        order_status: "template_2eyveh9", // Für angenommen/abgelehnt/in-vorbereitung
-        order_ready: "template_ov1de3n", // Nur für "fertig"
-        new_order_notification: "template_new_order", // Für Admin-Benachrichtigungen bei neuen Bestellungen
+        order_status: "template_2eyveh9", // Für alle Status-Änderungen (angenommen/abgelehnt/in-vorbereitung/fertig)
+        order_ready: "template_2eyveh9", // Auch für "fertig" - gleiches Template mit Bewertungslink
+        new_order_notification: "template_ov1de3n", // Für Admin-Benachrichtigungen bei neuen Bestellungen
     },
 
     // EmailJS Public Key (von Ihrem EmailJS Account)
