@@ -1601,6 +1601,135 @@ details > div {
   background: #4caf50;
 }
 
+.legend-color.status-abgeholt {
+  background: #9e9e9e;
+}
+
+/* Admin Panel Collapsible Sections */
+.admin-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.admin-section.collapsed {
+  background: #f8f9fa;
+}
+
+.admin-section-header {
+  padding: 15px 20px;
+  background: var(--clr-accent-soft);
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-section-header:hover {
+  background: #e6f4ea;
+}
+
+.admin-section.collapsed .admin-section-header {
+  border-bottom: none;
+  background: #f1f5f9;
+}
+
+.admin-section.collapsed .admin-section-header:hover {
+  background: #e2e8f0;
+}
+
+.admin-section-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.admin-section-toggle {
+  font-size: 1.2rem;
+  color: var(--clr-muted);
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.admin-section-header:hover .admin-section-toggle {
+  color: var(--clr-accent-strong);
+}
+
+.admin-section.collapsed .admin-section-toggle {
+  transform: rotate(-90deg);
+}
+
+.admin-section-content {
+  padding: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.admin-section.collapsed .admin-section-content {
+  display: none;
+}
+
+/* Loading Animation für lazy loading */
+.admin-section-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--clr-muted);
+}
+
+.admin-section-loading::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid var(--clr-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Section specific styling */
+.admin-section.orders .admin-section-header {
+  background: linear-gradient(135deg, #e6f4ea, #f1f8e9);
+  border-bottom-color: var(--clr-accent-soft);
+}
+
+.admin-section.orders .admin-section-title {
+  color: var(--clr-accent-strong);
+}
+
+/* Mobile responsive für Admin-Bereiche */
+@media (max-width: 768px) {
+  .admin-section-header {
+    padding: 12px 15px;
+  }
+
+  .admin-section-content {
+    padding: 15px;
+  }
+
+  .admin-section-title {
+    font-size: 1rem;
+  }
+}
+
 /* Responsive Kalender */
 @media (max-width: 768px) {
   .calendar-day {

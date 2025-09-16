@@ -26,7 +26,7 @@ class NotificationManager {
     async sendAdminNotification(orderData, customerData) {
         const config = window.emailConfig.adminNotifications;
 
-        if (!config.options.email && !config.options.sms) {
+        if (!config.options.email) {
             return; // Keine Benachrichtigungen aktiviert
         }
 
@@ -64,22 +64,6 @@ class NotificationManager {
                     window.emailConfig.publicKey
                 );
                 console.log("Admin E-Mail-Benachrichtigung gesendet");
-            }
-
-            // SMS-Benachrichtigung (über E-Mail-to-SMS Gateway)
-            if (config.options.sms && config.smsSettings.enabled) {
-                const smsText = `Neue Tortenbestellung!\nKunde: ${customerData.name}\nGröße: ${orderData.details?.durchmesserCm || "?"}cm\nWert: ${orderData.gesamtpreis || "?"}€`;
-
-                const smsEmail = `${config.smsSettings.phoneNumber
-                    .replace("+", "")
-                    .replace(/\s/g, "")}@${config.smsSettings.gateways[config.smsSettings.selectedGateway]}`;
-
-                const smsData = {
-                    to_email: smsEmail,
-                    message: smsText,
-                };
-
-                console.log("SMS würde gesendet an:", smsEmail, "Text:", smsText);
             }
 
             // Sound-Benachrichtigung im Browser

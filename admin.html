@@ -118,7 +118,13 @@
             margin-bottom: 20px;
           "
         >
-          <h2 style="margin: 0">Bestellungen</h2>
+          <h2
+            style="margin: 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('ordersSection')"
+            title="Klicken zum Ein-/Ausblenden"
+          >
+            📋 Bestellungen <span id="ordersToggle">▼</span>
+          </h2>
           <div>
             <button
               id="notificationSettingsBtn"
@@ -131,6 +137,11 @@
               Abmelden
             </button>
           </div>
+        </div>
+
+        <!-- Bestellungen Inhalt -->
+        <div id="ordersSection" style="display: block">
+          <div id="ordersList">Lade Bestellungen...</div>
         </div>
 
         <!-- Benachrichtigungs-Einstellungen Modal -->
@@ -203,22 +214,6 @@
             </div>
 
             <div style="margin-bottom: 16px">
-              <label
-                style="display: flex; align-items: center; margin-bottom: 8px"
-              >
-                <input
-                  type="checkbox"
-                  id="smsNotifications"
-                  style="margin-right: 8px"
-                />
-                📱 SMS-Benachrichtigungen
-              </label>
-              <div style="margin-left: 24px; font-size: 0.9em; color: #666">
-                Über E-Mail-to-SMS Gateway (kostenlos)
-              </div>
-            </div>
-
-            <div style="margin-bottom: 16px">
               <label style="display: flex; align-items: center">
                 <input
                   type="checkbox"
@@ -249,20 +244,6 @@
               />
             </div>
 
-            <div
-              style="
-                margin-bottom: 20px;
-                padding: 12px;
-                background: #f0f8ff;
-                border-radius: 8px;
-                font-size: 0.9em;
-              "
-            >
-              <strong>💡 SMS-Setup:</strong><br />
-              Für SMS-Benachrichtigungen tragen Sie in der email.js Ihre
-              Handynummer ein und wählen Ihren Mobilfunkanbieter.
-            </div>
-
             <div style="display: flex; gap: 8px; justify-content: flex-end">
               <button
                 id="cancelNotificationSettings"
@@ -289,8 +270,6 @@
           </div>
         </div>
 
-        <div id="ordersList">Lade Bestellungen...</div>
-
         <!-- Archiv Bereich -->
         <div
           style="
@@ -299,16 +278,15 @@
             padding-top: 20px;
           "
         >
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 20px;
-            "
+          <h2
+            style="margin: 0 0 20px 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('archiveSection')"
+            title="Klicken zum Ein-/Ausblenden"
           >
-            <h2 style="margin: 0">📦 Archiv</h2>
-            <div>
+            📦 Archiv <span id="archiveToggle">▶</span>
+          </h2>
+          <div id="archiveSection" style="display: none">
+            <div style="margin-bottom: 16px">
               <button
                 id="archiveAllFinishedBtn"
                 class="btn-small"
@@ -316,16 +294,7 @@
               >
                 📦 Alle fertigen archivieren
               </button>
-              <button
-                id="toggleArchiveBtn"
-                class="btn-small"
-                style="background: #666; margin-left: 8px"
-              >
-                Anzeigen/Verbergen
-              </button>
             </div>
-          </div>
-          <div id="archiveSection" style="display: none">
             <div id="archivesList">Lade Archiv...</div>
           </div>
         </div>
@@ -337,35 +306,16 @@
             padding-top: 20px;
           "
         >
-          <h2 style="margin: 0 0 12px 0">💰 Buchhaltung & Umsatz</h2>
-          <div id="accountingStats">Lade Buchhaltungsdaten...</div>
-        </div>
-
-        <div
-          style="
-            margin-top: 32px;
-            border-top: 1px solid #eef4ee;
-            padding-top: 20px;
-          "
-        >
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 12px;
-            "
+          <h2
+            style="margin: 0 0 20px 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('accountingSection')"
+            title="Klicken zum Ein-/Ausblenden"
           >
-            <h2 style="margin: 0">📅 Bestellkalender</h2>
-            <button
-              onclick="window.calendarManager.goToToday()"
-              class="btn btn-small"
-              style="background: var(--clr-accent)"
-            >
-              📍 Heute
-            </button>
+            💰 Buchhaltung & Umsatz <span id="accountingToggle">▶</span>
+          </h2>
+          <div id="accountingSection" style="display: none">
+            <div id="accountingStats">Lade Buchhaltungsdaten...</div>
           </div>
-          <div id="calendarView">Lade Kalender...</div>
         </div>
 
         <div
@@ -375,8 +325,44 @@
             padding-top: 20px;
           "
         >
-          <h2 style="margin: 0 0 12px 0">Bewertungen</h2>
-          <div id="reviewsList">Lade Bewertungen...</div>
+          <h2
+            style="margin: 0 0 20px 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('calendarSection')"
+            title="Klicken zum Ein-/Ausblenden"
+          >
+            📅 Bestellkalender <span id="calendarToggle">▶</span>
+          </h2>
+          <div id="calendarSection" style="display: none">
+            <div style="margin-bottom: 12px">
+              <button
+                onclick="window.calendarManager.goToToday()"
+                class="btn btn-small"
+                style="background: var(--clr-accent)"
+              >
+                📍 Heute
+              </button>
+            </div>
+            <div id="calendarView">Lade Kalender...</div>
+          </div>
+        </div>
+
+        <div
+          style="
+            margin-top: 32px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 20px;
+          "
+        >
+          <h2
+            style="margin: 0 0 20px 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('reviewsSection')"
+            title="Klicken zum Ein-/Ausblenden"
+          >
+            ⭐ Bewertungen <span id="reviewsToggle">▶</span>
+          </h2>
+          <div id="reviewsSection" style="display: none">
+            <div id="reviewsList">Lade Bewertungen...</div>
+          </div>
         </div>
       </div>
       <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -395,6 +381,69 @@
       <script src="js/admin/accounting.js"></script>
       <script src="js/admin/calendar.js"></script>
       <script src="js/admin/admin.js"></script>
+
+      <script>
+        // Kollabierbare Sektionen
+        function toggleSection(sectionId) {
+          const section = document.getElementById(sectionId);
+          const toggleIcon = document.getElementById(
+            sectionId.replace("Section", "Toggle")
+          );
+
+          if (section.style.display === "none") {
+            section.style.display = "block";
+            if (toggleIcon) toggleIcon.textContent = "▼";
+
+            // Daten laden wenn Sektion geöffnet wird
+            if (sectionId === "archiveSection" && window.archiveManager) {
+              window.archiveManager.loadArchives();
+            } else if (
+              sectionId === "accountingSection" &&
+              window.accountingManager
+            ) {
+              window.accountingManager.loadAccountingData();
+            } else if (
+              sectionId === "calendarSection" &&
+              window.calendarManager
+            ) {
+              window.calendarManager.loadCalendarData();
+            }
+          } else {
+            section.style.display = "none";
+            if (toggleIcon) toggleIcon.textContent = "▶";
+          }
+        }
+
+        // Initial state: Nur Bestellungen geöffnet, alle anderen geschlossen
+        document.addEventListener("DOMContentLoaded", function () {
+          // Warten bis DOM vollständig geladen ist
+          setTimeout(() => {
+            // Alle anderen Sektionen schließen (außer Bestellungen)
+            const sectionsToClose = [
+              "archiveSection",
+              "accountingSection",
+              "calendarSection",
+              "reviewsSection",
+            ];
+            sectionsToClose.forEach((sectionId) => {
+              const section = document.getElementById(sectionId);
+              const toggleIcon = document.getElementById(
+                sectionId.replace("Section", "Toggle")
+              );
+              if (section) {
+                section.style.display = "none";
+                if (toggleIcon) toggleIcon.textContent = "▶";
+              }
+            });
+
+            // Bestellungen offen lassen
+            const ordersSection = document.getElementById("ordersSection");
+            const ordersToggle = document.getElementById("ordersToggle");
+            if (ordersSection) ordersSection.style.display = "block";
+            if (ordersToggle) ordersToggle.textContent = "▼";
+          }, 100);
+        });
+      </script>
 
       <footer class="site-footer">
         <p>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase Debug - Laura's Backstube</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/website-protection.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header class="site-header">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <div class="title">Laura's Backstube</div>
+            <div class="subtitle">Firebase Debug</div>
+          </div>
+        </div>
+        <nav>
+          <a href="index.html">Startseite</a>
+          <a href="admin.html">Admin</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <h1>🔧 Firebase Debug-Console</h1>
+        <p>Diese Seite hilft bei der Diagnose von Firebase-Problemen.</p>
+      </section>
+
+      <div
+        style="
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          margin: 20px 0;
+        "
+      >
+        <h3>Firebase-Verbindung testen</h3>
+        <button onclick="testFirebaseConnection()" class="btn">
+          Verbindung testen
+        </button>
+        <button onclick="listAllCollections()" class="btn">
+          Collections auflisten
+        </button>
+        <button onclick="testOrdersCollection()" class="btn">
+          Bestellungen prüfen
+        </button>
+        <button onclick="createTestOrder()" class="btn btn-outline">
+          Test-Bestellung erstellen
+        </button>
+      </div>
+
+      <div
+        id="debug-output"
+        style="
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 12px;
+          font-family: monospace;
+          white-space: pre-wrap;
+          max-height: 500px;
+          overflow-y: auto;
+        "
+      >
+        Warte auf Test-Ausführung...
+      </div>
+
+      <div
+        style="
+          background: #fff3cd;
+          border: 1px solid #ffeaa7;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+        "
+      >
+        <h4>🔍 Debug-Anweisungen:</h4>
+        <ol>
+          <li>Öffnen Sie die Browser-Entwicklertools (F12)</li>
+          <li>Gehen Sie zum "Console"-Tab</li>
+          <li>
+            Klicken Sie auf "Verbindung testen" und beobachten Sie die Console
+          </li>
+          <li>Bei Fehlern: Screenshot der Console-Ausgabe machen</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Firebase Bibliotheken -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="config/firebase.js"></script>
+    <script src="js/common.js"></script>
+
+    <script>
+      let db = null;
+
+      function logOutput(message, type = "info") {
+        const timestamp = new Date().toLocaleTimeString();
+        const output = document.getElementById("debug-output");
+        const prefix =
+          type === "error" ? "❌" : type === "success" ? "✅" : "ℹ️";
+        output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+        output.scrollTop = output.scrollHeight;
+
+        if (type === "error") {
+          console.error(message);
+        } else {
+          console.log(message);
+        }
+      }
+
+      async function testFirebaseConnection() {
+        logOutput("Starte Firebase-Verbindungstest...");
+
+        try {
+          // Firebase initialisieren
+          if (!firebase.apps.length) {
+            firebase.initializeApp(window.firebaseConfig);
+            logOutput("Firebase App initialisiert", "success");
+          } else {
+            logOutput("Firebase App bereits initialisiert", "info");
+          }
+
+          // Firestore-Instanz erstellen
+          db = firebase.firestore();
+          logOutput("Firestore-Instanz erstellt", "success");
+
+          // Einfache Test-Abfrage
+          const testCollection = await db.collection("orders").limit(1).get();
+          logOutput(
+            `Verbindung erfolgreich! Collections erreichbar. Test-Abfrage ergab ${testCollection.size} Dokument(e)`,
+            "success"
+          );
+
+          // Weitere Details
+          logOutput(`Firebase-Projekt: ${window.firebaseConfig.projectId}`);
+          logOutput(`Firebase-App Name: ${firebase.app().name}`);
+
+          return true;
+        } catch (error) {
+          logOutput(`Firebase-Verbindungsfehler: ${error.message}`, "error");
+          logOutput(`Error Code: ${error.code}`, "error");
+          logOutput(
+            `Vollständiger Fehler: ${JSON.stringify(error, null, 2)}`,
+            "error"
+          );
+          return false;
+        }
+      }
+
+      async function listAllCollections() {
+        if (!db) {
+          logOutput(
+            "Firebase nicht initialisiert. Führen Sie zuerst den Verbindungstest durch.",
+            "error"
+          );
+          return;
+        }
+
+        logOutput("Prüfe verfügbare Collections...");
+
+        try {
+          const collections = [
+            "orders",
+            "customers",
+            "reviews",
+            "archived_orders",
+          ];
+
+          for (const collectionName of collections) {
+            const snapshot = await db.collection(collectionName).limit(5).get();
+            logOutput(
+              `Collection "${collectionName}": ${snapshot.size} Dokumente (erste 5 gezeigt)`
+            );
+
+            if (!snapshot.empty) {
+              snapshot.forEach((doc) => {
+                const data = doc.data();
+                logOutput(
+                  `  Dokument ${doc.id}: ${JSON.stringify(
+                    data,
+                    null,
+                    2
+                  ).substring(0, 200)}...`
+                );
+              });
+            }
+          }
+        } catch (error) {
+          logOutput(
+            `Fehler beim Auflisten der Collections: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      async function testOrdersCollection() {
+        if (!db) {
+          logOutput(
+            "Firebase nicht initialisiert. Führen Sie zuerst den Verbindungstest durch.",
+            "error"
+          );
+          return;
+        }
+
+        logOutput("Analysiere Bestellungen-Collection...");
+
+        try {
+          // Alle Bestellungen laden
+          const allOrders = await db.collection("orders").get();
+          logOutput(`Gesamt Bestellungen: ${allOrders.size}`);
+
+          if (allOrders.empty) {
+            logOutput(
+              "❗ Keine Bestellungen in der Datenbank gefunden!",
+              "error"
+            );
+            return;
+          }
+
+          // Beispiel-Bestellung analysieren
+          const firstOrder = allOrders.docs[0];
+          const orderData = firstOrder.data();
+          logOutput(`Erste Bestellung (${firstOrder.id}):`);
+          logOutput(JSON.stringify(orderData, null, 2));
+
+          // Verschiedene Datumfelder prüfen
+          logOutput("\nDatumfelder-Analyse:");
+          logOutput(`created: ${orderData.created}`);
+          logOutput(`wunschtermin: ${JSON.stringify(orderData.wunschtermin)}`);
+          logOutput(`gesamtpreis: ${orderData.gesamtpreis}`);
+          logOutput(`price: ${orderData.price}`);
+          logOutput(`status: ${orderData.status}`);
+
+          // Status-Statistik
+          const statusCounts = {};
+          allOrders.forEach((doc) => {
+            const status = doc.data().status || "unbekannt";
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+          });
+
+          logOutput("\nStatus-Übersicht:");
+          Object.entries(statusCounts).forEach(([status, count]) => {
+            logOutput(`  ${status}: ${count}`);
+          });
+        } catch (error) {
+          logOutput(
+            `Fehler beim Analysieren der Bestellungen: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      async function createTestOrder() {
+        if (!db) {
+          logOutput(
+            "Firebase nicht initialisiert. Führen Sie zuerst den Verbindungstest durch.",
+            "error"
+          );
+          return;
+        }
+
+        logOutput("Erstelle Test-Bestellung...");
+
+        try {
+          const testOrder = {
+            created: new Date().toISOString(),
+            status: "neu",
+            gesamtpreis: 55.5,
+            anlass: "test",
+            details: {
+              durchmesserCm: 18,
+              extras: ["schokoboden", "buttercreme"],
+            },
+            wunschtermin: {
+              datum: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0], // In 7 Tagen
+              uhrzeit: "14:00",
+            },
+            customerId: "test_customer_" + Date.now(),
+          };
+
+          const docRef = await db.collection("orders").add(testOrder);
+          logOutput(`Test-Bestellung erstellt mit ID: ${docRef.id}`, "success");
+          logOutput("Test-Daten: " + JSON.stringify(testOrder, null, 2));
+        } catch (error) {
+          logOutput(
+            `Fehler beim Erstellen der Test-Bestellung: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Auto-Test beim Laden der Seite
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(() => {
+          testFirebaseConnection();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

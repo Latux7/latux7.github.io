@@ -8,14 +8,24 @@ class OrderManager {
 
     init() {
         // Firebase App erst initialisieren, dann Firestore verwenden
+        console.log('OrderManager: Initialisiere Firebase...');
+
         if (typeof initializeFirebaseApp === 'function') {
             this.db = initializeFirebaseApp();
+            console.log('OrderManager: Firebase über initializeFirebaseApp initialisiert');
         } else {
             // Fallback: Firebase direkt verwenden falls schon initialisiert
             if (!firebase.apps.length) {
                 firebase.initializeApp(window.firebaseConfig);
+                console.log('OrderManager: Firebase direkt initialisiert');
             }
             this.db = firebase.firestore();
+        }
+
+        if (this.db) {
+            console.log('OrderManager: Firestore erfolgreich initialisiert');
+        } else {
+            console.error('OrderManager: Firestore-Initialisierung fehlgeschlagen!');
         }
     }
 
@@ -322,7 +332,17 @@ class OrderManager {
     // Bestellungen laden und anzeigen
     async loadOrders() {
         try {
+            console.log('OrderManager: Lade Bestellungen...');
             showLoading('ordersList', 'Lade Bestellungen...');
+
+            if (!this.db) {
+                console.error('OrderManager: Firestore nicht initialisiert!');
+                document.getElementById('ordersList').innerHTML = '<p style="color: red;">Fehler: Firebase nicht initialisiert!</p>';
+                return;
+            }
+
+            // Teste Firebase-Verbindung
+            console.log('OrderManager: Teste Firebase-Verbindung...');
 
             // Vereinfachte Abfrage ohne Composite Index
             // Erst alle aktiven Bestellungen laden, dann clientseitig filtern und sortieren
@@ -331,7 +351,10 @@ class OrderManager {
                 .orderBy("created", "desc")
                 .get();
 
+            console.log('OrderManager: Datenbankabfrage abgeschlossen. Anzahl Dokumente:', ordersSnapshot.size);
+
             if (ordersSnapshot.empty) {
+                console.log('OrderManager: Keine Bestellungen in der Datenbank gefunden');
                 document.getElementById('ordersList').innerHTML = '<p>Keine Bestellungen vorhanden.</p>';
                 return;
             }
@@ -366,16 +389,20 @@ class OrderManager {
                     return dateB - dateA;
                 });
 
+            console.log('OrderManager: Gefilterte aktive Bestellungen:', activeOrders.length);
+
             let html = "";
             for (const doc of activeOrders) {
                 const order = doc.data();
+                console.log('OrderManager: Verarbeite Bestellung:', doc.id, order);
                 html += await this.renderOrder(doc, order);
             }
 
             document.getElementById('ordersList').innerHTML = html;
+            console.log('OrderManager: Bestellungen erfolgreich geladen und angezeigt');
         } catch (error) {
-            console.error("Fehler beim Laden der Bestellungen:", error);
-            document.getElementById('ordersList').innerHTML = '<p>Fehler beim Laden der Bestellungen.</p>';
+            console.error("OrderManager: Fehler beim Laden der Bestellungen:", error);
+            document.getElementById('ordersList').innerHTML = '<p style="color: red;">Fehler beim Laden der Bestellungen: ' + error.message + '</p>';
         }
     }
 

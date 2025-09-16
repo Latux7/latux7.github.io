@@ -53,8 +53,8 @@ window.emailConfig = {
 
     // Lieferoptionen
     deliveryMessages: {
-        abholung: "Ihre Bestellung kann abgeholt werden! <br> Bitte kommen Sie vorbei.",
-        lieferung: "Ihre Bestellung wird in Kürze geliefert! <br> Wir werden uns bald bei Ihnen melden.",
+        abholung: "Ihre Bestellung kann abgeholt werden! Bitte kommen Sie vorbei.",
+        lieferung: "Ihre Bestellung wird in Kürze geliefert! Wir werden uns bald bei Ihnen melden.",
     },
 
     // Admin-Benachrichtigungseinstellungen
@@ -62,32 +62,13 @@ window.emailConfig = {
         // E-Mail-Adresse für Admin-Benachrichtigungen
         adminEmail: "lauratustean@gmail.com",
 
-        // SMS-Benachrichtigungen (über E-Mail-to-SMS Gateway)
-        smsSettings: {
-            enabled: true,
-            // Telefonnummer für SMS (wird als E-Mail versendet)
-            phoneNumber: "+49152545566388", // Ihre Handynummer
-
-            // E-Mail-to-SMS Gateways (kostenlos)
-            gateways: {
-                // Telekom: handynummer@t-d1-sms.de
-                telekom: "t-d1-sms.de",
-                // Vodafone: handynummer@vodafone-sms.de  
-                vodafone: "vodafone-sms.de",
-                // O2: handynummer@o2online.de
-                o2: "o2online.de"
-            },
-            selectedGateway: "telekom" // Wählen Sie Ihren Anbieter
-        },
-
         // Benachrichtigungsintervall (wie oft nach neuen Bestellungen suchen)
-        checkInterval: 30000, // 30 Sekunden
+        checkInterval: 10000, // 10 Sekunden
 
         // Benachrichtigungsoptionen
         options: {
-            email: true, // E-Mail-Benachrichtigungen IMMER aktiviert (nicht steuerbar)
-            sms: false,   // SMS vorerst deaktiviert (kann später aktiviert werden)
-            sound: true   // Sound-Benachrichtigung im Browser
+            email: true, // E-Mail-Benachrichtigungen
+            sound: true  // Sound-Benachrichtigung im Browser
         }
     }
 };

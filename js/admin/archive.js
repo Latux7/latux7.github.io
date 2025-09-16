@@ -278,18 +278,6 @@ class ArchiveManager {
         }
     }
 
-    // Toggle Archiv-Bereich
-    toggleArchive() {
-        const archiveSection = document.getElementById('archiveSection');
-        const isVisible = archiveSection.style.display !== 'none';
-
-        if (isVisible) {
-            archiveSection.style.display = 'none';
-        } else {
-            archiveSection.style.display = 'block';
-            this.loadArchives(); // Laden wenn angezeigt
-        }
-    }
 }
 
 // Globale Funktionen für HTML-Callbacks
@@ -299,10 +287,6 @@ window.archiveOrder = async function (orderId) {
 
 window.archiveAllFinished = async function () {
     await window.archiveManager.archiveAllFinished();
-};
-
-window.toggleArchive = function () {
-    window.archiveManager.toggleArchive();
 };
 
 // Globale Instanz für Admin-Dashboard

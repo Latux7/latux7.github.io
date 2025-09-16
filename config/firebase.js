@@ -10,15 +10,19 @@ window.firebaseConfig = {
 
 // Firebase App initialisieren mit verbesserter Fehlerbehandlung
 function initializeFirebaseApp() {
+  console.log('initializeFirebaseApp: Starte Firebase-Initialisierung...');
+
   if (!firebase.apps.length) {
     try {
       firebase.initializeApp(window.firebaseConfig);
-      console.log('Firebase App initialisiert');
+      console.log('✅ Firebase App erfolgreich initialisiert');
     } catch (error) {
-      console.error('Fehler bei Firebase-Initialisierung:', error);
+      console.error('❌ Fehler bei Firebase-Initialisierung:', error);
       showNotification('Firebase-Verbindung fehlgeschlagen. Bitte prüfen Sie Ihre Internetverbindung oder deaktivieren Sie Adblocker.', 'error');
       return null;
     }
+  } else {
+    console.log('ℹ️ Firebase App bereits initialisiert');
   }
 
   // Firestore mit verbesserter Konfiguration
@@ -30,9 +34,19 @@ function initializeFirebaseApp() {
       cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
       experimentalForceLongPolling: true // Hilft bei Adblocker-Problemen
     });
+    console.log('✅ Firestore-Settings konfiguriert');
   } catch (settingsError) {
-    console.warn('Firestore-Settings konnten nicht gesetzt werden:', settingsError);
+    console.warn('⚠️ Firestore-Settings konnten nicht gesetzt werden:', settingsError);
   }
+
+  // Test-Abfrage um Verbindung zu verifizieren
+  db.collection('orders').limit(1).get()
+    .then(snapshot => {
+      console.log(`✅ Firebase-Verbindung verifiziert. Zugriff auf ${snapshot.size} Test-Dokument(e)`);
+    })
+    .catch(error => {
+      console.error('❌ Firebase-Verbindung fehlgeschlagen:', error);
+    });
 
   return db;
 }

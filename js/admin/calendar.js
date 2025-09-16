@@ -9,22 +9,44 @@ class CalendarManager {
     }
 
     init() {
+        console.log('CalendarManager: Initialisiere Firebase...');
+
         // Firebase App erst initialisieren, dann Firestore verwenden
         if (typeof initializeFirebaseApp === 'function') {
             this.db = initializeFirebaseApp();
+            console.log('CalendarManager: Firebase über initializeFirebaseApp initialisiert');
         } else {
+            console.warn('CalendarManager: initializeFirebaseApp nicht verfügbar, verwende Fallback');
             setTimeout(() => {
-                this.db = initializeFirebaseApp();
+                if (typeof initializeFirebaseApp === 'function') {
+                    this.db = initializeFirebaseApp();
+                    console.log('CalendarManager: Firebase über Fallback initialisiert');
+                } else {
+                    // Direkte Initialisierung falls die Funktion immer noch nicht verfügbar ist
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(window.firebaseConfig);
+                    }
+                    this.db = firebase.firestore();
+                    console.log('CalendarManager: Firebase direkt initialisiert');
+                }
                 this.loadCalendarData();
             }, 1000);
+        }
+
+        if (this.db) {
+            console.log('CalendarManager: Firestore erfolgreich initialisiert');
+        } else {
+            console.error('CalendarManager: Firestore-Initialisierung fehlgeschlagen!');
         }
     }
 
     // Bestellungen für einen Monat laden
     async loadOrdersForMonth(year, month) {
         try {
+            console.log(`CalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
+
             if (!this.db) {
-                console.warn('Firebase noch nicht initialisiert');
+                console.error('CalendarManager: Firebase noch nicht initialisiert');
                 return [];
             }
 
@@ -32,26 +54,65 @@ class CalendarManager {
             const startDate = new Date(year, month, 1);
             const endDate = new Date(year, month + 1, 0, 23, 59, 59);
 
-            const ordersSnapshot = await this.db.collection('orders')
-                .where('wunschDatum', '>=', startDate.toISOString().split('T')[0])
-                .where('wunschDatum', '<=', endDate.toISOString().split('T')[0])
-                .orderBy('wunschDatum', 'asc')
-                .get();
+            console.log(`CalendarManager: Datumbereich: ${startDate.toDateString()} bis ${endDate.toDateString()}`);
 
-            const orders = [];
-            ordersSnapshot.forEach(doc => {
-                const orderData = doc.data();
-                orders.push({
-                    id: doc.id,
-                    ...orderData,
-                    date: orderData.wunschDatum || orderData.created?.split('T')[0]
+            // Versuche verschiedene Datumfelder und Formate
+            let orders = [];
+
+            // Methode 1: wunschtermin.datum als String
+            try {
+                const ordersSnapshot1 = await this.db.collection('orders')
+                    .where('wunschtermin.datum', '>=', startDate.toISOString().split('T')[0])
+                    .where('wunschtermin.datum', '<=', endDate.toISOString().split('T')[0])
+                    .get();
+
+                console.log(`CalendarManager: Methode 1 (wunschtermin.datum): ${ordersSnapshot1.size} Bestellungen`);
+
+                ordersSnapshot1.forEach(doc => {
+                    const orderData = doc.data();
+                    orders.push({
+                        id: doc.id,
+                        ...orderData,
+                        date: orderData.wunschtermin?.datum
+                    });
                 });
+            } catch (error) {
+                console.warn('CalendarManager: Methode 1 fehlgeschlagen:', error);
+            }
+
+            // Wenn keine Daten, versuche created-Feld
+            if (orders.length === 0) {
+                try {
+                    const ordersSnapshot2 = await this.db.collection('orders')
+                        .where('created', '>=', startDate.toISOString())
+                        .where('created', '<=', endDate.toISOString())
+                        .get();
+
+                    console.log(`CalendarManager: Methode 2 (created): ${ordersSnapshot2.size} Bestellungen`);
+
+                    ordersSnapshot2.forEach(doc => {
+                        const orderData = doc.data();
+                        const createdDate = new Date(orderData.created);
+                        orders.push({
+                            id: doc.id,
+                            ...orderData,
+                            date: createdDate.toISOString().split('T')[0]
+                        });
+                    });
+                } catch (error) {
+                    console.warn('CalendarManager: Methode 2 fehlgeschlagen:', error);
+                }
+            }
+
+            console.log(`CalendarManager: Gesamt gefundene Bestellungen: ${orders.length}`);
+            orders.forEach(order => {
+                console.log(`CalendarManager: Bestellung ${order.id} für ${order.date}`);
             });
 
             return orders;
 
         } catch (error) {
-            console.error('Fehler beim Laden der Kalender-Bestellungen:', error);
+            console.error('CalendarManager: Fehler beim Laden der Kalender-Bestellungen:', error);
             return [];
         }
     }

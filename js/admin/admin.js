@@ -93,15 +93,6 @@ class AdminDashboard {
             });
         }
 
-        const toggleArchiveBtn = document.getElementById('toggleArchiveBtn');
-        if (toggleArchiveBtn) {
-            toggleArchiveBtn.addEventListener('click', () => {
-                if (window.archiveManager) {
-                    window.archiveManager.toggleArchive();
-                }
-            });
-        }
-
         // Test-Notification Button
         const testNotificationBtn = document.getElementById('testNotificationBtn');
         if (testNotificationBtn) {
@@ -271,15 +262,13 @@ class AdminDashboard {
     loadNotificationSettings() {
         const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
         const emailEnabled = true; // E-Mail-Benachrichtigungen sind IMMER aktiviert
-        const smsEnabled = localStorage.getItem("smsNotifications") === "true";
         const soundEnabled = localStorage.getItem("soundNotifications") !== "false"; // Default true
-        const checkInterval = localStorage.getItem("checkInterval") || "30";
+        const checkInterval = localStorage.getItem("checkInterval") || "10";
 
         // Checkboxen setzen
         const elements = {
             notificationsEnabled: document.getElementById('notificationsEnabled'),
             emailNotifications: document.getElementById('emailNotifications'),
-            smsNotifications: document.getElementById('smsNotifications'),
             soundNotifications: document.getElementById('soundNotifications'),
             checkInterval: document.getElementById('checkInterval')
         };
@@ -290,14 +279,12 @@ class AdminDashboard {
             elements.emailNotifications.disabled = true; // Nicht änderbar
             elements.emailNotifications.title = "E-Mail-Benachrichtigungen sind permanent aktiviert";
         }
-        if (elements.smsNotifications) elements.smsNotifications.checked = smsEnabled;
         if (elements.soundNotifications) elements.soundNotifications.checked = soundEnabled;
         if (elements.checkInterval) elements.checkInterval.value = checkInterval;
 
         // EmailConfig aktualisieren
         if (window.emailConfig && window.emailConfig.adminNotifications) {
             window.emailConfig.adminNotifications.options.email = true; // Immer aktiviert
-            window.emailConfig.adminNotifications.options.sms = smsEnabled;
             window.emailConfig.adminNotifications.options.sound = soundEnabled;
             window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
         }
@@ -333,21 +320,18 @@ class AdminDashboard {
 
         const enabled = enabledCheckbox.checked;
         const emailEnabled = true; // Email-Benachrichtigungen sind IMMER aktiviert
-        const smsEnabled = document.getElementById('smsNotifications')?.checked || false;
         const soundEnabled = document.getElementById('soundNotifications')?.checked || false;
-        const checkInterval = document.getElementById('checkInterval')?.value || 30;
+        const checkInterval = document.getElementById('checkInterval')?.value || 10;
 
         // Einstellungen in localStorage speichern
         localStorage.setItem("notificationsEnabled", enabled.toString());
         localStorage.setItem("emailNotifications", "true"); // Immer aktiviert
-        localStorage.setItem("smsNotifications", smsEnabled.toString());
         localStorage.setItem("soundNotifications", soundEnabled.toString());
         localStorage.setItem("checkInterval", checkInterval.toString());
 
         // EmailConfig aktualisieren
         if (window.emailConfig && window.emailConfig.adminNotifications) {
             window.emailConfig.adminNotifications.options.email = true; // Immer aktiviert
-            window.emailConfig.adminNotifications.options.sms = smsEnabled;
             window.emailConfig.adminNotifications.options.sound = soundEnabled;
             window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
         }

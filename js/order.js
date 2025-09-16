@@ -223,6 +223,18 @@ class OrderManager {
         // Setze Minimum-Datum auf heute
         const heute = new Date().toISOString().split("T")[0];
         document.getElementById("wunschDatum").min = heute;
+
+        // Datum aus URL-Parameter übernehmen (falls vom Kalender weitergeleitet)
+        const urlParams = new URLSearchParams(window.location.search);
+        const dateParam = urlParams.get('date');
+
+        if (dateParam) {
+            const targetDate = new Date(dateParam);
+            if (!isNaN(targetDate.getTime()) && dateParam >= heute) {
+                document.getElementById("wunschDatum").value = dateParam;
+                showNotification(`Datum ${targetDate.toLocaleDateString('de-DE')} aus Kalender übernommen`, 'success');
+            }
+        }
     }
 
     async handleSubmit(e) {
