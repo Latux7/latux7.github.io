@@ -9,6 +9,7 @@ window.emailConfig = {
     templates: {
         order_status: "template_2eyveh9", // Für angenommen/abgelehnt/in-vorbereitung
         order_ready: "template_ov1de3n", // Nur für "fertig"
+        new_order_notification: "template_new_order", // Für Admin-Benachrichtigungen bei neuen Bestellungen
     },
 
     // EmailJS Public Key (von Ihrem EmailJS Account)
@@ -54,5 +55,39 @@ window.emailConfig = {
     deliveryMessages: {
         abholung: "und kann abgeholt werden! Bitte kommen Sie vorbei.",
         lieferung: "und wird in Kürze geliefert! Halten Sie sich bitte bereit."
+    },
+
+    // Admin-Benachrichtigungseinstellungen
+    adminNotifications: {
+        // E-Mail-Adresse für Admin-Benachrichtigungen
+        adminEmail: "lauratustean@gmail.com",
+
+        // SMS-Benachrichtigungen (über E-Mail-to-SMS Gateway)
+        smsSettings: {
+            enabled: true,
+            // Telefonnummer für SMS (wird als E-Mail versendet)
+            phoneNumber: "+49176xxxxx", // Ihre Handynummer
+
+            // E-Mail-to-SMS Gateways (kostenlos)
+            gateways: {
+                // Telekom: handynummer@t-d1-sms.de
+                telekom: "t-d1-sms.de",
+                // Vodafone: handynummer@vodafone-sms.de  
+                vodafone: "vodafone-sms.de",
+                // O2: handynummer@o2online.de
+                o2: "o2online.de"
+            },
+            selectedGateway: "telekom" // Wählen Sie Ihren Anbieter
+        },
+
+        // Benachrichtigungsintervall (wie oft nach neuen Bestellungen suchen)
+        checkInterval: 30000, // 30 Sekunden
+
+        // Benachrichtigungsoptionen
+        options: {
+            email: true, // E-Mail-Benachrichtigungen aktiviert
+            sms: false,   // SMS vorerst deaktiviert (kann später aktiviert werden)
+            sound: true   // Sound-Benachrichtigung im Browser
+        }
     }
 };

@@ -142,6 +142,19 @@
           </div>
         </div>
       </section>
+
+      <!-- Bewertungen Sektion -->
+      <section class="reviews-section">
+        <div class="reviews-header">
+          <h2>Was unsere Kunden sagen</h2>
+          <p>Echte Bewertungen von zufriedenen Kunden</p>
+        </div>
+        
+        <div class="reviews-grid" id="reviewsGrid">
+          <div class="loading-reviews">Lade Bewertungen...</div>
+        </div>
+      </section>
+
       <footer class="site-footer">
         <p>&copy; 2025 Laura's Backstube</p>
       </footer>
@@ -197,5 +210,9 @@
         });
       });
     </script>
+    <script src="firebase-config.js"></script>
+    <script src="reviews.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   </body>
 </html>

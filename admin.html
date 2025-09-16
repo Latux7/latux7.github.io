@@ -88,8 +88,155 @@
           "
         >
           <h2 style="margin: 0">Bestellungen</h2>
-          <button id="logoutBtn" class="btn-small btn-danger">Abmelden</button>
+          <div>
+            <button
+              id="notificationSettingsBtn"
+              class="btn-small"
+              style="background: #2196f3; margin-right: 8px"
+            >
+              🔔 Benachrichtigungen
+            </button>
+            <button id="logoutBtn" class="btn-small btn-danger">
+              Abmelden
+            </button>
+          </div>
         </div>
+
+        <!-- Benachrichtigungs-Einstellungen Modal -->
+        <div
+          id="notificationModal"
+          style="
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+          "
+        >
+          <div
+            style="
+              background: white;
+              padding: 24px;
+              border-radius: 16px;
+              max-width: 500px;
+              width: 90%;
+              max-height: 80vh;
+              overflow-y: auto;
+            "
+          >
+            <h3 style="margin: 0 0 16px 0; color: #92d050">
+              🔔 Benachrichtigungseinstellungen
+            </h3>
+
+            <div style="margin-bottom: 16px">
+              <label
+                style="display: flex; align-items: center; margin-bottom: 8px"
+              >
+                <input
+                  type="checkbox"
+                  id="emailNotifications"
+                  checked
+                  style="margin-right: 8px"
+                />
+                📧 E-Mail-Benachrichtigungen
+              </label>
+              <div style="margin-left: 24px; font-size: 0.9em; color: #666">
+                An: <span id="currentEmailAddress"></span>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 16px">
+              <label
+                style="display: flex; align-items: center; margin-bottom: 8px"
+              >
+                <input
+                  type="checkbox"
+                  id="smsNotifications"
+                  style="margin-right: 8px"
+                />
+                📱 SMS-Benachrichtigungen
+              </label>
+              <div style="margin-left: 24px; font-size: 0.9em; color: #666">
+                Über E-Mail-to-SMS Gateway (kostenlos)
+              </div>
+            </div>
+
+            <div style="margin-bottom: 16px">
+              <label style="display: flex; align-items: center">
+                <input
+                  type="checkbox"
+                  id="soundNotifications"
+                  checked
+                  style="margin-right: 8px"
+                />
+                🔊 Sound-Benachrichtigungen
+              </label>
+            </div>
+
+            <div style="margin-bottom: 16px">
+              <label style="display: block; margin-bottom: 4px">
+                ⏱️ Prüfintervall (Sekunden):
+              </label>
+              <input
+                type="number"
+                id="checkInterval"
+                value="30"
+                min="10"
+                max="300"
+                style="
+                  width: 100px;
+                  padding: 4px 8px;
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                "
+              />
+            </div>
+
+            <div
+              style="
+                margin-bottom: 20px;
+                padding: 12px;
+                background: #f0f8ff;
+                border-radius: 8px;
+                font-size: 0.9em;
+              "
+            >
+              <strong>💡 SMS-Setup:</strong><br />
+              Für SMS-Benachrichtigungen tragen Sie in der email-config.js Ihre
+              Handynummer ein und wählen Ihren Mobilfunkanbieter.
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: flex-end">
+              <button
+                id="cancelNotificationSettings"
+                class="btn-small"
+                style="background: #666"
+              >
+                Abbrechen
+              </button>
+              <button
+                id="saveNotificationSettings"
+                class="btn-small"
+                style="background: #4caf50"
+              >
+                Speichern
+              </button>
+              <button
+                id="testNotificationBtn"
+                class="btn-small"
+                style="background: #ff9800"
+              >
+                🧪 Test
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div id="ordersList">Lade Bestellungen...</div>
 
         <!-- Archiv Bereich -->
@@ -111,18 +258,11 @@
             <h2 style="margin: 0">📦 Archiv</h2>
             <div>
               <button
-                id="refreshArchiveBtn"
-                class="btn-small"
-                style="background: #92d050; margin-right: 8px"
-              >
-                🔄 Aktualisieren
-              </button>
-              <button
-                id="autoArchiveBtn"
+                id="archiveAllFinishedBtn"
                 class="btn-small"
                 style="background: #ff9800"
               >
-                ⏰ Auto-Archivierung (7+ Tage)
+                📦 Alle fertigen archivieren
               </button>
             </div>
           </div>
@@ -172,6 +312,237 @@
         // Firebase-Konfiguration aus externer Datei
         firebase.initializeApp(window.firebaseConfig);
         const db = firebase.firestore();
+
+        // ==================== BENACHRICHTIGUNGSSYSTEM ====================
+
+        // Variable für die letzte bekannte Anzahl von Bestellungen
+        let lastOrderCount = 0;
+        let notificationInterval = null;
+        let autoArchiveInterval = null;
+
+        // Admin-Benachrichtigung senden
+        async function sendAdminNotification(orderData, customerData) {
+          const config = window.emailConfig.adminNotifications;
+
+          if (!config.options.email && !config.options.sms) {
+            return; // Keine Benachrichtigungen aktiviert
+          }
+
+          try {
+            // E-Mail-Benachrichtigung
+            if (config.options.email) {
+              const emailData = {
+                to_email: config.adminEmail,
+                to_name: "Admin",
+                customer_name: customerData.name || "Unbekannt",
+                customer_email: customerData.email || "Nicht angegeben",
+                customer_phone: customerData.telefon || "Nicht angegeben",
+                order_date: new Date().toLocaleString("de-DE"),
+                cake_size:
+                  orderData.details && orderData.details.durchmesserCm
+                    ? `${orderData.details.durchmesserCm} cm`
+                    : "Nicht spezifiziert",
+                extras:
+                  orderData.details && orderData.details.extras
+                    ? orderData.details.extras.join(", ")
+                    : "Keine",
+                delivery:
+                  orderData.details && orderData.details.lieferung
+                    ? orderData.details.lieferung === ""
+                      ? "Abholung"
+                      : `Lieferung ${orderData.details.lieferung}`
+                    : "Abholung",
+                total_price: orderData.gesamtpreis || "Nicht berechnet",
+                desired_date:
+                  orderData.wunschtermin && orderData.wunschtermin.datum
+                    ? new Date(orderData.wunschtermin.datum).toLocaleDateString(
+                        "de-DE"
+                      )
+                    : "Nicht angegeben",
+              };
+
+              await emailjs.send(
+                window.emailConfig.serviceId,
+                window.emailConfig.templates.new_order_notification,
+                emailData,
+                window.emailConfig.publicKey
+              );
+              console.log("Admin E-Mail-Benachrichtigung gesendet");
+            }
+
+            // SMS-Benachrichtigung (über E-Mail-to-SMS Gateway)
+            if (config.options.sms && config.smsSettings.enabled) {
+              const smsText = `Neue Tortenbestellung!\nKunde: ${
+                customerData.name
+              }\nGröße: ${orderData.details?.durchmesserCm || "?"}cm\nWert: ${
+                orderData.gesamtpreis || "?"
+              }€`;
+
+              const smsEmail = `${config.smsSettings.phoneNumber
+                .replace("+", "")
+                .replace(/\s/g, "")}@${
+                config.smsSettings.gateways[config.smsSettings.selectedGateway]
+              }`;
+
+              const smsData = {
+                to_email: smsEmail,
+                message: smsText,
+              };
+
+              // Hier würden Sie ein separates SMS-Template verwenden
+              console.log("SMS würde gesendet an:", smsEmail, "Text:", smsText);
+            }
+
+            // Sound-Benachrichtigung im Browser
+            if (config.options.sound) {
+              playNotificationSound();
+            }
+
+            showNotification(
+              "Admin-Benachrichtigung für neue Bestellung gesendet!",
+              "success"
+            );
+          } catch (error) {
+            console.error(
+              "Fehler beim Senden der Admin-Benachrichtigung:",
+              error
+            );
+          }
+        }
+
+        // Sound-Benachrichtigung abspielen
+        function playNotificationSound() {
+          // Erstelle einen kurzen Beep-Sound
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = 800; // Frequenz
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + 0.5
+          );
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Überwachung neuer Bestellungen
+        async function checkForNewOrders() {
+          try {
+            const snapshot = await db
+              .collection("orders")
+              .where("status", "==", "neu")
+              .get();
+            const currentOrderCount = snapshot.size;
+
+            if (lastOrderCount > 0 && currentOrderCount > lastOrderCount) {
+              // Neue Bestellung(en) gefunden!
+              const newOrders = currentOrderCount - lastOrderCount;
+              console.log(`${newOrders} neue Bestellung(en) gefunden!`);
+
+              // Hole die Details der neuesten Bestellung
+              const latestOrderSnap = await db
+                .collection("orders")
+                .where("status", "==", "neu")
+                .orderBy("created", "desc")
+                .limit(1)
+                .get();
+
+              if (!latestOrderSnap.empty) {
+                const orderDoc = latestOrderSnap.docs[0];
+                const orderData = orderDoc.data();
+
+                // Hole Kundendaten
+                let customerData = {};
+                if (orderData.customerId) {
+                  const customerDoc = await db
+                    .collection("customers")
+                    .doc(orderData.customerId)
+                    .get();
+                  if (customerDoc.exists) {
+                    customerData = customerDoc.data();
+                  }
+                }
+
+                // Sende Benachrichtigung
+                await sendAdminNotification(orderData, customerData);
+
+                // Zeige Browser-Benachrichtigung
+                if (Notification.permission === "granted") {
+                  new Notification("Neue Tortenbestellung!", {
+                    body: `Von: ${customerData.name || "Unbekannt"}\nWert: ${
+                      orderData.gesamtpreis || "?"
+                    }€`,
+                    icon: "/images/logo.png", // Falls Sie ein Logo haben
+                  });
+                }
+              }
+            }
+
+            lastOrderCount = currentOrderCount;
+          } catch (error) {
+            console.error("Fehler beim Prüfen neuer Bestellungen:", error);
+          }
+        }
+
+        // Benachrichtigungsüberwachung starten
+        function startOrderMonitoring() {
+          const config = window.emailConfig.adminNotifications;
+
+          // Browser-Benachrichtigungen anfordern
+          if (Notification.permission === "default") {
+            Notification.requestPermission();
+          }
+
+          // Initiale Anzahl setzen
+          checkForNewOrders().then(() => {
+            // Regelmäßige Überwachung starten
+            notificationInterval = setInterval(
+              checkForNewOrders,
+              config.checkInterval
+            );
+            console.log(
+              `Bestellungsüberwachung gestartet (alle ${
+                config.checkInterval / 1000
+              } Sekunden)`
+            );
+          });
+
+          // Auto-Archivierung alle 30 Minuten
+          autoArchiveInterval = setInterval(() => {
+            autoArchiveOldOrders(false); // Ohne Bestätigung
+          }, 30 * 60 * 1000); // 30 Minuten
+          console.log("Auto-Archivierung aktiviert (alle 30 Minuten)");
+
+          // Auto-Refresh für Listen alle 60 Sekunden
+          setInterval(() => {
+            loadOrders();
+            loadArchives();
+          }, 60 * 1000); // 60 Sekunden
+          console.log("Auto-Refresh für Listen aktiviert (alle 60 Sekunden)");
+        }
+
+        // Überwachung stoppen
+        function stopOrderMonitoring() {
+          if (notificationInterval) {
+            clearInterval(notificationInterval);
+            notificationInterval = null;
+            console.log("Bestellungsüberwachung gestoppt");
+          }
+          if (autoArchiveInterval) {
+            clearInterval(autoArchiveInterval);
+            autoArchiveInterval = null;
+            console.log("Auto-Archivierung gestoppt");
+          }
+        }
+
+        // ==================== ENDE BENACHRICHTIGUNGSSYSTEM ====================
 
         // Bestellung löschen (global verfügbar)
         window.deleteOrder = async function (orderId) {
@@ -499,8 +870,9 @@
         };
 
         // Automatische Archivierung für alte fertige Bestellungen
-        window.autoArchiveOldOrders = async function () {
+        async function autoArchiveOldOrders(showConfirm = true) {
           if (
+            showConfirm &&
             !confirm(
               "Alle fertigen Bestellungen älter als 7 Tage automatisch archivieren?"
             )
@@ -511,23 +883,90 @@
           try {
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const cutoffTime = sevenDaysAgo.getTime();
 
+            // Hole alle fertigen Bestellungen (ohne created-Filter um Index-Problem zu vermeiden)
             const oldOrdersSnap = await db
               .collection("orders")
               .where("status", "==", "fertig")
-              .where("created", "<", sevenDaysAgo.getTime())
               .get();
 
             let archivedCount = 0;
             const batch = db.batch();
 
+            // Filtere im Code statt in der Query
             for (const doc of oldOrdersSnap.docs) {
+              const orderData = doc.data();
+
+              // Prüfe ob Bestellung älter als 7 Tage ist
+              if (orderData.created && orderData.created < cutoffTime) {
+                const archiveData = {
+                  ...orderData,
+                  archivedAt: new Date().toISOString(),
+                  originalOrderId: doc.id,
+                  autoArchived: true,
+                };
+
+                // Zu Archiv hinzufügen
+                batch.set(
+                  db.collection("archived_orders").doc(doc.id),
+                  archiveData
+                );
+                // Aus orders entfernen
+                batch.delete(db.collection("orders").doc(doc.id));
+                archivedCount++;
+              }
+            }
+
+            if (archivedCount > 0) {
+              await batch.commit();
+              showNotification(
+                `${archivedCount} Bestellungen automatisch archiviert!`,
+                "success"
+              );
+            } else {
+              if (showConfirm) {
+                showNotification(
+                  "Keine alten Bestellungen zum Archivieren gefunden.",
+                  "success"
+                );
+              }
+            }
+
+            loadOrders();
+            loadArchives();
+          } catch (error) {
+            console.error("Fehler bei Auto-Archivierung:", error);
+            showNotification(
+              "Fehler bei der automatischen Archivierung!",
+              "error"
+            );
+          }
+        }
+
+        // Alle fertigen Bestellungen archivieren (Button-Funktion)
+        async function archiveAllFinished() {
+          if (!confirm("Alle fertigen Bestellungen sofort archivieren?")) {
+            return;
+          }
+
+          try {
+            // Hole alle fertigen Bestellungen
+            const finishedOrdersSnap = await db
+              .collection("orders")
+              .where("status", "==", "fertig")
+              .get();
+
+            let archivedCount = 0;
+            const batch = db.batch();
+
+            for (const doc of finishedOrdersSnap.docs) {
               const orderData = doc.data();
               const archiveData = {
                 ...orderData,
                 archivedAt: new Date().toISOString(),
                 originalOrderId: doc.id,
-                autoArchived: true,
+                manualArchived: true,
               };
 
               // Zu Archiv hinzufügen
@@ -540,21 +979,29 @@
               archivedCount++;
             }
 
-            await batch.commit();
-            showNotification(
-              `${archivedCount} Bestellungen automatisch archiviert!`,
-              "success"
-            );
+            if (archivedCount > 0) {
+              await batch.commit();
+              showNotification(
+                `${archivedCount} fertige Bestellungen archiviert!`,
+                "success"
+              );
+            } else {
+              showNotification(
+                "Keine fertigen Bestellungen zum Archivieren vorhanden.",
+                "success"
+              );
+            }
+
             loadOrders();
             loadArchives();
           } catch (error) {
-            console.error("Fehler bei Auto-Archivierung:", error);
-            showNotification(
-              "Fehler bei der automatischen Archivierung!",
-              "error"
+            console.error(
+              "Fehler beim Archivieren fertiger Bestellungen:",
+              error
             );
+            showNotification("Fehler beim Archivieren!", "error");
           }
-        };
+        }
 
         // Archiv laden und anzeigen
         async function loadArchives() {
@@ -678,6 +1125,9 @@
             loadOrders();
             loadArchives();
             loadReviews();
+            startOrderMonitoring(); // Benachrichtigungsüberwachung starten
+            // Automatische Archivierung beim Login (ohne Bestätigung)
+            setTimeout(() => autoArchiveOldOrders(false), 2000);
           }
         }
 
@@ -693,6 +1143,9 @@
               loadOrders();
               loadArchives();
               loadReviews();
+              startOrderMonitoring(); // Benachrichtigungsüberwachung starten
+              // Automatische Archivierung beim Login (ohne Bestätigung)
+              setTimeout(() => autoArchiveOldOrders(false), 2000);
             } else {
               document.getElementById("loginError").style.display = "block";
             }
@@ -700,6 +1153,7 @@
 
         // Logout-Handler
         function logout() {
+          stopOrderMonitoring(); // Benachrichtigungsüberwachung stoppen
           localStorage.removeItem("adminLoggedIn");
           document.getElementById("adminLogin").style.display = "block";
           document.getElementById("adminPanel").style.display = "none";
@@ -719,12 +1173,90 @@
 
           // Archiv Event-Listener hinzufügen
           document
-            .getElementById("refreshArchiveBtn")
-            .addEventListener("click", loadArchives);
+            .getElementById("archiveAllFinishedBtn")
+            .addEventListener("click", archiveAllFinished);
+
+          // Benachrichtigungs-Modal Event-Listener
           document
-            .getElementById("autoArchiveBtn")
-            .addEventListener("click", autoArchiveOldOrders);
+            .getElementById("notificationSettingsBtn")
+            .addEventListener("click", showNotificationModal);
+          document
+            .getElementById("cancelNotificationSettings")
+            .addEventListener("click", hideNotificationModal);
+          document
+            .getElementById("saveNotificationSettings")
+            .addEventListener("click", saveNotificationSettings);
+          document
+            .getElementById("testNotificationBtn")
+            .addEventListener("click", testNotifications);
         });
+
+        // Benachrichtigungs-Modal Funktionen
+        function showNotificationModal() {
+          const config = window.emailConfig.adminNotifications;
+
+          // Aktuelle Einstellungen laden
+          document.getElementById("emailNotifications").checked =
+            config.options.email;
+          document.getElementById("smsNotifications").checked =
+            config.options.sms;
+          document.getElementById("soundNotifications").checked =
+            config.options.sound;
+          document.getElementById("checkInterval").value =
+            config.checkInterval / 1000;
+          document.getElementById("currentEmailAddress").textContent =
+            config.adminEmail;
+
+          document.getElementById("notificationModal").style.display = "flex";
+        }
+
+        function hideNotificationModal() {
+          document.getElementById("notificationModal").style.display = "none";
+        }
+
+        function saveNotificationSettings() {
+          const config = window.emailConfig.adminNotifications;
+
+          // Einstellungen speichern
+          config.options.email =
+            document.getElementById("emailNotifications").checked;
+          config.options.sms =
+            document.getElementById("smsNotifications").checked;
+          config.options.sound =
+            document.getElementById("soundNotifications").checked;
+          config.checkInterval =
+            parseInt(document.getElementById("checkInterval").value) * 1000;
+
+          // Überwachung neu starten mit neuen Einstellungen
+          stopOrderMonitoring();
+          startOrderMonitoring();
+
+          showNotification(
+            "Benachrichtigungseinstellungen gespeichert!",
+            "success"
+          );
+          hideNotificationModal();
+        }
+
+        async function testNotifications() {
+          // Test-Benachrichtigung senden
+          const testOrderData = {
+            details: {
+              durchmesserCm: 20,
+              extras: ["Schokoboden", "Vanillecreme"],
+            },
+            gesamtpreis: "45",
+            wunschtermin: { datum: new Date().getTime() },
+          };
+
+          const testCustomerData = {
+            name: "Test Kunde",
+            email: "test@example.com",
+            telefon: "0123456789",
+          };
+
+          await sendAdminNotification(testOrderData, testCustomerData);
+        }
 
         // Hilfsfunktion: Bestellungshistorie für Kunden ermitteln (nach E-Mail gruppiert)
         async function getCustomerOrderHistory() {

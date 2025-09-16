@@ -870,4 +870,140 @@ details > div {
   #lightboxVideo {
     max-height: 60vh;
   }
+
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .review-card {
+    padding: var(--space-3);
+  }
+
+  .rating-item {
+    margin-bottom: var(--space-1);
+  }
+}
+
+/* Reviews Section Styles */
+.reviews-section {
+  margin: var(--space-6) 0;
+}
+
+.reviews-header {
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.reviews-header h2 {
+  color: var(--clr-accent);
+  margin-bottom: var(--space-2);
+}
+
+.reviews-header p {
+  color: var(--clr-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.review-card {
+  background: var(--clr-surface);
+  border-radius: 12px;
+  padding: var(--space-4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(146, 208, 80, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(146, 208, 80, 0.2);
+}
+
+.review-date {
+  font-size: 0.875rem;
+  color: var(--clr-muted);
+  font-weight: 500;
+}
+
+.review-ratings {
+  margin-bottom: var(--space-3);
+}
+
+.rating-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.rating-item.overall {
+  border-top: 1px solid rgba(146, 208, 80, 0.2);
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+  font-weight: 600;
+}
+
+.rating-label {
+  font-size: 0.875rem;
+  color: var(--clr-text);
+  font-weight: 500;
+}
+
+.rating-stars {
+  font-size: 1rem;
+  color: #ffd700;
+  letter-spacing: 1px;
+}
+
+.review-nps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(146, 208, 80, 0.1);
+  padding: var(--space-2);
+  border-radius: 8px;
+  margin-top: var(--space-3);
+}
+
+.nps-label {
+  font-size: 0.875rem;
+  color: var(--clr-text);
+  font-weight: 500;
+}
+
+.nps-score {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.loading-reviews,
+.no-reviews,
+.error-reviews {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-5);
+  color: var(--clr-muted);
+  font-style: italic;
+}
+
+.error-reviews {
+  color: var(--clr-danger);
 }
