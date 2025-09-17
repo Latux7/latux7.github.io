@@ -139,40 +139,9 @@
             </label>
           </div>
         </fieldset>
-        <fieldset>
-          <legend>Gesamteindruck?</legend>
-          <div
-            class="heart-group"
-            role="radiogroup"
-            aria-label="Gesamteindruck"
-          >
-            <label class="heart-option">
-              <input type="radio" name="gesamt" value="1" required />
-              <span class="heart-icon">♡</span>
-              <span class="heart-label">Unzufrieden</span>
-            </label>
-            <label class="heart-option">
-              <input type="radio" name="gesamt" value="2" />
-              <span class="heart-icon">♡</span>
-              <span class="heart-label">Mittel</span>
-            </label>
-            <label class="heart-option">
-              <input type="radio" name="gesamt" value="3" />
-              <span class="heart-icon">♡</span>
-              <span class="heart-label">Gut</span>
-            </label>
-            <label class="heart-option">
-              <input type="radio" name="gesamt" value="4" />
-              <span class="heart-icon">♡</span>
-              <span class="heart-label">Sehr gut</span>
-            </label>
-            <label class="heart-option">
-              <input type="radio" name="gesamt" value="5" />
-              <span class="heart-icon">♡</span>
-              <span class="heart-label">Exzellent</span>
-            </label>
-          </div>
-        </fieldset>
+        <!-- Gesamt wird nicht mehr vom Benutzer eingegeben. Es wird vor dem Absenden
+             aus Geschmach/Aussehen/Service berechnet, damit die Homepage eine
+             konsistente Durchschnitts-Berechnung zeigen kann. -->
         <fieldset>
           <legend>
             Wie wahrscheinlich ist es, dass Sie mich weiterempfehlen?
@@ -331,15 +300,68 @@
       <script src="js/common.js"></script>
       <script src="js/email-template-manager.js"></script>
       <script src="js/admin/notifications.js"></script>
+      <script src="js/admin-security.js"></script>
       <script>
         // Firebase wird bereits in config/firebase.js initialisiert
         const db = initializeFirebaseApp();
 
-        // Zugangsüberprüfung: Nur mit gültigen Parametern erlaubt
+        // Zugangsüberprüfung: Standardmäßig nur mit orderId+customerId erlaubt.
+        // Wenn der eingeloggte Benutzer eine Admin-Session hat (adminSecurity),
+        // erlauben wir das Laden der Seite auch ohne URL-Parameter.
         async function checkAccess() {
           const params = new URLSearchParams(window.location.search);
           const orderId = params.get("orderId");
           const customerId = params.get("customerId");
+
+          // Small helper: wait briefly for adminSecurity to become available
+          async function waitForAdminSecurity(timeoutMs = 500) {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+              if (window.adminSecurity && typeof window.adminSecurity.checkSession === 'function') return true;
+              await new Promise(r => setTimeout(r, 50));
+            }
+            return !!(window.adminSecurity && typeof window.adminSecurity.checkSession === 'function');
+          }
+
+          // If adminSecurity is available and session is valid, grant access
+          try {
+            const hasAdminModule = await waitForAdminSecurity(500);
+            console.debug('checkAccess: admin module present?', !!hasAdminModule);
+            if (hasAdminModule) {
+              try {
+                const adminCheck = !!window.adminSecurity.checkSession();
+                console.debug('checkAccess: window.adminSecurity.checkSession() ->', adminCheck);
+                if (adminCheck) {
+                  return true;
+                }
+              } catch (e) {
+                console.debug('checkAccess: window.adminSecurity.checkSession() threw', e);
+                // fall through to storage fallback
+              }
+            }
+          } catch (e) {
+            // ignore and continue to storage-based checks
+          }
+
+          // Fallback: check the admin session key in localStorage or sessionStorage directly
+          try {
+            const TWO_HOURS = 2 * 60 * 60 * 1000;
+            const sessKeys = [localStorage.getItem('lauras_admin_session'), sessionStorage.getItem('lauras_admin_session')];
+            console.debug('checkAccess: storage sessions', { local: sessKeys[0], session: sessKeys[1] });
+            for (const sess of sessKeys) {
+              if (!sess) continue;
+              try {
+                const data = JSON.parse(sess);
+                if (data && data.timestamp && (Date.now() - data.timestamp) < TWO_HOURS) {
+                  return true;
+                }
+              } catch (e) {
+                // invalid JSON - ignore
+              }
+            }
+          } catch (e) {
+            // ignore storage errors
+          }
 
           if (!orderId || !customerId) {
             // Keine gültigen Parameter - zur Startseite weiterleiten
@@ -433,14 +455,22 @@
             // Kundennamen laden (falls customerId verfügbar)
             const customerName = await getCustomerName();
 
+            // Compute 'gesamt' as numeric average of geschmack/aussehen/service
+            const tasteVal = parseInt(f.geschmack.value) || 0;
+            const appearanceVal = parseInt(f.aussehen.value) || 0;
+            const serviceVal = parseInt(f.service.value) || 0;
+            const catVals = [tasteVal, appearanceVal, serviceVal].filter(n => n > 0);
+            const gesamtComputed = catVals.length > 0 ? Math.round((catVals.reduce((a,b)=>a+b,0)/catVals.length)) : 0;
+
             const review = {
               orderId: getOrderId(),
               customerId: getCustomerId(),
               customerName: customerName,
-              geschmack: f.geschmack.value,
-              aussehen: f.aussehen.value,
-              service: f.service.value,
-              gesamt: f.gesamt.value,
+              geschmack: tasteVal,
+              aussehen: appearanceVal,
+              service: serviceVal,
+              // store computed overall (1-5)
+              gesamt: gesamtComputed,
               empfehlung: f.empfehlung.value,
               text: f.text.value,
               created: new Date().toISOString(),

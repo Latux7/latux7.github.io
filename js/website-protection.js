@@ -15,6 +15,35 @@
     const SESSION_KEY = "lauras_backstube_access";
     const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 Stunden in Milliseconds
 
+    // Prevent flash: hide page content until we decide whether to show the
+    // password modal. We hide all direct body children except the modal element
+    // (#websitePasswordModal) so that when the modal is injected it becomes
+    // visible immediately. This style is removed when access is granted.
+    const WP_BLOCK_STYLE_ID = 'wp-protect-block-style';
+    (function insertBlockStyle() {
+        try {
+            if (!document.getElementById(WP_BLOCK_STYLE_ID)) {
+                const s = document.createElement('style');
+                s.id = WP_BLOCK_STYLE_ID;
+                // hide everything except the modal container (when present)
+                s.textContent = 'body > *:not(#websitePasswordModal){display:none !important}';
+                const target = document.head || document.documentElement;
+                target.insertBefore(s, target.firstChild);
+            }
+        } catch (e) {
+            // ignore - best effort only
+        }
+    })();
+
+    function removeBlockStyle() {
+        try {
+            const el = document.getElementById(WP_BLOCK_STYLE_ID);
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        } catch (e) {
+            // ignore
+        }
+    }
+
     // Prüfen ob Zugriff berechtigt ist
     function checkAccess() {
         // WICHTIG: sessionStorage wird bei Tab/Browser-Schließung automatisch gelöscht!
@@ -49,6 +78,8 @@
         };
         // sessionStorage: Wird automatisch bei Tab/Browser-Schließung gelöscht
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(accessData));
+        // reveal page content after access granted
+        removeBlockStyle();
     }
 
     // Passwort-Modal erstellen und anzeigen
@@ -289,6 +320,9 @@
             if (!checkAccess()) {
                 // Kein Zugriff - Modal anzeigen
                 showPasswordModal();
+            } else {
+                // already have access - reveal page
+                removeBlockStyle();
             }
         }).catch(err => {
             console.warn('Could not load website password from Firestore:', err);
@@ -300,7 +334,10 @@
             }
 
             if (!checkAccess()) {
+                // show modal - modal will be visible thanks to the block style
                 showPasswordModal();
+            } else {
+                removeBlockStyle();
             }
         });
     }

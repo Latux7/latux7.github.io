@@ -23,14 +23,20 @@ async function loadAndDisplayReviews() {
       const taste = review.geschmack || review.taste || 0;
       const appearance = review.aussehen || review.appearance || 0;
       const service = review.service || review.bedienung || 0;
-      const overall = review.gesamt || review.overall || 0;
+      // If 'gesamt' (overall) is provided use it, otherwise compute average from categories
+      let overall = review.gesamt || review.overall || 0;
       const nps = review.empfehlung || review.nps || review.weiterempfehlung || 0;
 
       // Validierung der Werte (1-5 für Sterne, 1-10 für NPS)
       const validTaste = Math.max(0, Math.min(5, taste));
       const validAppearance = Math.max(0, Math.min(5, appearance));
-      const validService = Math.max(0, Math.min(5, service));
-      const validOverall = Math.max(0, Math.min(5, overall));
+      const validService = Math.max(0, Math.min(5, parseInt(service) || 0));
+      // Compute category-based numeric average if overall is missing/zero
+      const categoryNums = [parseInt(taste) || 0, parseInt(appearance) || 0, parseInt(service) || 0].filter(n => n > 0);
+      const numericOverallAvg = categoryNums.length > 0 ? (categoryNums.reduce((a, b) => a + b, 0) / categoryNums.length) : (parseInt(overall) || 0);
+      // For star display round numeric average to nearest integer
+      const roundedOverall = Math.max(0, Math.min(5, Math.round(numericOverallAvg)));
+      const validOverall = roundedOverall;
       const validNps = Math.max(0, Math.min(10, nps));
 
       // Sterne für jede Kategorie erstellen
@@ -71,7 +77,7 @@ async function loadAndDisplayReviews() {
             <div class="rating-item overall">
               <span class="rating-label">Gesamt:</span>
               <span class="rating-stars">${overallStars}</span>
-              <span class="rating-value">(${validOverall}/5)</span>
+              <span class="rating-value">(${numericOverallAvg.toFixed(1)}/5)</span>
             </div>
           </div>
           

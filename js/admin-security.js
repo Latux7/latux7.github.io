@@ -12,7 +12,7 @@
     const FALLBACK_ADMIN_HASH = 'dbf7408ad5bb4580a4e6672c91bea0cfd23eddb065ccf36131793feac622f9e3'; // hash of 'tortenadmin2025' - remove after migration
     const ADMIN_SESSION_KEY = "lauras_admin_session";
     const ADMIN_SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 Stunden
-    const MAX_LOGIN_ATTEMPTS = 3;
+    const MAX_LOGIN_ATTEMPTS = 10;
     const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 Minuten Sperrzeit
 
     // Admin-spezifische Sicherheitsmaßnahmen
