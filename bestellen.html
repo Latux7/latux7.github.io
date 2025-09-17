@@ -93,10 +93,7 @@
           </div>
 
           <!-- Kalender wird hier eingebettet -->
-          <div
-            id="embeddedCalendarContent"
-            style="border-radius: 10px; padding: 10px"
-          >
+          <div id="embeddedCalendarContent">
             <div
               style="text-align: center; padding: 40px; color: var(--clr-muted)"
             >
@@ -110,7 +107,7 @@
               margin-top: 15px;
               padding: 10px;
               border-radius: 8px;
-              border: 1px solid grey;
+              border: 1px solid white;
               font-size: 0.9rem;
             "
           >
@@ -124,7 +121,7 @@
         <!-- NEU: Exakter Durchmesser -->
         <fieldset>
           <legend>Durchmesser (exakt)</legend>
-          <label for="diameter">Gewünschter Durchmesser in cm (10–24):</label>
+          <label for="diameter">Gewünschter Durchmesser in cm (10–24): </label>
           <div class="input-inline">
             <input
               type="number"
@@ -138,8 +135,8 @@
             />
           </div>
           <div id="sizeHint" class="help" style="margin-top: 6px">
-            Kategorie: <strong id="sizeLabel">–</strong> (Basispreis:
-            <strong id="sizePrice">–</strong>)
+            Kategorie: <strong id="sizeLabel">–</strong> <br />
+            Basispreis: <strong id="sizePrice">–</strong>
           </div>
         </fieldset>
 
@@ -302,7 +299,6 @@
           </div>
         </fieldset>
 
-        <div id="orderSum" class="order-summary"></div>
         <fieldset class="notes-fieldset">
           <legend>
             Anmerkungen zur Bestellung (z. B. Allergien, Text auf Torte)
@@ -323,6 +319,18 @@
           Fehler beim Absenden. Bitte versuchen Sie es erneut.
         </div>
       </form>
+
+      <!-- Floating badge (mirrored via JS) -->
+      <div
+        id="orderTotalBadgeFloating"
+        class="order-total-badge floating empty"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span class="label">Gesamt</span>
+        <span id="orderTotalBadgeFloatingAmount" class="amount">—</span>
+      </div>
 
       <footer class="site-footer">
         <p>

@@ -210,8 +210,43 @@ class OrderManager {
             }
         });
 
-        const sumDisplay = document.getElementById("orderSum");
-        sumDisplay.textContent = sum ? `Gesamt: ${sum} €` : "";
+        // Update prominent badge(s) if present (we no longer use the old orderSum text)
+        const badge = document.getElementById('orderTotalBadgeAmount');
+        const badgeFloating = document.getElementById('orderTotalBadgeFloatingAmount');
+        const badgeContainer = document.getElementById('orderTotalBadge');
+        const badgeFloatingContainer = document.getElementById('orderTotalBadgeFloating');
+        const newText = sum ? `${sum} €` : '— €';
+        if (badge) {
+            const prev = badge.textContent;
+            badge.textContent = newText;
+            // pulse when changed
+            if (prev !== newText && badgeContainer) {
+                badgeContainer.classList.remove('pulse');
+                // force reflow
+                // eslint-disable-next-line no-unused-expressions
+                badgeContainer.offsetWidth;
+                badgeContainer.classList.add('pulse');
+                setTimeout(() => badgeContainer.classList.remove('pulse'), 350);
+            }
+        }
+        if (badgeFloating) {
+            const prevF = badgeFloating.textContent;
+            badgeFloating.textContent = newText;
+            if (prevF !== newText && badgeFloatingContainer) {
+                badgeFloatingContainer.classList.remove('pulse');
+                // force reflow
+                // eslint-disable-next-line no-unused-expressions
+                badgeFloatingContainer.offsetWidth;
+                badgeFloatingContainer.classList.add('pulse');
+                setTimeout(() => badgeFloatingContainer.classList.remove('pulse'), 350);
+            }
+        }
+        if (badgeContainer) {
+            badgeContainer.classList.toggle('empty', !sum);
+        }
+        if (badgeFloatingContainer) {
+            badgeFloatingContainer.classList.toggle('empty', !sum);
+        }
         return sum;
     }
 
@@ -716,8 +751,18 @@ class OrderManager {
     resetForm(f) {
         f.reset();
         this.updateSizeUI();
+        // clear badges
         const orderSumEl = document.getElementById("orderSum");
-        if (orderSumEl) orderSumEl.textContent = "";
+        if (orderSumEl) orderSumEl.textContent = ""; // harmless if element absent
+        // clear badges as well
+        const b = document.getElementById('orderTotalBadgeAmount');
+        const bf = document.getElementById('orderTotalBadgeFloatingAmount');
+        const bc = document.getElementById('orderTotalBadge');
+        const bcf = document.getElementById('orderTotalBadgeFloating');
+        if (b) b.textContent = '—';
+        if (bf) bf.textContent = '—';
+        if (bc) bc.classList.add('empty');
+        if (bcf) bcf.classList.add('empty');
         try {
             this.toggleDeliveryFields();
         } catch (e) {

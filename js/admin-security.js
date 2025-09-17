@@ -4,7 +4,7 @@
     'use strict';
 
     // Konfiguration
-    const ADMIN_ACCESS_CODE = "LAURA_ADMIN_2025_SECURE"; // Geheimer Admin-Code
+    const ADMIN_ACCESS_CODE = "tortenadmin2025"; // Geheimer Admin-Code
     const ADMIN_SESSION_KEY = "lauras_admin_session";
     const ADMIN_SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 Stunden
     const MAX_LOGIN_ATTEMPTS = 3;

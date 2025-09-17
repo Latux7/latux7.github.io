@@ -5,13 +5,16 @@
 *::after {
   box-sizing: border-box;
 }
+
 html,
 body {
   height: 100%;
 }
+
 html:focus-within {
   scroll-behavior: smooth;
 }
+
 body {
   font-family: "Poppins", Arial, sans-serif;
   background: radial-gradient(
@@ -45,9 +48,12 @@ body {
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 10px;
+
   --shadow-xs: 0 1px 4px rgba(146, 208, 80, 0.08);
   --shadow-sm: 0 2px 8px rgba(146, 208, 80, 0.14);
   --shadow-md: 0 6px 22px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.04);
 
   --space-1: 6px;
   --space-2: 10px;
@@ -55,33 +61,15 @@ body {
   --space-4: 24px;
   --space-5: 32px;
   --space-6: 48px;
-  /* convenience variables for layout and transitions */
+
   --container-padding-x: 24px;
   --max-content-width: 1280px;
+
   --transition-fast: 0.18s;
   --transition-base: 0.2s;
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.04);
+
   --btn-padding-vertical: 10px;
   --btn-padding-horizontal: 24px;
-}
-
-/* Dark theme overrides - toggled by adding the `dark` class to the <html> element */
-html.dark {
-  --clr-bg: #071018; /* deep charcoal-green backdrop */
-  --clr-surface: #0b1112; /* card / container surface */
-  --clr-text: #e6eef0; /* primary text */
-  --clr-muted: #9aa6a8;
-  --clr-accent: #8fd46b; /* slightly brighter pistachio on dark */
-  --clr-accent-strong: #7bbf3a;
-  --clr-accent-soft: rgba(143, 212, 107, 0.06);
-  --clr-danger: #ef9a9a;
-  --clr-success: #66bb6a;
-  --shadow-xs: 0 1px 6px rgba(0, 0, 0, 0.6);
-  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.6);
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Smooth theme transition for supported properties */
@@ -97,110 +85,7 @@ textarea {
     box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
-/* Dark-specific element tweaks */
-html.dark body {
-  background: radial-gradient(
-      1000px 600px at -10% -10%,
-      rgba(0, 8, 10, 0.2) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      900px 500px at 110% -20%,
-      rgba(4, 12, 8, 0.2) 0%,
-      transparent 50%
-    ),
-    var(--clr-bg);
-  color: var(--clr-text);
-}
-
-html.dark nav a {
-  color: var(--clr-text);
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: var(--shadow-soft);
-}
-
-html.dark .hero {
-  background: linear-gradient(180deg, #0f1718, #0b1112);
-  border-color: rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-sm);
-}
-html.dark .container {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-md);
-}
-
-html.dark input,
-html.dark select,
-html.dark textarea {
-  background: linear-gradient(180deg, #0d1414, #0b1112);
-  color: var(--clr-text);
-  border-color: rgba(255, 255, 255, 0.04);
-}
-
-/* Improve native select dropdown look on many browsers by styling the control and options where possible */
-html.dark select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: linear-gradient(
-      45deg,
-      transparent 50%,
-      rgba(255, 255, 255, 0.08) 50%
-    ),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(1em + 2px),
-    calc(100% - 13px) calc(1em + 2px);
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 40px;
-}
-
-/* Many browsers don't allow styling option background reliably; provide a reasonable fallback for custom selects */
-html.dark option {
-  background: #0b1112;
-  color: var(--clr-text);
-}
-
-/* Embedded calendar dark-mode overrides */
-html.dark .calendar-container {
-  background: linear-gradient(180deg, #0b1213, #071018);
-  color: var(--clr-text);
-  border: 1px solid rgba(143, 212, 107, 0.06);
-  box-shadow: var(--shadow-md);
-}
-
-html.dark .calendar-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-html.dark .calendar-header h3 {
-  color: var(--clr-accent);
-}
-
-html.dark .calendar-nav {
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--clr-text);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-html.dark .calendar-grid {
-  background: transparent;
-}
-
-html.dark .calendar-weekdays {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-html.dark .calendar-day {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* Admin panel helpers - prefer classes over inline styles for dark-mode compatibility */
+/* Admin panel helpers */
 .admin-review-item {
   border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 15px;
@@ -280,46 +165,33 @@ html.dark .calendar-day {
   cursor: pointer;
 }
 
-html.dark .admin-review-item {
-  border-color: rgba(255, 255, 255, 0.04);
-  background: #0b1112;
-}
-html.dark .admin-review-comment {
-  background: rgba(255, 255, 255, 0.02);
-  border-left-color: #b8860b;
-}
-
-/* Dark-mode list-item tweaks for contrast */
-html.dark .list-item {
-  border-color: rgba(255, 255, 255, 0.03);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(255, 255, 255, 0)
-  );
-  color: var(--clr-text);
-}
-
-/* Breakdown list and items */
+/* Breakdown list unified */
 .breakdown-list {
   padding: 0;
   margin: 0;
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .breakdown-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 0; /* gap übernimmt den Abstand */
   background: var(--clr-accent-soft);
   color: var(--clr-text);
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
-html.dark .breakdown-item {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.03);
+.breakdown-category {
+  font-weight: 500;
+  color: var(--clr-text);
+}
+.breakdown-value {
+  font-weight: 600;
+  color: var(--clr-accent-strong);
 }
 
 /* Comparison table styles */
@@ -333,135 +205,8 @@ html.dark .breakdown-item {
   padding: 8px 10px;
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
-html.dark .comparison-table th,
-html.dark .comparison-table td {
-  border-color: rgba(255, 255, 255, 0.03);
-}
 
-html.dark .calendar-day.empty,
-html.dark .calendar-day.past {
-  background: rgba(255, 255, 255, 0.01);
-  color: rgba(255, 255, 255, 0.35);
-}
-
-html.dark .calendar-day.today {
-  box-shadow: 0 0 0 3px rgba(143, 212, 107, 0.06) inset;
-}
-
-html.dark .calendar-day.has-orders {
-  background: rgba(143, 212, 107, 0.06);
-  border-color: rgba(143, 212, 107, 0.12);
-}
-
-html.dark .calendar-legend {
-  color: rgba(255, 255, 255, 0.75);
-}
-
-html.dark .brand .subtitle,
-html.dark p,
-html.dark small,
-html.dark .muted,
-html.dark .muted-note {
-  color: var(--clr-text);
-}
-
-html.dark .btn,
-html.dark .btn:link,
-html.dark .btn:visited {
-  background: var(--clr-accent);
-  color: #071018;
-  box-shadow: var(--shadow-xs);
-}
-
-html.dark .btn:hover {
-  background: var(--clr-accent-strong);
-  color: #071018;
-  box-shadow: var(--shadow-sm);
-}
-
-html.dark .btn-outline {
-  background: transparent;
-  color: var(--clr-accent-strong);
-  border-color: rgba(143, 212, 107, 0.3);
-}
-
-html.dark .btn-outline:hover {
-  background: rgba(143, 212, 107, 0.1);
-  border-color: var(--clr-accent);
-  color: var(--clr-accent-strong);
-}
-
-html.dark .btn-danger {
-  background: var(--clr-danger);
-  color: #071018;
-}
-
-html.dark .btn-danger:hover {
-  background: #b71c1c;
-  color: #071018;
-}
-
-html.dark .btn-warning {
-  background: #ffb74d;
-  color: #071018;
-}
-
-html.dark .btn-warning:hover {
-  background: #ff9800;
-  color: #071018;
-}
-
-html.dark .btn-success {
-  background: #66bb6a;
-  color: #071018;
-}
-
-html.dark .btn-success:hover {
-  background: #4caf50;
-  color: #071018;
-}
-
-/* Fieldset / panels in dark mode: slightly lighter than surface but still muted */
-html.dark fieldset {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(255, 255, 255, 0)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-/* Date-warning and alerts: use softer backgrounds with clear left border */
-html.dark .date-warning.success {
-  background: rgba(34, 85, 45, 0.12);
-  border-left-color: rgba(102, 187, 106, 0.9);
-  color: var(--clr-text);
-}
-html.dark .date-warning.error {
-  background: rgba(183, 28, 28, 0.09);
-  border-left-color: rgba(244, 67, 54, 0.9);
-  color: var(--clr-text);
-}
-html.dark .date-warning.warning {
-  background: rgba(189, 124, 0, 0.08);
-  border-left-color: rgba(255, 152, 0, 0.9);
-  color: var(--clr-text);
-}
-
-/* Order summary color for visibility on dark background */
-html.dark .order-summary {
-  color: #ffdca3; /* warm highlight */
-}
-
-/* Make alerts readable */
-html.dark .alert.success {
-  color: var(--clr-success);
-}
-html.dark .alert.error {
-  color: var(--clr-danger);
-}
-
-/* Floating theme toggle: style hint (actual button created by JS) */
+/* Theme toggle */
 #themeToggle {
   position: fixed;
   right: 18px;
@@ -481,24 +226,18 @@ html.dark .alert.error {
   font-size: 18px;
 }
 
-html.dark #themeToggle {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--clr-text);
-  box-shadow: var(--shadow-sm);
-}
-
+/* Container */
 .container {
   max-width: var(--max-content-width);
   width: min(
     var(--max-content-width),
     calc(100% - (var(--container-padding-x) * 2))
   );
-  margin: 40px auto 0 auto;
+  margin: 40px auto 0;
   background: var(--clr-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: var(--space-5) var(--container-padding-x) var(--space-4)
-    var(--container-padding-x);
+  padding: var(--space-5) var(--container-padding-x) var(--space-4);
 }
 
 /* Header / Brand */
@@ -545,7 +284,6 @@ h3 {
   margin-top: 0;
 }
 h1 {
-  /* responsive scaling for headings */
   font-size: clamp(1.5rem, 2.5vw + 1rem, 2.4rem);
 }
 h2 {
@@ -562,6 +300,7 @@ small,
   color: var(--clr-muted);
 }
 
+/* Nav */
 nav {
   display: flex;
   gap: 10px;
@@ -572,10 +311,8 @@ nav a {
   background: var(--clr-accent-soft);
   border-radius: 20px;
   padding: 8px 18px;
-  margin: 0;
   text-decoration: none;
   font-weight: 600;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   box-shadow: var(--shadow-xs);
 }
 nav a:hover {
@@ -620,9 +357,9 @@ input[type="submit"] {
   font-weight: 600;
   cursor: pointer;
   margin-top: 16px;
+  box-shadow: var(--shadow-xs);
   transition: background var(--transition-base),
     box-shadow var(--transition-base), transform 0.02s;
-  box-shadow: var(--shadow-xs);
 }
 button:hover,
 input[type="submit"]:hover {
@@ -669,21 +406,17 @@ input[type="submit"]:hover {
   padding: 6px 14px;
   font-size: 0.9rem;
 }
-
 .btn-warning {
   background: #ff9800;
-  color: white;
+  color: #fff;
 }
-
 .btn-warning:hover {
   background: #e68900;
 }
-
 .btn-success {
   background: #4caf50;
-  color: white;
+  color: #fff;
 }
-
 .btn-success:hover {
   background: #3d8b40;
 }
@@ -712,8 +445,6 @@ textarea:focus {
   border-color: #cae9d1;
   box-shadow: 0 0 0 3px rgba(146, 208, 80, 0.15);
 }
-
-/* Small muted helper note used for inline hints */
 .muted-note {
   color: var(--clr-muted);
   font-size: 0.9em;
@@ -751,6 +482,92 @@ legend {
   margin: 10px 0;
   color: #b45309;
 }
+
+/* Prominent total badge shown near the form and as a floating element on wide screens */
+.order-total-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--clr-accent),
+    var(--clr-accent-strong)
+  );
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(43, 118, 27, 0.12);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  transition: transform 240ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 240ms ease, opacity 200ms ease;
+  white-space: nowrap;
+  width: -moz-fit-content;
+  width: fit-content; /* prevent stretching to full width */
+  max-width: 92%;
+}
+
+/* Floating badge pinned to bottom-right on larger screens */
+.order-total-badge.floating {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Pulse animation when amount updates */
+.order-total-badge.pulse {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 18px 40px rgba(43, 118, 27, 0.16);
+}
+
+/* Small label + amount layout */
+.order-total-badge .label {
+  font-size: 1.6rem; /* slightly larger label */
+  opacity: 0.98;
+  text-transform: none; /* keep 'Gesamt' natural */
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.98);
+  white-space: nowrap;
+}
+.order-total-badge .amount {
+  font-size: 1.6rem; /* make amount more prominent */
+  font-weight: 900;
+  margin-left: 8px;
+  white-space: nowrap; /* prevent line wrap */
+  min-width: 25px; /* keep badge compact, avoid long stretching */
+  text-align: right;
+}
+
+/* Small helper when amount is zero/empty */
+.order-total-badge.empty {
+  background: linear-gradient(90deg, #e6e6e6, #dcdcdc);
+  color: #6b7280;
+  box-shadow: none;
+}
+
+/* Ensure mobile doesn't obscure content */
+@media (max-width: 600px) {
+  .order-total-badge.floating {
+    right: 12px;
+    bottom: 12px;
+    font-size: 0.95rem;
+    padding: 12px 14px;
+  }
+  /* On small screens prefer compact badge */
+  .order-total-badge .label {
+    display: none;
+  }
+  .order-total-badge .amount {
+    font-size: 1.15rem;
+  }
+}
 .alert {
   display: none;
   margin-top: 12px;
@@ -759,8 +576,11 @@ legend {
 .alert.success {
   color: var(--clr-success);
 }
+.alert.error {
+  color: var(--clr-danger);
+}
 
-/* Date Warning Styles für Kapazitäts- und Vorlaufzeit-Feedback */
+/* Date Warning Styles */
 .date-warning {
   margin-top: 8px;
   padding: 12px;
@@ -770,19 +590,16 @@ legend {
   line-height: 1.4;
   animation: slideIn 0.3s ease-out;
 }
-
 .date-warning.success {
   background: #f0f9f0;
   border-left-color: #4caf50;
   color: #2e7d2e;
 }
-
 .date-warning.error {
   background: #ffeaea;
   border-left-color: #f44336;
   color: #c62828;
 }
-
 .date-warning.warning {
   background: #fff3cd;
   border-left-color: #ff8c00;
@@ -799,9 +616,6 @@ legend {
     transform: translateY(0);
   }
 }
-.alert.error {
-  color: var(--clr-danger);
-}
 
 input[type="radio"],
 input[type="checkbox"] {
@@ -809,7 +623,7 @@ input[type="checkbox"] {
   accent-color: var(--clr-accent);
 }
 
-/* Accessibility helpers */
+/* Accessibility */
 .sr-only {
   position: absolute !important;
   width: 1px !important;
@@ -822,7 +636,7 @@ input[type="checkbox"] {
   border: 0 !important;
 }
 
-/* Focus visible for keyboard users */
+/* Focus handling */
 :focus {
   outline: none;
 }
@@ -831,8 +645,6 @@ input[type="checkbox"] {
   outline-offset: 3px;
   border-radius: 8px;
 }
-
-/* Fallback focus styling */
 button:focus,
 a:focus,
 input:focus,
@@ -841,7 +653,7 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(146, 208, 80, 0.12);
 }
 
-/* Respect users who prefer reduced motion */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001s !important;
@@ -851,7 +663,7 @@ textarea:focus {
   }
 }
 
-/* Disabled button appearance */
+/* Disabled buttons */
 button:disabled,
 .btn[disabled] {
   opacity: 0.5;
@@ -898,7 +710,7 @@ button:disabled,
   box-shadow: var(--shadow-xs);
 }
 
-/* Details (accordion) */
+/* Details accordion */
 details {
   border-radius: var(--radius-md);
   border: 1px solid #eef4ee;
@@ -916,11 +728,12 @@ details > div {
   padding: 10px 14px;
 }
 
+/* Small screens 600px */
 @media (max-width: 600px) {
   .container {
     max-width: 100vw;
-    margin: 10px auto 0 auto;
-    padding: 12px 8px 16px 8px;
+    margin: 10px auto 0;
+    padding: 12px 8px 16px;
     border-radius: 0;
   }
   h1 {
@@ -932,31 +745,27 @@ details > div {
     align-items: flex-start;
   }
 
-  /* Review page mobile adjustments */
   .review-intro {
     padding: 0 4px;
     margin-bottom: 16px;
   }
-
   .review-title {
+    font-family: "Dancing Script", cursive;
     font-size: 2rem;
-    padding: 0 2px 2px 2px;
+    padding: 0 2px 2px;
     text-align: center;
     word-wrap: break-word;
   }
-
   .review-note {
     max-width: 100%;
     padding: 0 4px;
     font-size: 0.9rem;
     line-height: 1.4;
   }
-
   .review-form {
     padding: 0;
     margin: 0;
   }
-
   .review-form fieldset {
     padding: 12px 6px !important;
     margin: 0 0 12px 0 !important;
@@ -966,7 +775,6 @@ details > div {
     box-sizing: border-box !important;
     overflow: hidden;
   }
-
   .review-form legend {
     padding: 0 4px !important;
     font-size: 0.9rem !important;
@@ -975,26 +783,19 @@ details > div {
     overflow-wrap: break-word;
   }
 
-  /* Heart rating mobile */
   .heart-group {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 8px !important;
     padding: 8px 4px !important;
     width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden;
   }
-
   .heart-option {
     padding: 6px 2px !important;
     min-width: 0;
-    max-width: 100%;
   }
-
   .heart-icon {
     font-size: 22px !important;
   }
-
   .heart-label {
     font-size: 0.75rem !important;
     line-height: 1.2 !important;
@@ -1003,26 +804,19 @@ details > div {
     overflow-wrap: break-word;
   }
 
-  /* NPS scale mobile */
   .nps-scale {
     grid-template-columns: repeat(5, 1fr) !important;
     gap: 3px !important;
     padding: 8px 4px !important;
     width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden;
   }
-
   .nps-item {
     min-width: 0;
-    max-width: 100%;
   }
-
   .nps-num {
     font-size: 1.4rem !important;
     padding: 4px 2px !important;
   }
-
   .nps-hint {
     font-size: 0.7rem !important;
     padding: 2px 3px !important;
@@ -1032,12 +826,10 @@ details > div {
     line-height: 1.2;
   }
 
-  /* Notes textarea mobile */
   .notes-fieldset {
     padding: 0;
     margin: 0 0 12px 0;
   }
-
   .notes-fieldset .lined-textarea {
     padding: 8px 6px;
     min-height: 100px;
@@ -1046,7 +838,6 @@ details > div {
     font-size: 0.9rem;
   }
 
-  /* Form buttons mobile */
   input[type="submit"] {
     width: 100%;
     padding: 12px;
@@ -1054,7 +845,6 @@ details > div {
     margin-top: 8px;
   }
 
-  /* Alert messages mobile */
   .alert {
     margin: 8px 0;
     padding: 8px;
@@ -1062,7 +852,7 @@ details > div {
   }
 }
 
-/* Review page extras */
+/* Review page */
 .review-intro {
   margin-bottom: var(--space-4);
   text-align: center;
@@ -1073,16 +863,15 @@ details > div {
   line-height: 1.1;
   display: inline-block;
   background: linear-gradient(transparent 62%, #cfeee8 62%);
-  padding: 0 6px 2px 6px;
+  padding: 0 6px 2px;
   border-radius: 4px;
-  color: #000; /* Titel schwarz */
+  color: #000;
 }
 .review-note {
   max-width: 60ch;
   color: #374151;
-  margin: 0 auto; /* mittig */
+  margin: 0 auto;
 }
-
 .review-form fieldset {
   border: 2px solid #cfe2dd;
   background: #ffffff;
@@ -1094,7 +883,7 @@ details > div {
   padding: 0 8px;
 }
 
-/* Heart rating group */
+/* Heart rating */
 .heart-group {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -1135,7 +924,7 @@ details > div {
   color: #1f2937;
 }
 
-/* NPS scale 1-10 */
+/* NPS scale */
 .nps-scale {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -1180,11 +969,10 @@ details > div {
 
 /* Lined textarea */
 .lined-textarea {
-  /* Tunable variables for perfect alignment */
-  --line-h: 22px; /* line height (must match line-height) */
-  --line-thickness: 1px; /* thickness of the rule line */
-  --line-offset: 10px; /* vertical offset from the top content edge */
-  --baseline-adjust: 4px; /* push lines slightly below text baseline */
+  --line-h: 22px;
+  --line-thickness: 1px;
+  --line-offset: 10px;
+  --baseline-adjust: 4px;
 
   line-height: var(--line-h);
   min-height: 140px;
@@ -1195,11 +983,11 @@ details > div {
   );
   background-size: 100% var(--line-h);
   background-position: left calc(var(--line-offset) + var(--baseline-adjust));
-  background-origin: content-box; /* position relative to content, not border */
+  background-origin: content-box;
   background-attachment: local;
 }
 
-/* Notes area should fill the box */
+/* Notes */
 .notes-fieldset {
   padding: 0;
   overflow: hidden;
@@ -1209,58 +997,49 @@ details > div {
   margin-top: 8px;
 }
 .notes-fieldset .lined-textarea {
-  /* push lines a bit further below the text baseline in this context */
   --baseline-adjust: 10px;
   width: 100%;
   display: block;
-  border: none; /* use fieldset border */
+  border: none;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  padding: calc(var(--line-offset) + var(--baseline-adjust) + 8px) 18px 16px; /* align first baseline to grid */
+  padding: calc(var(--line-offset) + var(--baseline-adjust) + 8px) 18px 16px;
   background-color: #fff;
 }
-
-/* Plain textarea variant without college-block lines */
 .notes-fieldset .plain-textarea {
   min-height: 140px;
   width: 100%;
-  /* allow vertical resize only; prevent changing width */
   resize: vertical;
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid #dbeedb;
-  background: #f7f7f7; /* same as other inputs */
+  background: #f7f7f7;
   box-sizing: border-box;
   font-size: 1rem;
   line-height: 1.4;
   display: block;
 }
-
 .notes-fieldset .plain-textarea:focus {
   outline: none;
   border-color: #cae9d1;
   box-shadow: 0 0 0 3px rgba(146, 208, 80, 0.12);
 }
 
-/* Portfolio Galerie Styles */
+/* Portfolio Galerie */
 .portfolio-section {
   margin: var(--space-6) 0;
 }
-
 .portfolio-header {
   text-align: center;
   margin-bottom: var(--space-5);
 }
-
 .portfolio-header h2 {
   margin-bottom: var(--space-2);
   font-size: 1.8rem;
 }
-
 .portfolio-header p {
   color: var(--clr-muted);
   margin-bottom: var(--space-4);
 }
-
 .upload-icon {
   margin-right: 8px;
   font-size: 1.2em;
@@ -1272,7 +1051,6 @@ details > div {
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
-
 .portfolio-item {
   position: relative;
   border-radius: var(--radius-md);
@@ -1282,7 +1060,6 @@ details > div {
   cursor: pointer;
   background: var(--clr-surface);
 }
-
 .portfolio-item:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
@@ -1294,7 +1071,6 @@ details > div {
   height: 300px;
   overflow: hidden;
 }
-
 .portfolio-content img,
 .portfolio-content video {
   width: 100%;
@@ -1303,14 +1079,13 @@ details > div {
   transition: transform 0.3s ease;
 }
 
-/* Make images/videos responsive across the site */
+/* Global media elements */
 img,
 video {
   max-width: 100%;
   height: auto;
   display: block;
 }
-
 .portfolio-item:hover .portfolio-content img,
 .portfolio-item:hover .portfolio-content video {
   transform: scale(1.05);
@@ -1322,22 +1097,19 @@ video {
   left: 0;
   right: 0;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  color: white;
+  color: #fff;
   padding: var(--space-4);
   transform: translateY(100%);
   transition: transform 0.3s ease;
 }
-
 .portfolio-item:hover .portfolio-overlay {
   transform: translateY(0);
 }
-
 .portfolio-overlay h3 {
-  margin: 0 0 var(--space-1) 0;
-  color: white;
+  margin: 0 0 var(--space-1);
+  color: #fff;
   font-size: 1.1rem;
 }
-
 .portfolio-overlay p {
   margin: 0;
   color: rgba(255, 255, 255, 0.9);
@@ -1358,17 +1130,15 @@ video {
   transition: background 0.2s ease;
   opacity: 0;
 }
-
 .portfolio-item:hover .delete-btn {
   opacity: 1;
 }
-
 .delete-btn:hover {
   background: var(--clr-danger);
-  color: white;
+  color: #fff;
 }
 
-/* Lightbox Styles */
+/* Lightbox */
 .lightbox {
   display: none;
   position: fixed;
@@ -1382,19 +1152,17 @@ video {
   justify-content: center;
   padding: var(--space-4);
 }
-
 .lightbox-content {
   position: relative;
   max-width: 90vw;
   max-height: 90vh;
   text-align: center;
 }
-
 .lightbox-close {
   position: absolute;
   top: -40px;
   right: 0;
-  color: white;
+  color: #fff;
   font-size: 2rem;
   cursor: pointer;
   z-index: 2001;
@@ -1406,11 +1174,9 @@ video {
   align-items: center;
   justify-content: center;
 }
-
 .lightbox-close:hover {
   background: rgba(255, 255, 255, 0.2);
 }
-
 #lightboxImage,
 #lightboxVideo {
   max-width: 100%;
@@ -1418,37 +1184,31 @@ video {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
 }
-
 .lightbox-info {
-  color: white;
+  color: #fff;
   margin-top: var(--space-3);
 }
-
 .lightbox-info h3 {
-  margin: 0 0 var(--space-1) 0;
-  color: white;
+  margin: 0 0 var(--space-1);
+  color: #fff;
 }
-
 .lightbox-info p {
   margin: 0;
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Mobile Responsive */
+/* Tablet mobile 768px */
 @media (max-width: 768px) {
   .portfolio-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--space-3);
   }
-
   .portfolio-content {
     height: 250px;
   }
-
   .lightbox-content {
     max-width: 95vw;
   }
-
   #lightboxImage,
   #lightboxVideo {
     max-height: 60vh;
@@ -1458,31 +1218,26 @@ video {
     grid-template-columns: 1fr;
     gap: var(--space-3);
   }
-
   .review-card {
     padding: var(--space-3);
   }
-
   .rating-item {
     margin-bottom: var(--space-1);
   }
 }
 
-/* Reviews Section Styles */
+/* Reviews */
 .reviews-section {
   margin: var(--space-6) 0;
 }
-
 .reviews-header {
   text-align: center;
   margin-bottom: var(--space-5);
 }
-
 .reviews-header h2 {
   color: var(--clr-accent);
   margin-bottom: var(--space-2);
 }
-
 .reviews-header p {
   color: var(--clr-muted);
   max-width: 600px;
@@ -1495,7 +1250,6 @@ video {
   gap: var(--space-4);
   margin-top: var(--space-4);
 }
-
 .review-card {
   background: var(--clr-surface);
   border-radius: 12px;
@@ -1504,7 +1258,6 @@ video {
   border: 1px solid rgba(146, 208, 80, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .review-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -1518,7 +1271,6 @@ video {
   padding-bottom: var(--space-2);
   border-bottom: 1px solid rgba(146, 208, 80, 0.2);
 }
-
 .review-date {
   font-size: 0.875rem;
   color: var(--clr-muted);
@@ -1528,7 +1280,6 @@ video {
 .review-ratings {
   margin-bottom: var(--space-3);
 }
-
 .rating-item {
   display: flex;
   justify-content: space-between;
@@ -1536,28 +1287,24 @@ video {
   margin-bottom: var(--space-2);
   padding: var(--space-1) 0;
 }
-
 .rating-item.overall {
   border-top: 1px solid rgba(146, 208, 80, 0.2);
   padding-top: var(--space-2);
   margin-top: var(--space-2);
   font-weight: 600;
 }
-
 .rating-label {
   font-size: 0.875rem;
   color: var(--clr-text);
   font-weight: 500;
   flex: 1;
 }
-
 .rating-stars {
   font-size: 1rem;
   color: #ffd700;
   letter-spacing: 1px;
   margin-right: var(--space-2);
 }
-
 .rating-value {
   font-size: 0.75rem;
   color: var(--clr-muted);
@@ -1574,7 +1321,6 @@ video {
   color: var(--clr-text);
   border-left: 3px solid var(--clr-accent);
 }
-
 .review-nps {
   display: flex;
   justify-content: space-between;
@@ -1584,18 +1330,15 @@ video {
   border-radius: 8px;
   margin-top: var(--space-3);
 }
-
 .nps-label {
   font-size: 0.875rem;
   color: var(--clr-text);
   font-weight: 500;
 }
-
 .nps-score {
   font-size: 1.1rem;
   font-weight: 600;
 }
-
 .loading-reviews,
 .no-reviews,
 .error-reviews {
@@ -1605,323 +1348,210 @@ video {
   color: var(--clr-muted);
   font-style: italic;
 }
-
 .error-reviews {
   color: var(--clr-danger);
 }
 
-/* Buchhaltung & Umsatzstatistiken */
+/* Accounting overview */
 .accounting-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
-
 .stat-card {
-  background: white;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow-xs);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Admin dashboard dark-mode card overrides */
-html.dark .stat-card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-sm);
-  color: var(--clr-text);
-}
-
-html.dark .stat-card.main-revenue {
-  background: linear-gradient(135deg, #7bbf3a, #6aa92f);
-  color: white;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-card.main-revenue {
-  background: linear-gradient(135deg, #92d050, #7bbf3a);
-  color: white;
-  border: none;
-}
-
-.stat-card {
   display: flex;
   align-items: center;
   gap: 15px;
 }
-
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.stat-card.main-revenue {
+  background: linear-gradient(135deg, #92d050, #7bbf3a);
+  color: #fff;
+  border: none;
+}
 .stat-icon {
   font-size: 2.5rem;
   opacity: 0.8;
 }
-
 .main-revenue .stat-icon {
   opacity: 1;
 }
-
 .stat-content {
   flex: 1;
 }
-
 .stat-value {
   font-size: 1.8rem;
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 4px;
 }
-
 .stat-label {
   font-size: 0.9rem;
   opacity: 0.8;
   font-weight: 500;
 }
-
 .main-revenue .stat-label {
   opacity: 1;
 }
-
 .stat-trend {
   font-size: 0.8rem;
   font-weight: 600;
   margin-top: 4px;
 }
-
 .trend-up {
   color: #2e7d32;
 }
-
 .main-revenue .trend-up {
   color: rgba(255, 255, 255, 0.9);
 }
-
 .trend-down {
   color: #d32f2f;
 }
-
 .main-revenue .trend-down {
   color: rgba(255, 255, 255, 0.9);
 }
-
 .trend-neutral {
   color: #6b7280;
 }
-
 .main-revenue .trend-neutral {
   color: rgba(255, 255, 255, 0.8);
 }
-
 .stat-info {
   font-size: 0.75rem;
   opacity: 0.7;
   margin-top: 2px;
 }
 
-/* Detaillierte Aufschlüsselung */
+/* Accounting details */
 .accounting-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
-
 .detail-section {
-  background: white;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow-xs);
 }
-
-html.dark .detail-section {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(255, 255, 255, 0)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  color: var(--clr-text);
-}
-
 .detail-section h3 {
-  margin: 0 0 15px 0;
+  margin: 0 0 15px;
   font-size: 1.1rem;
   color: var(--clr-text);
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 8px;
 }
 
-.breakdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.breakdown-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.breakdown-category {
-  font-weight: 500;
-  color: var(--clr-text);
-}
-
-.breakdown-value {
-  font-weight: 600;
-  color: var(--clr-accent-strong);
-}
-
-/* Monatsvergleich */
+/* Month comparison */
 .month-comparison {
-  background: white;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow-xs);
   margin-bottom: 20px;
 }
-
-html.dark .month-comparison {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(255, 255, 255, 0)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
 .month-comparison h3 {
-  margin: 0 0 15px 0;
+  margin: 0 0 15px;
   font-size: 1.2rem;
   color: var(--clr-text);
 }
-
 .comparison-table {
   overflow-x: auto;
 }
-
 .comparison-table table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
-
 .comparison-table th,
 .comparison-table td {
   padding: 12px;
   text-align: right;
   border-bottom: 1px solid #e5e7eb;
 }
-
 .comparison-table th {
   font-weight: 600;
   color: var(--clr-text);
 }
-
 .comparison-table th:first-child,
 .comparison-table td:first-child {
   text-align: left;
 }
-
 .comparison-table .current-month {
   font-weight: 600;
 }
-
 .comparison-table .previous-month {
   opacity: 0.8;
 }
 
-/* Buchhaltungs-Controls */
+/* Accounting controls and error */
 .accounting-controls {
   display: flex;
   gap: 12px;
   justify-content: center;
   padding: 20px 0;
 }
-
 .accounting-controls .btn {
   min-width: 200px;
 }
-
-/* Buchhaltungs-Fehler */
 .accounting-error {
   text-align: center;
   padding: 40px 20px;
-  background: white;
+  background: #fff;
   border: 1px solid #fecaca;
   border-radius: 12px;
   box-shadow: var(--shadow-xs);
 }
-
-html.dark .accounting-error {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 100, 100, 0.12);
-  color: var(--clr-text);
-}
-
 .accounting-error .error-icon {
   font-size: 3rem;
   margin-bottom: 15px;
 }
-
 .accounting-error h3 {
   color: var(--clr-danger);
   margin-bottom: 10px;
 }
-
 .accounting-error p {
   color: var(--clr-muted);
   margin-bottom: 20px;
 }
 
-/* Responsive Design für Buchhaltung */
+/* Responsive accounting */
 @media (max-width: 768px) {
   .accounting-overview {
     grid-template-columns: 1fr;
   }
-
   .accounting-details {
     grid-template-columns: 1fr;
   }
-
   .stat-card {
     flex-direction: column;
     text-align: center;
     gap: 10px;
   }
-
   .accounting-controls {
     flex-direction: column;
     align-items: center;
   }
-
   .accounting-controls .btn {
     width: 100%;
     max-width: 300px;
   }
 }
 
-/* Bestelllimit-System & Vorlaufzeit-System */
+/* Order limit and lead time */
 .order-limit-status,
 .order-deadline-info {
   margin: 20px 0;
@@ -1929,15 +1559,12 @@ html.dark .accounting-error {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
-
 .order-limit-status.available {
   border: 2px solid #4caf50;
 }
-
 .order-limit-status.unavailable {
   border: 2px solid #f44336;
 }
-
 .order-deadline-info {
   border: 2px solid #2196f3;
 }
@@ -1949,11 +1576,9 @@ html.dark .accounting-error {
   gap: 15px;
   padding: 20px;
 }
-
 .limit-info.available {
   background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
 }
-
 .limit-info.unavailable {
   background: linear-gradient(135deg, #ffebee, #fce4ec);
 }
@@ -1964,25 +1589,21 @@ html.dark .accounting-error {
   line-height: 1;
   flex-shrink: 0;
 }
-
 .limit-content,
 .deadline-content {
   flex: 1;
 }
-
 .limit-content h3,
 .deadline-content h3 {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 1.2rem;
   color: var(--clr-text);
 }
-
 .limit-content p,
 .deadline-content p {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   line-height: 1.5;
 }
-
 .limit-content small,
 .deadline-content small {
   color: var(--clr-muted);
@@ -1998,14 +1619,12 @@ html.dark .accounting-error {
   font-size: 0.9rem;
   line-height: 1.5;
 }
-
 .limit-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
   flex-wrap: wrap;
 }
-
 .limit-actions .btn {
   flex: 1;
   min-width: 120px;
@@ -2014,7 +1633,7 @@ html.dark .accounting-error {
   padding: 10px 15px;
 }
 
-/* Responsive für Bestelllimit & Vorlaufzeit */
+/* Responsive for limit and deadline */
 @media (max-width: 768px) {
   .limit-info,
   .deadline-info {
@@ -2022,26 +1641,23 @@ html.dark .accounting-error {
     text-align: center;
     gap: 10px;
   }
-
   .limit-actions {
     flex-direction: column;
   }
-
   .limit-actions .btn {
     width: 100%;
   }
 }
 
-/* Kalender-System */
+/* Calendar */
 .calendar-container {
-  background: white;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow-xs);
   margin: 20px 0;
 }
-
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -2050,16 +1666,14 @@ html.dark .accounting-error {
   padding-bottom: 15px;
   border-bottom: 2px solid #e5e7eb;
 }
-
 .calendar-header h3 {
   margin: 0;
   font-size: 1.4rem;
   color: var(--clr-text);
 }
-
 .calendar-nav {
   background: var(--clr-accent);
-  color: white;
+  color: #fff;
   border: none;
   width: 40px;
   height: 40px;
@@ -2069,7 +1683,6 @@ html.dark .accounting-error {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-
 .calendar-nav:hover {
   background: var(--clr-accent-strong);
 }
@@ -2077,14 +1690,12 @@ html.dark .accounting-error {
 .calendar-grid {
   width: 100%;
 }
-
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
   margin-bottom: 10px;
 }
-
 .weekday {
   text-align: center;
   font-weight: 600;
@@ -2094,16 +1705,14 @@ html.dark .accounting-error {
   font-size: 0.9rem;
   border-radius: 4px;
 }
-
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
   background: #e5e7eb;
 }
-
 .calendar-day {
-  background: white;
+  background: #fff;
   min-height: 100px;
   padding: 8px;
   position: relative;
@@ -2112,25 +1721,20 @@ html.dark .accounting-error {
   display: flex;
   flex-direction: column;
 }
-
 .calendar-day:hover {
   background: #f8f9fa;
 }
-
 .calendar-day.empty {
   background: #f8f9fa;
   cursor: default;
 }
-
 .calendar-day.today {
   background: linear-gradient(135deg, #e6f4ea, #f1f8e9);
   border: 2px solid var(--clr-accent);
 }
-
 .calendar-day.past {
   opacity: 0.7;
 }
-
 .calendar-day.has-orders {
   background: linear-gradient(135deg, #fff3cd, #ffeaa7);
 }
@@ -2141,7 +1745,6 @@ html.dark .accounting-error {
   margin-bottom: 5px;
   color: var(--clr-text);
 }
-
 .day-orders {
   flex: 1;
   display: flex;
@@ -2151,49 +1754,40 @@ html.dark .accounting-error {
 
 .day-order {
   background: #2196f3;
-  color: white;
-  padding: 4px 6px; /* larger hit target */
+  color: #fff;
+  padding: 4px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--transition-base) ease;
 }
-
 .day-order:hover {
   opacity: 0.8;
 }
-
 .day-order.status-neu {
   background: #2196f3;
 }
-
-.day-order.status-in-bearbeitung {
-  background: #ff9800;
-}
-
+.day-order.status-in-bearbeitung,
 .day-order.status-in-vorbereitung {
   background: #ff9800;
 }
-
 .day-order.status-fertig {
   background: #4caf50;
 }
-
 .day-order.status-abgeholt {
   background: #9e9e9e;
 }
 
 .day-order-more {
   background: #666;
-  color: white;
+  color: #fff;
   padding: 4px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
   text-align: center;
   margin-top: 4px;
 }
-
 .order-name {
   white-space: nowrap;
   overflow: hidden;
@@ -2209,52 +1803,41 @@ html.dark .accounting-error {
   border-top: 1px solid #e5e7eb;
   justify-content: center;
 }
-
 .legend-item {
   display: flex;
   align-items: center;
   gap: 5px;
   font-size: 0.85rem;
 }
-
 .legend-color {
   width: 12px;
   height: 12px;
   border-radius: 2px;
 }
-
 .legend-color.today {
   background: var(--clr-accent);
 }
-
 .legend-color.has-orders {
   background: #ffeaa7;
   border: 1px solid #d68910;
 }
-
 .legend-color.status-neu {
   background: #2196f3;
 }
-
-.legend-color.status-in-bearbeitung {
-  background: #ff9800;
-}
-
+.legend-color.status-in-bearbeitung,
 .legend-color.status-in-vorbereitung {
   background: #ff9800;
 }
-
 .legend-color.status-fertig {
   background: #4caf50;
 }
-
 .legend-color.status-abgeholt {
   background: #9e9e9e;
 }
 
 /* Admin Panel Collapsible Sections */
 .admin-section {
-  background: white;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   margin-bottom: 20px;
@@ -2262,151 +1845,9 @@ html.dark .accounting-error {
   overflow: hidden;
   transition: all 0.3s ease;
 }
-
-/* Dark-mode overrides for calendar and admin sections (apply when html.dark) */
-html.dark .calendar-container {
-  background: linear-gradient(180deg, #071219, #081317);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  color: var(--clr-text);
-}
-
-html.dark .calendar-header h3 {
-  color: var(--clr-text);
-}
-
-html.dark .weekday {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-html.dark .calendar-days {
-  background: transparent;
-}
-
-html.dark .calendar-day {
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--clr-text);
-  border: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-html.dark .calendar-day:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-html.dark .calendar-day.empty {
-  background: rgba(255, 255, 255, 0.01);
-  cursor: default;
-}
-
-html.dark .calendar-day.today {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 212, 107, 0.1),
-    rgba(143, 212, 107, 0.05)
-  );
-  border: 2px solid var(--clr-accent);
-}
-
-html.dark .calendar-day.past {
-  opacity: 0.6;
-}
-
-html.dark .calendar-day.has-orders {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 152, 0, 0.1),
-    rgba(255, 152, 0, 0.05)
-  );
-}
-
-html.dark .day-number {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-html.dark .day-order,
-html.dark .day-order-more {
-  color: #071018;
-}
-
-/* Vollständige Palette für Bestellstatus-Chips im Dark Mode */
-html.dark .day-order.status-neu {
-  background: #42a5f5;
-}
-html.dark .day-order.status-in-bearbeitung,
-html.dark .day-order.status-in-vorbereitung {
-  background: #ffb74d;
-}
-html.dark .day-order.status-fertig {
-  background: #66bb6a;
-}
-html.dark .day-order.status-abgeholt {
-  background: #9e9e9e;
-}
-
-html.dark .day-order-more {
-  background: #666;
-  color: white;
-}
-
-html.dark .legend-color.today {
-  background: rgba(143, 212, 107, 0.2);
-  border: 1px solid rgba(143, 212, 107, 0.4);
-}
-
-html.dark .legend-color.has-orders {
-  background: rgba(255, 152, 0, 0.2);
-  border: 1px solid rgba(255, 152, 0, 0.4);
-}
-
-html.dark .legend-color.status-neu {
-  background: rgba(66, 165, 245, 0.8);
-}
-
-html.dark .legend-color.status-in-bearbeitung,
-html.dark .legend-color.status-in-vorbereitung {
-  background: rgba(255, 183, 77, 0.8);
-}
-
-html.dark .legend-color.status-fertig {
-  background: rgba(102, 187, 106, 0.8);
-}
-
-html.dark .legend-color.status-abgeholt {
-  background: rgba(158, 158, 158, 0.8);
-}
-
-/* Admin panel dark adjustments */
-html.dark .admin-section {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-sm);
-}
-
-html.dark .admin-section-header {
-  background: rgba(255, 255, 255, 0.01);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-html.dark .admin-section-title {
-  color: var(--clr-text);
-}
-
-html.dark .admin-section.collapsed {
-  background: rgba(255, 255, 255, 0.01);
-}
-
-html.dark .ad min-section-header:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
 .admin-section.collapsed {
   background: #f8f9fa;
 }
-
 .admin-section-header {
   padding: 15px 20px;
   background: var(--clr-accent-soft);
@@ -2418,52 +1859,43 @@ html.dark .ad min-section-header:hover {
   justify-content: space-between;
   align-items: center;
 }
-
 .admin-section-header:hover {
   background: #e6f4ea;
 }
-
 .admin-section.collapsed .admin-section-header {
   border-bottom: none;
   background: #f1f5f9;
 }
-
 .admin-section.collapsed .admin-section-header:hover {
   background: #e2e8f0;
 }
-
 .admin-section-title {
   font-weight: 600;
   font-size: 1.1rem;
   color: var(--clr-text);
   margin: 0;
 }
-
 .admin-section-toggle {
   font-size: 1.2rem;
   color: var(--clr-muted);
   transition: transform 0.3s ease, color 0.2s ease;
 }
-
 .admin-section-header:hover .admin-section-toggle {
   color: var(--clr-accent-strong);
 }
-
 .admin-section.collapsed .admin-section-toggle {
   transform: rotate(-90deg);
 }
-
 .admin-section-content {
   padding: 20px;
   transition: all 0.3s ease;
   overflow: hidden;
 }
-
 .admin-section.collapsed .admin-section-content {
   display: none;
 }
 
-/* Loading Animation für lazy loading */
+/* Loading Animation */
 .admin-section-loading {
   display: flex;
   justify-content: center;
@@ -2471,7 +1903,6 @@ html.dark .ad min-section-header:hover {
   padding: 40px;
   color: var(--clr-muted);
 }
-
 .admin-section-loading::after {
   content: "";
   width: 20px;
@@ -2482,7 +1913,6 @@ html.dark .ad min-section-header:hover {
   animation: spin 1s linear infinite;
   margin-left: 10px;
 }
-
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -2492,98 +1922,50 @@ html.dark .ad min-section-header:hover {
   }
 }
 
-/* Section specific styling */
 .admin-section.orders .admin-section-header {
   background: linear-gradient(135deg, #e6f4ea, #f1f8e9);
   border-bottom-color: var(--clr-accent-soft);
 }
-
 .admin-section.orders .admin-section-title {
   color: var(--clr-accent-strong);
 }
 
-/* Dark-mode specific fixes for admin orders list (override inline light backgrounds) */
-html.dark .admin-section.orders details summary {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  ) !important;
-  background-color: var(--clr-surface) !important;
-  color: var(--clr-text) !important;
-  padding: 8px !important;
-  border-radius: 4px !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
-}
-
-html.dark .admin-section.orders details > div {
-  background: var(--clr-surface) !important;
-  color: var(--clr-text) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-
-/* Make selects, options and inline buttons inside order details readable */
-html.dark .admin-section.orders details select,
-html.dark .admin-section.orders details select option {
-  background: var(--clr-bg) !important;
-  color: var(--clr-text) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-
-html.dark .admin-section.orders details .btn-small,
-html.dark .admin-section.orders details .btn-danger {
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--clr-text);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-/* Ensure details summary marker is visible */
-html.dark .admin-section.orders details summary::-webkit-details-marker {
-  color: var(--clr-text);
-}
-
-/* Mobile responsive für Admin-Bereiche */
+/* Mobile responsive admin */
 @media (max-width: 768px) {
   .admin-section-header {
     padding: 12px 15px;
   }
-
   .admin-section-content {
     padding: 15px;
   }
-
   .admin-section-title {
     font-size: 1rem;
   }
 }
 
-/* Responsive Kalender */
+/* Responsive Calendar extras */
 @media (max-width: 768px) {
   .calendar-day {
     min-height: 80px;
     padding: 4px;
   }
-
   .day-number {
     font-size: 0.8rem;
   }
-
   .day-order {
     font-size: 0.6rem;
     padding: 1px 3px;
   }
-
   .calendar-legend {
     flex-direction: column;
     gap: 8px;
   }
-
   .legend-item {
     justify-content: center;
   }
 }
 
-/* Reduce heavy shadows and animations on very small screens for performance */
+/* Small devices 480px */
 @media (max-width: 480px) {
   :root {
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -2612,7 +1994,6 @@ html.dark .admin-section.orders details summary::-webkit-details-marker {
   font-family: "Poppins", Arial, sans-serif;
   backdrop-filter: blur(2px);
 }
-
 .order-details-modal {
   background: var(--clr-surface);
   border-radius: var(--radius-lg);
@@ -2623,16 +2004,6 @@ html.dark .admin-section.orders details summary::-webkit-details-marker {
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-html.dark .order-details-modal {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
 .order-details-modal-header {
   display: flex;
   justify-content: space-between;
@@ -2640,18 +2011,12 @@ html.dark .order-details-modal {
   padding: 24px 30px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
-
-html.dark .order-details-modal-header {
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
 .order-details-modal-title {
   margin: 0;
   color: var(--clr-text);
   font-size: 1.4rem;
   font-weight: 600;
 }
-
 .order-details-modal-close {
   background: none;
   border: none;
@@ -2667,48 +2032,34 @@ html.dark .order-details-modal-header {
   align-items: center;
   justify-content: center;
 }
-
 .order-details-modal-close:hover {
   background: rgba(0, 0, 0, 0.05);
   color: var(--clr-text);
-}
-
-html.dark .order-details-modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .order-details-modal-content {
   padding: 0 30px 30px;
   line-height: 1.6;
 }
-
 .order-details-section {
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
-
-html.dark .order-details-section {
-  border-bottom-color: rgba(255, 255, 255, 0.04);
-}
-
 .order-details-section:last-child {
   border-bottom: none;
   margin-bottom: 0;
 }
-
 .order-details-section-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   color: var(--clr-text);
   font-size: 1.1rem;
   font-weight: 600;
 }
-
 .order-details-field {
   margin-bottom: 8px;
   color: var(--clr-text);
 }
-
 .order-details-field strong {
   color: var(--clr-text);
   font-weight: 600;
@@ -2722,23 +2073,19 @@ html.dark .order-details-section {
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: white;
+  color: #fff;
   text-transform: capitalize;
 }
-
 .order-details-status[data-status="neu"] {
   background: #2196f3;
 }
-
 .order-details-status[data-status="in vorbereitung"],
 .order-details-status[data-status="in bearbeitung"] {
   background: #ff9800;
 }
-
 .order-details-status[data-status="fertig"] {
   background: #4caf50;
 }
-
 .order-details-status[data-status="abgeholt"] {
   background: #9e9e9e;
 }
@@ -2756,11 +2103,6 @@ html.dark .order-details-section {
   word-wrap: break-word;
 }
 
-html.dark .order-details-special-request {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.04);
-}
-
 .order-details-modal-actions {
   display: flex;
   gap: 12px;
@@ -2768,11 +2110,6 @@ html.dark .order-details-special-request {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   margin-top: 20px;
 }
-
-html.dark .order-details-modal-actions {
-  border-top-color: rgba(255, 255, 255, 0.04);
-}
-
 .order-details-modal-actions .btn {
   flex: 1;
   padding: 12px 16px;
@@ -2780,7 +2117,6 @@ html.dark .order-details-modal-actions {
   border-radius: 8px;
   transition: all 0.2s ease;
 }
-
 .order-details-modal-actions .btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
@@ -2800,7 +2136,6 @@ html.dark .order-details-modal-actions {
   z-index: 1000;
   backdrop-filter: blur(2px);
 }
-
 .date-selection-modal {
   background: var(--clr-surface);
   border-radius: var(--radius-lg);
@@ -2811,25 +2146,13 @@ html.dark .order-details-modal-actions {
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: modalFadeIn 0.3s ease-out;
 }
-
-html.dark .date-selection-modal {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
 .date-selection-modal-content {
   padding: 30px;
 }
-
 .date-selection-modal-icon {
   font-size: 3rem;
   margin-bottom: 15px;
 }
-
 .date-selection-modal-title {
   margin-bottom: 15px;
   color: var(--clr-accent);
@@ -2844,34 +2167,21 @@ html.dark .date-selection-modal {
   border-left: 4px solid;
   line-height: 1.5;
 }
-
 .date-selection-modal-status.available {
   background: rgba(76, 175, 80, 0.1);
   border-left-color: #4caf50;
 }
-
 .date-selection-modal-status.unavailable {
   background: rgba(244, 67, 54, 0.1);
   border-left-color: #f44336;
 }
-
-html.dark .date-selection-modal-status.available {
-  background: rgba(76, 175, 80, 0.15);
-}
-
-html.dark .date-selection-modal-status.unavailable {
-  background: rgba(244, 67, 54, 0.15);
-}
-
 .date-selection-modal-status-title {
   font-weight: bold;
   margin-bottom: 8px;
 }
-
 .date-selection-modal-status.available .date-selection-modal-status-title {
   color: #2e7d32;
 }
-
 .date-selection-modal-status.unavailable .date-selection-modal-status-title {
   color: #c62828;
 }
@@ -2882,7 +2192,6 @@ html.dark .date-selection-modal-status.unavailable {
   justify-content: center;
   flex-wrap: wrap;
 }
-
 .date-selection-modal-actions .btn {
   padding: 12px 24px;
   font-weight: 600;
@@ -2890,39 +2199,24 @@ html.dark .date-selection-modal-status.unavailable {
   min-width: 120px;
   transition: all 0.2s ease;
 }
-
 .date-selection-modal-actions .btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
-
 .date-selection-modal-actions .btn-primary {
   background: var(--clr-accent);
-  color: white;
+  color: #fff;
 }
-
 .date-selection-modal-actions .btn-primary:hover {
   background: var(--clr-accent-strong);
 }
-
 .date-selection-modal-actions .btn-secondary {
   background: rgba(0, 0, 0, 0.1);
   color: var(--clr-text);
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
-
 .date-selection-modal-actions .btn-secondary:hover {
   background: rgba(0, 0, 0, 0.15);
-}
-
-html.dark .date-selection-modal-actions .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--clr-text);
-}
-
-html.dark .date-selection-modal-actions .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Modal animations */
@@ -2937,146 +2231,36 @@ html.dark .date-selection-modal-actions .btn-secondary:hover {
   }
 }
 
-/* ==========================
-   Dark-mode: Bestellen-Seite
-   Ziel: bessere Kontraste für Kalender, Formular und Modals
-   ========================== */
-
-/* Embedded calendar container */
-html.dark #embeddedCalendar,
-html.dark #embeddedCalendarContent {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  color: var(--clr-text);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: var(--shadow-md);
-}
-
-/* Calendar day tiles in embedded calendar */
-html.dark .calendar-day {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-html.dark .calendar-day:hover {
-  background: rgba(255, 255, 255, 0.04);
-  transform: none; /* avoid too strong transforms in dark */
-}
-html.dark .calendar-day .day-number {
-  color: rgba(255, 255, 255, 0.9);
-}
-html.dark .calendar-day.today {
-  box-shadow: inset 0 0 0 3px rgba(143, 212, 107, 0.06);
-}
-
-/* Form container and fields on bestellen.html */
-html.dark form#orderForm,
-html.dark .order-form {
-  background: transparent;
-  color: var(--clr-text);
-}
-
-/* Inputs / selects / textareas in the order form */
-html.dark form#orderForm input,
-html.dark form#orderForm select,
-html.dark form#orderForm textarea,
-html.dark .order-form input,
-html.dark .order-form select,
-html.dark .order-form textarea {
-  background: linear-gradient(180deg, #0d1414, #0b1112);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  color: var(--clr-text);
-  box-shadow: none;
-}
-
-/* Placeholder color for better contrast */
-html.dark form#orderForm ::placeholder,
-html.dark .order-form ::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Notes / Sonderwunsch Bereich */
-html.dark .notes-fieldset,
-html.dark .notes-fieldset .plain-textarea,
-html.dark .order-details-special-request {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  color: var(--clr-text);
-}
-
-/* Toggle / calendar open button */
-html.dark #toggleCalendarBtn,
-html.dark .toggle-calendar-btn {
-  background: transparent;
-  color: var(--clr-accent-strong);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-/* Date selection modal tweaks (additional safety for small screens) */
-html.dark .date-selection-modal {
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-/* Ensure legend items are visible */
-html.dark .calendar-legend,
-html.dark .legend-item {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Buttons in the order form */
-html.dark form#orderForm .btn,
-html.dark .order-form .btn {
-  box-shadow: none;
-}
-
-/* Slightly reduce contrast for very small decorative accents to avoid glare */
-html.dark .hero,
-html.dark .brand {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(255, 255, 255, 0)
-  );
-}
-
-/* Accessibility: focus states in dark mode */
-html.dark input:focus,
-html.dark select:focus,
-html.dark textarea:focus,
-html.dark .btn:focus {
-  outline: 3px solid rgba(143, 212, 107, 0.12);
-  outline-offset: 2px;
-}
-
-/* Mobile stacking fix: ensure the calendar toggle is above other content on small screens */
+/* Mobile stacking fix for toggle */
 @media (max-width: 640px) {
+  /* On small screens keep the button in flow (top of the page) like desktop
+     instead of fixed in the bottom-right corner. This makes the UX consistent
+     with the browser/desktop layout where the button sits near the hero. */
   #toggleCalendarBtn {
-    position: fixed;
-    bottom: 18px;
-    right: 18px;
-    z-index: 9999; /* high value to avoid being covered */
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-    border-radius: 999px;
-    padding: 12px 14px;
+    position: static !important;
+    bottom: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: inline-block;
+    margin: 0 auto 12px auto;
   }
-
-  /* Slightly lift embedded calendar container so toggle doesn't overlap important controls */
+  /* Small spacing so embedded calendar doesn't overlap other content */
   #embeddedCalendar {
-    margin-bottom: 86px; /* leave space for the fixed toggle */
+    margin-bottom: 12px;
+  }
+  #orderForm .availability-check,
+  #orderForm #availabilityBtn,
+  #orderForm .check-availability {
+    position: relative;
+    z-index: 10000;
+    margin-bottom: 12px;
   }
 }
 
-/* ==========================
-   Admin - Expenses UI improvements
-   ========================== */
-
-/* Container and card styling for the expenses section */
+/* Expenses UI */
 .expenses-panel {
   background: var(--clr-surface);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -3084,7 +2268,6 @@ html.dark .btn:focus {
   padding: 16px;
   box-shadow: var(--shadow-card);
 }
-
 .expenses-controls {
   display: flex;
   gap: 12px;
@@ -3092,19 +2275,16 @@ html.dark .btn:focus {
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
-
 .expenses-controls .btn {
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
 }
-
 .expenses-list {
   border-radius: 8px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.01));
 }
-
 .expense-row {
   display: flex;
   gap: 12px;
@@ -3115,14 +2295,12 @@ html.dark .btn:focus {
 .expense-row:last-child {
   border-bottom: none;
 }
-
 .expense-select-checkbox {
   width: 18px;
   height: 18px;
   margin-right: 6px;
   flex: 0 0 22px;
 }
-
 .expense-meta {
   flex: 1 1 auto;
   min-width: 160px;
@@ -3141,7 +2319,6 @@ html.dark .btn:focus {
   font-size: 0.95rem;
   white-space: pre-wrap;
 }
-
 .expense-receipts {
   display: flex;
   gap: 8px;
@@ -3158,19 +2335,16 @@ html.dark .btn:focus {
   font-weight: 600;
   font-size: 0.92rem;
 }
-
 .expense-actions {
   flex: 0 0 auto;
 }
 .expense-actions .btn {
   background: #e74c3c;
-  color: white;
+  color: #fff;
   border: none;
   padding: 8px 10px;
   border-radius: 8px;
 }
-
-/* compact header with select all */
 .expenses-list-header {
   display: flex;
   justify-content: space-between;
@@ -3184,7 +2358,7 @@ html.dark .btn:focus {
   gap: 8px;
 }
 
-/* responsive tweaks */
+/* Expenses responsive */
 @media (max-width: 880px) {
   .expense-receipts img {
     width: 40px;
@@ -3196,7 +2370,6 @@ html.dark .btn:focus {
     gap: 8px;
   }
 }
-
 @media (max-width: 520px) {
   .expense-row {
     flex-direction: column;
@@ -3208,33 +2381,9 @@ html.dark .btn:focus {
     margin-top: 8px;
   }
 }
-
-/* subtle hover and focus states */
 .expense-row:hover {
   background: rgba(0, 0, 0, 0.01);
 }
 .expense-row:focus-within {
   outline: 2px solid rgba(143, 212, 107, 0.08);
-}
-
-/* Dark mode adjustments */
-html.dark .expenses-panel {
-  background: linear-gradient(180deg, #071018, #0b1112);
-  border-color: rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-md);
-}
-html.dark .expenses-list {
-  background: transparent;
-}
-html.dark .expense-row {
-  border-bottom-color: rgba(255, 255, 255, 0.03);
-}
-html.dark .expense-catdate {
-  color: rgba(255, 255, 255, 0.72);
-}
-html.dark .expense-note {
-  color: var(--clr-text);
-}
-html.dark .expense-actions .btn {
-  background: #b23b3b;
 }
