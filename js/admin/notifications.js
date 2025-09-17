@@ -111,23 +111,36 @@ class NotificationManager {
         try {
             // E-Mail-Benachrichtigung für Bewertung
             if (config.options.email) {
-                // Verwende neues Template-System
-                const templateData = window.emailTemplateManager.getEmailJSTemplateData('newReview', reviewData);
+                // Erzeuge das HTML für die Review-Benachrichtigung (fokussiert auf Bewertungstext und Sterne)
+                const htmlBody = window.emailTemplateManager.generateNewReviewEmail(reviewData);
 
-                // Admin-spezifische Daten hinzufügen
+                // Strukturierte, minimal notwendige Felder für das Template
+                const plainText = `Neue Bewertung von ${reviewData.name || reviewData.customerName || 'Anonym'}\n\n` +
+                    `Bewertung: ${reviewData.gesamt || reviewData.gesamtbewertung || ''}/5\n` +
+                    `Kommentar: ${reviewData.kommentar || reviewData.text || 'Keine zusätzlichen Kommentare'}\n` +
+                    (reviewData.orderId ? `Bestellungs-ID: ${reviewData.orderId}\n` : '');
+
                 const emailData = {
-                    ...templateData,
                     to_email: config.adminEmail,
-                    to_name: "Admin"
+                    to_name: 'Admin',
+                    subject: 'Neue Bewertung erhalten',
+                    html_body: htmlBody,
+                    message_html: htmlBody, // alias some templates expect
+                    text_body: plainText,
+                    message_text: plainText, // alias for plain-text templates
+                    review_comment: reviewData.kommentar || reviewData.text || '',
+                    rating_overall: reviewData.gesamt || reviewData.gesamtbewertung || '',
+                    reviewer_name: reviewData.name || reviewData.customerName || 'Anonym',
+                    order_id: reviewData.orderId || ''
                 };
 
                 await emailjs.send(
                     window.emailConfig.serviceId,
-                    'template_ov1de3n', // Verwendung des einheitlichen Templates
+                    'template_ov1de3n',
                     emailData,
                     window.emailConfig.publicKey
                 );
-                console.log("Admin E-Mail-Benachrichtigung (Bewertung) gesendet");
+                console.log('Admin E-Mail-Benachrichtigung (Bewertung) gesendet');
             }
 
             // Sound-Benachrichtigung im Browser
@@ -250,3 +263,8 @@ class NotificationManager {
 
 // Globale Instanz für Admin-Dashboard
 window.notificationManager = new NotificationManager();
+
+// Expose constructor for test helpers (non-breaking)
+if (typeof window.NotificationManager === 'undefined' && typeof NotificationManager !== 'undefined') {
+    window.NotificationManager = NotificationManager;
+}

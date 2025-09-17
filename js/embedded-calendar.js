@@ -12,19 +12,31 @@ let publicCalendarMode = 'embedded'; // Flag für modales Verhalten
 function showAvailabilityCalendar() {
     const calendarDiv = document.getElementById('embeddedCalendar');
     const contentDiv = document.getElementById('embeddedCalendarContent');
+    const toggleBtn = document.getElementById('toggleCalendarBtn');
 
-    if (calendarDiv && contentDiv) {
-        calendarDiv.style.display = 'block';
+    if (!calendarDiv || !contentDiv) return;
 
-        // Smooth scroll zum Kalender
-        calendarDiv.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+    const isOpen = calendarDiv.style.display && calendarDiv.style.display !== 'none';
 
-        // Kalender laden
-        loadEmbeddedCalendar();
+    if (isOpen) {
+        // Wenn offen: zu- und aria aktualisieren
+        calendarDiv.style.display = 'none';
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        return;
     }
+
+    // Ansonsten öffnen, aria setzen und aktuelle Daten laden
+    calendarDiv.style.display = 'block';
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+
+    // Smooth scroll zum Kalender
+    calendarDiv.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+    });
+
+    // Immer aktuellste Werte laden
+    loadEmbeddedCalendar();
 }
 
 /**
@@ -34,6 +46,8 @@ function hideAvailabilityCalendar() {
     const calendarDiv = document.getElementById('embeddedCalendar');
     if (calendarDiv) {
         calendarDiv.style.display = 'none';
+        const toggleBtn = document.getElementById('toggleCalendarBtn');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
     }
 }
 
@@ -135,6 +149,8 @@ function renderEmbeddedCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const orderCount = ordersCountData[dateString] || 0;
+        const maxOrders = 3; // Kapazitätslimit
+        const isCapacityFull = orderCount >= maxOrders;
 
         // Prüfe ob Datum zu früh ist (weniger als 7 Tage Vorlaufzeit)
         const selectedDate = new Date(currentYear, currentMonth, day);
@@ -150,17 +166,29 @@ function renderEmbeddedCalendar() {
         let dayClass = '';
         let clickHandler = '';
 
-        if (isPast || isTooEarly) {
-            dayStyle += 'background: #f0f0f0; color: #999; cursor: not-allowed;';
-            const reason = isPast ? 'Vergangen' : 'Zu kurzfristig (min. 7 Tage Vorlaufzeit)';
+        if (isPast || isTooEarly || isCapacityFull) {
+            if (isCapacityFull && !isPast && !isTooEarly) {
+                dayStyle += 'background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; cursor: not-allowed;';
+            } else {
+                dayStyle += 'background: #f0f0f0; color: #999; cursor: not-allowed;';
+            }
         } else {
-            dayStyle += 'background: #e8f5e8; color: #2e7d32; border-color: #4caf50;';
+            // Verfügbar - Farbe je nach Auslastung
+            if (orderCount === 0) {
+                dayStyle += 'background: #e8f5e8; color: #2e7d32; border: 1px solid #4caf50;';
+            } else if (orderCount === 1) {
+                dayStyle += 'background: #fff8e1; color: #f57f17; border: 1px solid #ffeb3b;';
+            } else if (orderCount === 2) {
+                dayStyle += 'background: #ffe0b2; color: #ef6c00; border: 1px solid #ff9800;';
+            }
             clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
         }
 
+        const availableSlots = Math.max(0, maxOrders - orderCount);
         const statusText = isPast ? 'Vergangen' :
             isTooEarly ? 'Zu kurzfristig (mind. 7 Tage Vorlaufzeit erforderlich)' :
-                `Verfügbar (${orderCount} Bestellung${orderCount === 1 ? '' : 'en'})`;
+                isCapacityFull ? 'Ausgebucht (3/3 Plätze belegt)' :
+                    `Verfügbar (${availableSlots}/${maxOrders} Plätze frei)`;
 
         calendarHTML += `
             <div ${clickHandler} 
@@ -169,19 +197,33 @@ function renderEmbeddedCalendar() {
                  onmouseover="this.style.transform='scale(1.05)'"
                  onmouseout="this.style.transform='scale(1)'">
                 <div style="font-weight: bold; margin-bottom: 2px;">${day}</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">${orderCount > 0 ? orderCount : ''}</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">
+                    ${isCapacityFull ? '❌' : (!isPast && !isTooEarly ? `${availableSlots}/${maxOrders}` : '')}
+                </div>
             </div>
         `;
     }
 
     calendarHTML += '</div>';
 
-    // Legende hinzufügen
+    // Legende hinzufügen mit Kapazitätsinformationen
     calendarHTML += `
-        <div style="display: flex; justify-content: space-around; font-size: 0.85rem; margin-top: 15px; text-align: center;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.8rem; margin-top: 15px; text-align: center;">
             <div style="display: flex; align-items: center; gap: 5px;">
                 <div style="width: 12px; height: 12px; background: #e8f5e8; border-radius: 3px; border: 1px solid #4caf50;"></div>
-                <span>Verfügbar</span>
+                <span>Frei (3/3)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: #fff8e1; border-radius: 3px; border: 1px solid #ffeb3b;"></div>
+                <span>Wenig frei (2/3)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: #ffe0b2; border-radius: 3px; border: 1px solid #ff9800;"></div>
+                <span>Fast voll (1/3)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: #fff3cd; border-radius: 3px; border: 1px solid #ffeaa7;"></div>
+                <span>Ausgebucht ❌</span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
                 <div style="width: 12px; height: 12px; background: #f0f0f0; border-radius: 3px;"></div>
@@ -189,7 +231,7 @@ function renderEmbeddedCalendar() {
             </div>
         </div>
         <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--clr-muted);">
-            <p><strong>Hinweis:</strong> Bestellungen sind nur mit mindestens 7 Tagen Vorlaufzeit möglich</p>
+            <p><strong>Hinweis:</strong> Mindestens 7 Tage Vorlaufzeit • Maximal 3 Bestellungen pro Tag</p>
         </div>
     `;
 
@@ -217,8 +259,9 @@ function showSelectionModal(dateString) {
     });
 
     const orderCount = ordersCountData[dateString] || 0;
-    const available = 5 - orderCount;
-    const isAvailable = orderCount < 5;
+    const maxOrders = 3; // Kapazitätslimit
+    const available = maxOrders - orderCount;
+    const isAvailable = orderCount < maxOrders;
 
     const modalHTML = `
         <div id="dateSelectionModal" style="
@@ -244,12 +287,12 @@ function showSelectionModal(dateString) {
                     ${isAvailable ?
             `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
                          <p style="margin: 0; line-height: 1.5;">
-                             <strong>${available} von 5 Plätzen</strong> noch frei.<br>
+                             <strong>${available} von ${maxOrders} Plätzen</strong> noch frei.<br>
                              Sie können für diesen Tag bestellen.
                          </p>` :
             `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
                          <p style="margin: 0; line-height: 1.5;">
-                             Dieser Tag ist leider bereits vollständig ausgebucht.<br>
+                             Dieser Tag ist leider bereits vollständig ausgebucht (${maxOrders}/${maxOrders} Plätze belegt).<br>
                              Bitte wählen Sie einen anderen Termin.
                          </p>`
         }
@@ -401,7 +444,7 @@ function isDateInPast(year, month, day) {
 }
 
 /**
- * Lädt Bestellungsanzahl für einen Monat (wiederverwendet aus public-calendar.js)
+ * Lädt Bestellungsanzahl für einen Monat (unterstützt beide Datenformate)
  */
 async function loadOrdersCountForMonth(month, year) {
     try {
@@ -411,27 +454,117 @@ async function loadOrdersCountForMonth(month, year) {
         const startDate = new Date(year, month, 1);
         const endDate = new Date(year, month + 1, 0, 23, 59, 59);
 
-        const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
-        const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+        // String-Format für neue Bestellungen (YYYY-MM-DD)
+        const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+        const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
-        const querySnapshot = await db.collection('orders')
-            .where('wunschtermin.datum', '>=', startTimestamp)
-            .where('wunschtermin.datum', '<=', endTimestamp)
-            .get();
+        console.log(`🔍 Suche Bestellungen zwischen ${startDateStr} und ${endDateStr}...`);
 
         // Reset für aktuellen Monat
         ordersCountData = {};
+        // Verfolgung bereits gezählter Dokumente, um Doppelzählungen zu vermeiden
+        const countedDocIds = new Set();
 
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.wunschtermin && data.wunschtermin.datum) {
-                const dateObj = data.wunschtermin.datum.toDate();
-                const dateString = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-                ordersCountData[dateString] = (ordersCountData[dateString] || 0) + 1;
-            }
-        });
+        // Abfrage 1: Neue Bestellungen mit String-Format (wunschtermin als String)
+        try {
+            const stringQuery = await db.collection('orders')
+                .where('wunschtermin', '>=', startDateStr)
+                .where('wunschtermin', '<=', endDateStr)
+                .get();
 
-        console.log(`📊 Bestellungen geladen:`, ordersCountData);
+            console.log(`📝 String-Format Bestellungen gefunden: ${stringQuery.size}`);
+
+            stringQuery.forEach(doc => {
+                if (countedDocIds.has(doc.id)) return;
+                const data = doc.data();
+                const wunschtermin = data.wunschtermin;
+                if (wunschtermin && typeof wunschtermin === 'string') {
+                    ordersCountData[wunschtermin] = (ordersCountData[wunschtermin] || 0) + 1;
+                    countedDocIds.add(doc.id);
+                    console.log(`📅 String-Bestellung gefunden für: ${wunschtermin} (doc ${doc.id})`);
+                }
+            });
+        } catch (stringError) {
+            console.log('ℹ️ String-Format Abfrage nicht möglich (normale bei älteren Daten)');
+        }
+
+        // Abfrage 2: Alte Bestellungen mit Timestamp-Format (wunschtermin.datum)
+        try {
+            const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
+            const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+
+            const timestampQuery = await db.collection('orders')
+                .where('wunschtermin.datum', '>=', startTimestamp)
+                .where('wunschtermin.datum', '<=', endTimestamp)
+                .get();
+
+            console.log(`🕒 Timestamp-Format Bestellungen gefunden: ${timestampQuery.size}`);
+
+            timestampQuery.forEach(doc => {
+                if (countedDocIds.has(doc.id)) return;
+                const data = doc.data();
+                if (data.wunschtermin && data.wunschtermin.datum) {
+                    const dateObj = data.wunschtermin.datum.toDate();
+                    const dateString = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+                    ordersCountData[dateString] = (ordersCountData[dateString] || 0) + 1;
+                    countedDocIds.add(doc.id);
+                    console.log(`📅 Timestamp-Bestellung gefunden für: ${dateString} (doc ${doc.id})`);
+                }
+            });
+        } catch (timestampError) {
+            console.log('ℹ️ Timestamp-Format Abfrage nicht möglich');
+        }
+
+        console.log(`📊 Vorläufige Bestellungen geladen:`, ordersCountData);
+
+        // Falls wichtige Daten fehlen (z.B. neue Dokumentstruktur), führe eine breite Fallback-Suche durch
+        // Diese lädt bis zu 1000 Bestellungen und durchsucht JSON-Strings nach Datums-Mustern YYYY-MM-DD
+        try {
+            const fallbackLimit = 1000;
+            const allQuery = await db.collection('orders').limit(fallbackLimit).get();
+            console.log(`🔎 Fallback-Scan: ${allQuery.size} Dokumente überprüft (Limit ${fallbackLimit})`);
+
+            allQuery.forEach(doc => {
+                if (countedDocIds.has(doc.id)) return; // bereits gezählt
+                const data = doc.data();
+                // Stringify once per doc
+                const s = JSON.stringify(data);
+                // Finde ISO-ähnliche Daten YYYY-MM-DD sowie deutsche D.M.YYYY oder DD.MM.YYYY
+                const isoMatches = s.match(/\d{4}-\d{2}-\d{2}/g) || [];
+                const dotMatches = s.match(/\d{1,2}\.\d{1,2}\.\d{4}/g) || [];
+                const seen = new Set();
+
+                isoMatches.forEach(m => {
+                    if (!m.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)) return;
+                    if (seen.has(m)) return;
+                    seen.add(m);
+                    ordersCountData[m] = (ordersCountData[m] || 0) + 1;
+                });
+
+                dotMatches.forEach(m => {
+                    // Konvertiere DD.MM.YYYY zu YYYY-MM-DD
+                    const parts = m.split('.');
+                    if (parts.length !== 3) return;
+                    const d = parts[0].padStart(2, '0');
+                    const mo = parts[1].padStart(2, '0');
+                    const y = parts[2];
+                    const norm = `${y}-${mo}-${d}`;
+                    if (!norm.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)) return;
+                    if (seen.has(norm)) return;
+                    seen.add(norm);
+                    ordersCountData[norm] = (ordersCountData[norm] || 0) + 1;
+                });
+
+                if (seen.size > 0) {
+                    countedDocIds.add(doc.id);
+                    console.log(`📅 Fallback fand Daten ${Array.from(seen).join(', ')} in Doc ${doc.id}`);
+                }
+            });
+
+            console.log(`📊 Finale Bestellungen nach Fallback:`, ordersCountData);
+        } catch (fbError) {
+            console.log('ℹ️ Fallback-Scan fehlgeschlagen:', fbError);
+        }
 
     } catch (error) {
         console.error('❌ Fehler beim Laden der Bestellungen:', error);
@@ -484,3 +617,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
 });
+
+// Debug-Hilfsfunktionen
+window.printOrdersCountData = function () {
+    console.log('ordersCountData:', ordersCountData);
+    return ordersCountData;
+};
+
+window.debugCalendarDate = async function (dateString) {
+    console.log('Debug: Prüfe Datum', dateString);
+    try {
+        const db = firebase.firestore();
+        // Suche nach String-Feld
+        const byString = await db.collection('orders').where('wunschtermin', '==', dateString).get();
+        console.log('String-Feld Treffer:', byString.size);
+        byString.forEach(d => console.log(' ->', d.id, d.data()));
+
+        // Suche nach Timestamp-Feld
+        // Versuche direkte Timestamp-Vergleich (falls gespeichert)
+        try {
+            const start = new Date(dateString + 'T00:00:00');
+            const end = new Date(dateString + 'T23:59:59');
+            const startTs = firebase.firestore.Timestamp.fromDate(start);
+            const endTs = firebase.firestore.Timestamp.fromDate(end);
+            const byTs = await db.collection('orders')
+                .where('wunschtermin.datum', '>=', startTs)
+                .where('wunschtermin.datum', '<=', endTs)
+                .get();
+            console.log('Timestamp-Feld Treffer:', byTs.size);
+            byTs.forEach(d => console.log(' ->', d.id, d.data()));
+        } catch (e) {
+            console.log('Timestamp-Abfrage schlug fehl:', e);
+        }
+
+        // Fallback: brute-force scan (limit 500)
+        const snap = await db.collection('orders').limit(500).get();
+        let found = 0;
+        snap.forEach(d => {
+            const s = JSON.stringify(d.data());
+            if (s.includes(dateString)) {
+                found++;
+                console.log('Fallback-Treffer:', d.id, d.data());
+            }
+        });
+        console.log('Fallback Treffer insgesamt:', found);
+    } catch (err) {
+        console.error('Debug-Abfrage Fehler:', err);
+    }
+};

@@ -458,6 +458,11 @@ window.saveNotificationSettings = function () {
     window.adminDashboard.saveNotificationSettings();
 };
 
+// Expose constructor for test helpers (non-breaking)
+if (typeof window.AdminDashboard === 'undefined' && typeof AdminDashboard !== 'undefined') {
+    window.AdminDashboard = AdminDashboard;
+}
+
 // Initialisierung wenn DOM geladen ist
 document.addEventListener("DOMContentLoaded", function () {
     // Erstelle globale Admin-Dashboard Instanz

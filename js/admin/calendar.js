@@ -241,8 +241,8 @@ class CalendarManager {
                         <span>Neu</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color status-in-bearbeitung"></div>
-                        <span>In Bearbeitung</span>
+                        <div class="legend-color status-in-vorbereitung"></div>
+                        <span>In Vorbereitung</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color status-fertig"></div>
@@ -261,7 +261,10 @@ class CalendarManager {
 
         let html = '';
         orders.slice(0, 3).forEach(order => { // Max 3 anzeigen
-            const statusClass = `status-${order.status || 'neu'}`;
+            // Normalize status to a CSS-friendly class (lowercase, spaces -> hyphens)
+            const rawStatus = order.status || 'neu';
+            const normalizedStatus = String(rawStatus).toLowerCase().replace(/\s+/g, '-');
+            const statusClass = `status-${normalizedStatus}`;
 
             // Name und Größe extrahieren
             const customerName = order.name || 'Unbekannt';
@@ -273,8 +276,12 @@ class CalendarManager {
                 orderSize = `${cm} cm (${kategorie})`;
             }
 
+            // For the calendar short view we keep the title concise but include tier count in tooltip if available
+            const tooltipExtras = order.details && order.details.extras && typeof formatExtras === 'function' ? formatExtras(order.details.extras, order.details) : '';
+            const tooltip = tooltipExtras ? `${customerName} - ${orderSize} - ${tooltipExtras}` : `${customerName} - ${orderSize}`;
+
             html += `
-                <div class="day-order ${statusClass}" title="${customerName} - ${orderSize}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
+                <div class="day-order ${statusClass}" title="${tooltip}" onclick="window.calendarManager.showOrderDetails('${order.id}')">
                     <span class="order-name">${customerName.substring(0, 8)}...</span>
                 </div>
             `;
@@ -398,9 +405,10 @@ class CalendarManager {
                     : 'Nicht angegeben'}</p>
                             <p><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</p>
                             ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ''}
-                            <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
+                <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
                     ? `${order.details.durchmesserCm} cm (${order.details.kategorie || this.deriveTierFromCm(order.details.durchmesserCm)})`
                     : 'Unbekannt'}</p>
+                ${order.details && order.details.numberOfTiers ? `<p><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</p>` : ''}
                             <p><strong>Status:</strong> <span style="
                                 padding: 4px 8px;
                                 border-radius: 4px;
@@ -409,13 +417,14 @@ class CalendarManager {
                                 font-weight: 600;
                             ">${order.status || 'neu'}</span></p>
                             <p><strong>Preis:</strong> ${order.gesamtpreis ? parseFloat(order.gesamtpreis).toFixed(2) + '€' : 'Nicht berechnet'}</p>
-                            ${order.details && order.details.extras && order.details.extras.length > 0 ? `<p><strong>Extras:</strong> ${order.details.extras.join(', ')}</p>` : ''}
+                            ${order.details && order.details.extras && order.details.extras.length > 0 ? `<p><strong>Extras:</strong> ${formatExtras(order.details.extras, order.details)}</p>` : ''}
                             ${order.sonderwunsch ? `<p><strong>Sonderwunsch:</strong> ${order.sonderwunsch}</p>` : ''}
-                            ${order.details && order.details.lieferung ? `<p><strong>Lieferung:</strong> ${order.details.lieferung === 'abholung' ? 'Abholung' : order.details.lieferung}</p>` : ''}
+                            ${order.details && order.details.lieferung ? `<p><strong>Lieferart:</strong> ${order.details.lieferung === 'abholung' ? 'Abholung' : toTitleCase(order.details.lieferung)}</p>` : ''}
+                            ${order.details && order.details.lieferung && order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ''}
                         </div>
                         
                         <div style="margin-top: 25px; display: flex; gap: 10px;">
-                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'in-bearbeitung')" style="
+                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'in Vorbereitung')" style="
                                 background: #ff9800;
                                 color: white;
                                 border: none;
@@ -423,7 +432,7 @@ class CalendarManager {
                                 border-radius: 6px;
                                 cursor: pointer;
                                 flex: 1;
-                            ">In Bearbeitung</button>
+                            ">In Vorbereitung</button>
                             <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'fertig')" style="
                                 background: #4caf50;
                                 color: white;
@@ -448,13 +457,14 @@ class CalendarManager {
 
     // Status-Farbe bestimmen
     getStatusColor(status) {
-        switch (status) {
-            case 'neu': return '#2196f3';
-            case 'in-bearbeitung': return '#ff9800';
-            case 'fertig': return '#4caf50';
-            case 'abgeholt': return '#9e9e9e';
-            default: return '#2196f3';
-        }
+        const s = String(status || '').toLowerCase();
+
+        if (s === 'neu') return '#2196f3';
+        // treat legacy variants and normalized strings that indicate preparation
+        if (s.includes('bearbeitung') || s.includes('vorbereitung')) return '#ff9800';
+        if (s === 'fertig') return '#4caf50';
+        if (s === 'abgeholt') return '#9e9e9e';
+        return '#2196f3';
     }
 
     // Zum heutigen Tag springen

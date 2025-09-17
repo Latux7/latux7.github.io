@@ -111,7 +111,7 @@ class AccountingManager {
         let categoryBreakdown = {};
         let statusBreakdown = {
             'neu': 0,
-            'in-bearbeitung': 0,
+            'in Vorbereitung': 0,
             'fertig': 0,
             'abgeholt': 0
         };
@@ -129,8 +129,17 @@ class AccountingManager {
             totalRevenue += price;
 
             // Status-Aufschlüsselung
-            const status = order.status || 'neu';
-            statusBreakdown[status] = (statusBreakdown[status] || 0) + price;
+            const rawStatus = order.status || 'neu';
+            // Normalize known variants to canonical keys used in UI
+            const s = String(rawStatus).toLowerCase();
+            let normalizedStatus = rawStatus;
+            if (s === 'in-bearbeitung' || s === 'in_bearbeitung' || s.includes('bearbeitung') || s.includes('vorbereitung') || s === 'invorbereitung') {
+                normalizedStatus = 'in Vorbereitung';
+            } else if (s === 'neu' || s === 'fertig' || s === 'abgeholt' || s === 'angenommen' || s === 'abgelehnt') {
+                normalizedStatus = s === 'neu' ? 'neu' : (s === 'fertig' ? 'fertig' : (s === 'abgeholt' ? 'abgeholt' : s));
+            }
+
+            statusBreakdown[normalizedStatus] = (statusBreakdown[normalizedStatus] || 0) + price;
 
             // Größen-Aufschlüsselung - prüfe verschiedene Größenfelder
             const size = order.details?.durchmesserCm ? `${order.details.durchmesserCm}cm` : (order.size || 'unbekannt');

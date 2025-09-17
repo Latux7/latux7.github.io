@@ -46,13 +46,12 @@
         >
           <button
             type="button"
+            id="toggleCalendarBtn"
             onclick="showAvailabilityCalendar()"
             class="btn btn-outline"
+            aria-expanded="false"
           >
             📊 Verfügbarkeit prüfen
-          </button>
-          <button type="button" onclick="scrollToForm()" class="btn">
-            🎂 Direkt bestellen
           </button>
         </div>
       </section>
@@ -183,8 +182,8 @@
               value="mehrstoeckig"
               id="mehrstoeckigCheckbox"
             />
-            Mehrstöckig (+30&nbsp;€)</label
-          >
+            Mehrstöckig (+30&nbsp;€) - erst ab Kategorie "Groß" verfügbar
+          </label>
 
           <!-- Anzahl Stockwerke auswählen -->
           <div
@@ -288,6 +287,18 @@
         </fieldset>
 
         <div id="orderSum" class="order-summary"></div>
+        <fieldset class="notes-fieldset">
+          <legend>
+            Anmerkungen zur Bestellung (z. B. Allergien, Text auf Torte)
+          </legend>
+          <textarea
+            id="sonderwunsch"
+            name="sonderwunsch"
+            rows="6"
+            class="plain-textarea"
+            placeholder="Gern dürfen Sie hier besondere Wünsche oder Hinweise eingeben..."
+          ></textarea>
+        </fieldset>
         <input type="submit" value="Bestellung absenden" />
         <div id="orderSuccess" class="alert success">
           Vielen Dank! Ihre Bestellung wurde übermittelt.
@@ -318,13 +329,13 @@
       <!-- Email Template Manager für dynamische Benachrichtigungen -->
       <script src="js/email-template-manager.js"></script>
       <!-- Order-Deadline System (Vorlaufzeit statt Limits) -->
-      <script src="js/order-deadline.js?v=2024-id-fix"></script>
+      <script src="js/order-deadline.js?v=2024-capacity-admin"></script>
       <!-- Embedded Calendar für bessere UX -->
-      <script src="js/embedded-calendar.js"></script>
+      <script src="js/embedded-calendar.js?v=2024-capacity-fixed"></script>
       <!-- Test-Fixes für kritische Probleme -->
       <script src="js/test-fixes.js"></script>
       <!-- Zuletzt die App-Scripts -->
-      <script src="js/order.js?v=2024-fixed"></script>
+      <script src="js/order.js?v=2024-capacity"></script>
     </div>
   </body>
 </html>

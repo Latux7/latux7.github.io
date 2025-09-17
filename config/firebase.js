@@ -30,11 +30,19 @@ function initializeFirebaseApp() {
 
   // Firestore-Settings für bessere Kompatibilität
   try {
-    db.settings({
-      cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-      experimentalForceLongPolling: true // Hilft bei Adblocker-Problemen
-    });
-    console.log('✅ Firestore-Settings konfiguriert');
+    // Only apply settings once across the whole app. Multiple calls to
+    // initializeFirebaseApp() can happen from different modules; attempting
+    // to call `settings()` after Firestore has already been used throws.
+    if (!window.__firestoreSettingsApplied) {
+      db.settings({
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+        experimentalForceLongPolling: true // Hilft bei Adblocker-Problemen
+      });
+      window.__firestoreSettingsApplied = true;
+      console.log('✅ Firestore-Settings konfiguriert');
+    } else {
+      console.log('ℹ️ Firestore-Settings bereits angewendet, überspringe setSettings.');
+    }
   } catch (settingsError) {
     console.warn('⚠️ Firestore-Settings konnten nicht gesetzt werden:', settingsError);
   }

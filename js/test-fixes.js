@@ -74,13 +74,35 @@
 
     // 5. Order Limit Manager sicherstellen
     function ensureOrderLimitManager() {
-        if (!window.orderLimitManager) {
-            console.error('❌ OrderLimitManager nicht verfügbar');
-            return false;
+        // If already available, we're good.
+        if (window.orderLimitManager) {
+            console.log('\u2705 OrderLimitManager verf\u00fcgbar');
+            return true;
         }
 
-        console.log('✅ OrderLimitManager verfügbar');
-        return true;
+        // Try to provide a compatible manager if one of the newer classes is available.
+        if (typeof OrderDeadlineManager !== 'undefined') {
+            try {
+                window.orderLimitManager = new OrderDeadlineManager();
+                console.log('\u26a1 OrderLimitManager nicht vorhanden — OrderDeadlineManager wurde instanziert und als window.orderLimitManager gesetzt');
+                return true;
+            } catch (err) {
+                console.warn('Fehler beim Instanziieren von OrderDeadlineManager:', err);
+            }
+        }
+
+        if (typeof OrderLimitManager !== 'undefined') {
+            try {
+                window.orderLimitManager = new OrderLimitManager();
+                console.log('\u26a1 OrderLimitManager wurde dynamisch instanziert');
+                return true;
+            } catch (err) {
+                console.warn('Fehler beim Instanziieren von OrderLimitManager:', err);
+            }
+        }
+
+        console.error('\u274c OrderLimitManager nicht verf\u00fcgbar - bitte sicherstellen, dass "js/order-deadline.js" oder "js/order-limits.js" geladen wird');
+        return false;
     }
 
     // 6. Admin Dashboard Klassen sicherstellen

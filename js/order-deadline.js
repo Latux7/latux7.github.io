@@ -5,6 +5,7 @@ class OrderDeadlineManager {
     constructor() {
         this.db = null;
         this.minimumLeadDays = 7; // Mindestens 7 Tage Vorlaufzeit
+        this.maxOrdersPerDay = 3; // KONFIGURIERBAR: Maximale Bestellungen pro Tag
         this.init();
     }
 
@@ -24,12 +25,12 @@ class OrderDeadlineManager {
     getMinimumOrderDate() {
         const minDate = new Date();
         minDate.setDate(minDate.getDate() + this.minimumLeadDays);
-        
+
         // Zeitzone-sichere Konvertierung - lokales Datum verwenden
         const year = minDate.getFullYear();
         const month = String(minDate.getMonth() + 1).padStart(2, '0');
         const day = String(minDate.getDate()).padStart(2, '0');
-        
+
         return `${year}-${month}-${day}`; // YYYY-MM-DD
     }
 
@@ -38,41 +39,65 @@ class OrderDeadlineManager {
         const selectedDate = new Date(dateString + 'T12:00:00'); // Mittags um Zeitzone-Probleme zu vermeiden
         const minDate = new Date();
         minDate.setDate(minDate.getDate() + this.minimumLeadDays);
-        
+
         // Beide Daten auf Mitternacht lokale Zeit setzen
         selectedDate.setHours(0, 0, 0, 0);
         minDate.setHours(0, 0, 0, 0);
 
         const isEarly = selectedDate < minDate;
         console.log(`🗓️ Datum-Validierung: Gewählt=${dateString}, Minimum=${this.getMinimumOrderDate()}, Zu früh=${isEarly}`);
-        
+
         return isEarly;
-    }    // Prüfen ob ein Datum für Bestellungen gültig ist (mindestens 7 Tage Vorlaufzeit)
+    }    // Prüfen ob ein Datum für Bestellungen gültig ist (Vorlaufzeit UND Kapazität)
     async canAcceptOrder(dateString = null) {
         if (!dateString) {
             console.warn('OrderDeadlineManager: Kein Datum angegeben');
             return {
                 canAccept: false,
                 reason: 'Kein Datum ausgewählt',
-                isDateTooEarly: false
+                isDateTooEarly: false,
+                isCapacityFull: false,
+                ordersCount: 0,
+                maxOrders: this.maxOrdersPerDay
             };
         }
 
+        // 1. Vorlaufzeit prüfen
         const isDateTooEarly = this.isDateTooEarly(dateString);
         const minimumDate = this.getMinimumOrderDate();
 
-        console.log(`OrderDeadlineManager: Prüfe Datum ${dateString} - Mindestdatum: ${minimumDate}`);
+        if (isDateTooEarly) {
+            return {
+                canAccept: false,
+                reason: `Bestellungen sind nur mit mindestens ${this.minimumLeadDays} Tagen Vorlaufzeit möglich`,
+                isDateTooEarly: true,
+                isCapacityFull: false,
+                minimumDate: minimumDate,
+                selectedDate: dateString,
+                ordersCount: 0,
+                maxOrders: this.maxOrdersPerDay
+            };
+        }
+
+        // 2. Kapazität prüfen
+        const ordersCount = await this.countOrdersForDate(dateString);
+        const isCapacityFull = ordersCount >= this.maxOrdersPerDay;
+
+        console.log(`OrderDeadlineManager: ${dateString} - Bestellungen: ${ordersCount}/${this.maxOrdersPerDay}, Voll: ${isCapacityFull}`);
 
         return {
-            canAccept: !isDateTooEarly,
+            canAccept: !isDateTooEarly && !isCapacityFull,
             isDateTooEarly: isDateTooEarly,
+            isCapacityFull: isCapacityFull,
             minimumDate: minimumDate,
             selectedDate: dateString,
-            reason: isDateTooEarly ? `Bestellungen sind nur mit mindestens ${this.minimumLeadDays} Tagen Vorlaufzeit möglich` : 'OK'
+            ordersCount: ordersCount,
+            maxOrders: this.maxOrdersPerDay,
+            reason: isCapacityFull ? `Maximale Kapazität erreicht (${ordersCount}/${this.maxOrdersPerDay} Bestellungen)` : 'Datum verfügbar'
         };
     }
 
-    // Vorlaufzeit-Status für UI anzeigen
+    // Vorlaufzeit- und Kapazitäts-Status für UI anzeigen
     async showDeadlineInfo() {
         const minimumDate = this.getMinimumOrderDate();
         const container = document.getElementById('orderDeadlineInfo');
@@ -101,10 +126,11 @@ class OrderDeadlineManager {
             <div class="deadline-info">
                 <div class="deadline-icon">📅</div>
                 <div class="deadline-content">
-                    <h3>Wichtiger Hinweis zur Bestellzeit</h3>
-                    <p><strong>Bestellungen sind nur mit mindestens ${this.minimumLeadDays} Tagen Vorlaufzeit möglich.</strong></p>
-                    <p>Frühestmöglicher Wunschtermin: <strong>${formattedDate}</strong></p>
-                    <small>So können wir die beste Qualität und Frische Ihrer Torte garantieren! 🍰</small>
+                    <h3>Wichtige Hinweise zur Bestellung</h3>
+                    <p><strong>Mindest-Vorlaufzeit:</strong> ${this.minimumLeadDays} Tage</p>
+                    <p><strong>Frühestmöglicher Wunschtermin:</strong> ${formattedDate}</p>
+                    <p><strong>Maximale Bestellungen pro Tag:</strong> ${this.maxOrdersPerDay} Stück</p>
+                    <small>So können wir die beste Qualität und individuelle Betreuung garantieren! 🍰</small>
                 </div>
             </div>
         `;
@@ -129,11 +155,17 @@ class OrderDeadlineManager {
         const validation = await this.canAcceptOrder(selectedDate);
 
         if (!validation.canAccept) {
-            console.log('❌ Datum zu früh - zeige Modal');
-            this.showDateTooEarlyModal(validation);
+            if (validation.isDateTooEarly) {
+                console.log('❌ Datum zu früh - zeige Vorlaufzeit-Modal');
+                this.showDateTooEarlyModal(validation);
+            } else if (validation.isCapacityFull) {
+                console.log('❌ Kapazität voll - zeige Kapazitäts-Modal');
+                this.showCapacityFullModal(validation);
+            }
             return false;
         }
 
+        console.log('✅ Datum verfügbar - Bestellung kann fortgesetzt werden');
         return true;
     }
 
@@ -208,6 +240,45 @@ class OrderDeadlineManager {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
+    // Modal für ausgebuchte Termine (Kapazität erreicht)
+    showCapacityFullModal(validation) {
+        const modalHTML = `
+            <div id="capacityFullModal" style="
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; 
+                z-index: 1000; font-family: 'Poppins', sans-serif;
+            ">
+                <div style="
+                    background: white; padding: 40px; border-radius: 12px; text-align: center; 
+                    max-width: 500px; margin: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+                ">
+                    <div style="font-size: 48px; margin-bottom: 15px;">🚫</div>
+                    <h3 style="color: #ff8c00; margin: 0 0 15px 0;">Termin ausgebucht</h3>
+                    <p style="margin-bottom: 25px; line-height: 1.5;">
+                        Dieser Wunschtermin ist bereits ausgebucht.
+                        <br><strong>${validation.ordersCount}/${validation.maxOrders}</strong> Bestellungen belegt.
+                    </p>
+                    <p style="margin-bottom: 25px; line-height: 1.5; color: #666; font-size: 14px;">
+                        Wählen Sie bitte einen anderen Termin oder prüfen Sie die Verfügbarkeit in unserem Kalender.
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="document.getElementById('capacityFullModal').remove()" style="
+                            background: #6c757d; color: white; border: none; 
+                            padding: 12px 20px; border-radius: 6px; cursor: pointer; 
+                            font-weight: 600;
+                        ">Anderes Datum wählen</button>
+                        <button onclick="document.getElementById('capacityFullModal').remove(); showAvailabilityCalendar();" style="
+                            background: #007bff; color: white; border: none; 
+                            padding: 12px 20px; border-radius: 6px; cursor: pointer; 
+                            font-weight: 600;
+                        ">Kalender öffnen</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
     // Kalender-Mindestdatum setzen
     setCalendarMinDate() {
         const dateInput = document.getElementById('wunschDatum'); // KORRIGIERT: wunschDatum statt wunschtermin
@@ -220,7 +291,7 @@ class OrderDeadlineManager {
         }
     }
 
-    // Bestellungen für ein bestimmtes Datum zählen (für Statistiken)
+    // Bestellungen für ein bestimmtes Datum zählen (für Kapazitätsprüfung)
     async countOrdersForDate(dateString) {
         try {
             if (!this.db) {
@@ -228,18 +299,72 @@ class OrderDeadlineManager {
                 return 0;
             }
 
-            const ordersSnapshot = await this.db.collection('orders')
-                .where('wunschtermin.datum', '==', dateString)
-                .get();
+            // Prüfe sowohl 'wunschDatum' als auch 'wunschtermin.datum' für Kompatibilität
+            const queries = [
+                this.db.collection('orders').where('wunschDatum', '==', dateString),
+                this.db.collection('orders').where('wunschtermin.datum', '==', dateString)
+            ];
 
-            return ordersSnapshot.size;
+            let totalCount = 0;
+            for (const query of queries) {
+                const snapshot = await query.get();
+                totalCount += snapshot.size;
+            }
+
+            console.log(`📊 Bestellungen für ${dateString}: ${totalCount}/${this.maxOrdersPerDay}`);
+            return totalCount;
         } catch (error) {
             console.error('OrderDeadlineManager: Fehler beim Zählen der Bestellungen:', error);
             return 0;
         }
     }
+
+    // Kapazitätsstatus für Datum abrufen
+    async getCapacityStatus(dateString) {
+        const ordersCount = await this.countOrdersForDate(dateString);
+        const available = this.maxOrdersPerDay - ordersCount;
+        const isFull = ordersCount >= this.maxOrdersPerDay;
+
+        return {
+            ordersCount,
+            maxOrders: this.maxOrdersPerDay,
+            available,
+            isFull,
+            percentageFull: Math.round((ordersCount / this.maxOrdersPerDay) * 100)
+        };
+    }
+
+    // Konfiguration: Maximale Bestellungen pro Tag ändern
+    setMaxOrdersPerDay(newMax) {
+        this.maxOrdersPerDay = newMax;
+        console.log(`📈 Maximale Bestellungen pro Tag geändert auf: ${newMax}`);
+        return this.maxOrdersPerDay;
+    }
 }
 
 // Globale Instanz - Für Rückwärtskompatibilität mit OrderLimitManager
-window.orderLimitManager = new OrderDeadlineManager();
-window.orderDeadlineManager = new OrderDeadlineManager();
+// Globale Instanz - Für Rückwärtskompatibilität mit OrderLimitManager
+// Create a single instance and assign it to both global names to avoid double initialization.
+if (!window.orderLimitManager) {
+    const __orderDeadlineInstance = new OrderDeadlineManager();
+    window.orderLimitManager = __orderDeadlineInstance;
+    window.orderDeadlineManager = __orderDeadlineInstance;
+} else if (!window.orderDeadlineManager) {
+    // If a legacy orderLimitManager exists, reuse it for the new name.
+    window.orderDeadlineManager = window.orderLimitManager;
+}
+
+// Globale Admin-Funktionen für Kapazitätsmanagement
+window.setMaxOrdersPerDay = function (newMax) {
+    if (window.orderLimitManager) {
+        return window.orderLimitManager.setMaxOrdersPerDay(newMax);
+    }
+    return null;
+};
+
+window.getCapacityStatus = async function (dateString) {
+    if (window.orderLimitManager) {
+        return await window.orderLimitManager.getCapacityStatus(dateString);
+    }
+    return null;
+};

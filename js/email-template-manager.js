@@ -111,7 +111,7 @@ class EmailTemplateManager {
             {
                 label: 'Extras',
                 value: orderData.details && orderData.details.extras && orderData.details.extras.length > 0
-                    ? orderData.details.extras.join(', ')
+                    ? (typeof formatExtras === 'function' ? formatExtras(orderData.details.extras, orderData.details) : orderData.details.extras.join(', '))
                     : 'Keine'
             },
             {
@@ -178,86 +178,83 @@ class EmailTemplateManager {
 
     // Erstelle Email-HTML für neue Bewertung
     generateNewReviewEmail(reviewData) {
-        const template = this.templates.newReview;
+        // Normalize incoming review fields (the review form uses: gesamt, geschmack, aussehen, service, text/kommentar)
+        const overall = parseInt(reviewData.gesamt || reviewData.gesamtbewertung || 0) || 0;
+        const taste = parseInt(reviewData.geschmack || 0) || 0;
+        const looks = parseInt(reviewData.aussehen || reviewData.optik || 0) || 0;
+        const service = parseInt(reviewData.service || 0) || 0;
+        const pricePerf = parseInt(reviewData.preisLeistung || 0) || 0;
 
-        // Sterne-Darstellung generieren
-        const generateStars = (rating) => {
-            const stars = [];
-            for (let i = 1; i <= 5; i++) {
-                stars.push(i <= rating ? '⭐' : '☆');
-            }
-            return stars.join('');
+        return {
+            // Template-Typ Controls
+            template_type: 'new_review',
+            is_order: false,
+            is_review: true,
+
+            // Header-Bereich
+            notification_title: 'Neue Bewertung erhalten',
+            header_title: 'NEUE BEWERTUNG',
+            priority_text: 'BEWERTUNG PRÜFEN',
+
+            // Alert-Bereich
+            alert_title: '\u2b50 Neue Kundenbewertung erhalten!',
+            alert_message: 'Ein Kunde hat eine neue Bewertung für Laura\'s Backstube abgegeben.',
+
+            // Bewertungsdetails für das Grid (human readable)
+            rating_overall: this.formatRating(overall),
+            rating_geschmack: this.formatRating(taste),
+            rating_optik: this.formatRating(looks),
+            rating_service: this.formatRating(service),
+            rating_preis: this.formatRating(pricePerf),
+
+            // Review content (ensure keys match other callers)
+            customer_name: reviewData.name || reviewData.customerName || 'Anonym',
+            customer_email: reviewData.email || reviewData.customerEmail || 'Nicht angegeben',
+            review_comment: reviewData.kommentar || reviewData.text || '',
+            review_title: reviewData.titel || '',
+            orderId: reviewData.orderId || '',
+
+            // Zeitstempel und Dashboard
+            review_timestamp: new Date().toLocaleString('de-DE'),
+            admin_dashboard_url: this.adminDashboardUrl,
+
+            // Action-Bereich
+            action_title: 'Bewertung verwalten',
+            action_message: '\u00d6ffnen Sie das Admin-Dashboard, um die Bewertung zu moderieren und zu verwalten.',
+            action_button_text: 'Zum Admin-Dashboard',
+
+            // Extras / Summary
+            average_rating: ((taste + looks + service + pricePerf + overall) / (overall ? 5 : (taste || looks || service || pricePerf ? 4 : 1))),
+            rating_count: 'Bewertungskategorien: ' + [overall, taste, looks, service, pricePerf].filter(n => n > 0).length
         };
 
-        // Content-Items für die Bewertung
+        // Build simple content and info for the review template
         const contentItems = [
-            {
-                label: 'Gesamtbewertung',
-                value: `${reviewData.gesamt || 0}/5 Sterne`
-            },
-            {
-                label: 'Geschmack',
-                value: `${reviewData.geschmack || 0}/5 Sterne`
-            },
-            {
-                label: 'Aussehen',
-                value: `${reviewData.aussehen || 0}/5 Sterne`
-            },
-            {
-                label: 'Service',
-                value: `${reviewData.service || 0}/5 Sterne`
-            }
+            { label: 'Gesamtbewertung', value: `${overall}/5` },
+            { label: 'Geschmack', value: `${taste}/5` },
+            { label: 'Aussehen', value: `${looks}/5` },
+            { label: 'Service', value: `${service}/5` }
         ];
 
-        // Bewertungs-Kategorien mit Sternen
-        const ratings = [
-            {
-                category: 'Gesamtbewertung',
-                stars: generateStars(reviewData.gesamt || 0)
-            },
-            {
-                category: 'Geschmack',
-                stars: generateStars(reviewData.geschmack || 0)
-            },
-            {
-                category: 'Aussehen',
-                stars: generateStars(reviewData.aussehen || 0)
-            },
-            {
-                category: 'Service',
-                stars: generateStars(reviewData.service || 0)
-            }
-        ];
-
-        // Info-Items für Kundendaten
         const infoItems = [
-            {
-                icon: '👤',
-                label: 'Name',
-                value: reviewData.name || 'Anonym'
-            },
-            {
-                icon: '📧',
-                label: 'E-Mail',
-                value: reviewData.email || 'Nicht angegeben'
-            }
+            { icon: '👤', label: 'Name', value: reviewData.name || reviewData.customerName || 'Anonym' },
+            { icon: '📧', label: 'E-Mail', value: reviewData.email || reviewData.customerEmail || 'Nicht angegeben' }
         ];
 
-        // Bestellungs-ID hinzufügen falls vorhanden
         if (reviewData.orderId) {
-            infoItems.push({
-                icon: '🛒',
-                label: 'Bestellungs-ID',
-                value: reviewData.orderId
-            });
+            infoItems.push({ icon: '🛒', label: 'Bestellungs-ID', value: reviewData.orderId });
         }
 
-        // Template-Data zusammenstellen
         const templateData = {
             ...template,
             content_items: contentItems,
-            ratings: ratings,
-            review_text: reviewData.kommentar || 'Keine zusätzlichen Kommentare',
+            ratings: [
+                { category: 'Gesamt', stars: this.formatRating(overall) },
+                { category: 'Geschmack', stars: this.formatRating(taste) },
+                { category: 'Aussehen', stars: this.formatRating(looks) },
+                { category: 'Service', stars: this.formatRating(service) }
+            ],
+            review_text: reviewData.kommentar || reviewData.text || 'Keine zusätzlichen Kommentare',
             highlight_content: `⭐ Durchschnitt: ${this.calculateAverageRating(reviewData).toFixed(1)}/5 Sterne`,
             info_items: infoItems,
             timestamp: new Date().toLocaleString('de-DE'),
@@ -360,7 +357,7 @@ class EmailTemplateManager {
                 ? `${orderData.details.durchmesserCm} cm ${orderData.details.tier ? `(${orderData.details.tier})` : ''}`
                 : 'Nicht angegeben',
             order_extras: orderData.details && orderData.details.extras && orderData.details.extras.length > 0
-                ? orderData.details.extras.join(', ')
+                ? (typeof formatExtras === 'function' ? formatExtras(orderData.details.extras, orderData.details) : orderData.details.extras.join(', '))
                 : 'Keine',
             wunschtermin: orderData.wunschtermin && orderData.wunschtermin.datum
                 ? this.formatDate(orderData.wunschtermin.datum)

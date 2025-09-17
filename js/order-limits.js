@@ -343,5 +343,7 @@ class OrderLimitManager {
     }
 }
 
-// Globale Instanz
-window.orderLimitManager = new OrderLimitManager();
+// Globale Instanz - nur erstellen, wenn noch nicht vorhanden (vermeidet Überschreiben)
+if (!window.orderLimitManager) {
+    window.orderLimitManager = new OrderLimitManager();
+}

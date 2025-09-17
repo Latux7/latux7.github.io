@@ -291,3 +291,8 @@ window.archiveAllFinished = async function () {
 
 // Globale Instanz für Admin-Dashboard
 window.archiveManager = new ArchiveManager();
+
+// Expose constructor for test helpers (non-breaking)
+if (typeof window.ArchiveManager === 'undefined' && typeof ArchiveManager !== 'undefined') {
+    window.ArchiveManager = ArchiveManager;
+}

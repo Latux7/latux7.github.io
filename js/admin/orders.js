@@ -258,7 +258,7 @@ class OrderManager {
         const isFirstTime = orderCount <= 1;
 
         const size = order.details?.durchmesserCm ? `${order.details.durchmesserCm} cm` : "Unbekannt";
-        const extras = order.details?.extras?.length ? order.details.extras.join(", ") : "keine";
+        const extras = order.details?.extras?.length ? (typeof formatExtras === 'function' ? formatExtras(order.details.extras, order.details) : order.details.extras.join(", ")) : "keine";
         const lieferung = order.details?.lieferung || "";
         const liefertext = lieferung ? `Lieferung (${lieferung})` : "Abholung";
         const price = order.gesamtpreis || "Nicht berechnet";
@@ -275,7 +275,7 @@ class OrderManager {
         return `
             <details style="margin-bottom:16px;">
                 <summary style="cursor: pointer; font-weight: bold; padding: 8px; background: #f5f5f5; border-radius: 4px;">
-                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <span style="color: ${this.getStatusColor(order.status)}">${order.status}</span>
+                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <strong>Wunschtermin:</strong> ${this.formatDesiredDate(order)} - <span style="color: ${this.getStatusColor(order.status)}">${order.status}</span>
                 </summary>
                 <div style="padding: 16px; border: 1px solid #ddd; border-top: none;">
                     <p><strong>Kunde:</strong> ${escapeHtml(customerName)}</p>
@@ -285,17 +285,18 @@ class OrderManager {
                     <p><strong>Wunschtermin:</strong> ${wunschtermin}</p>
                     ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ""}
                     <p><strong>Größe:</strong> ${size}</p>
+                    ${order.details && order.details.numberOfTiers ? `<p><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</p>` : ''}
                     <p><strong>Extras:</strong> ${extras}</p>
                     <p><strong>Lieferung:</strong> ${liefertext}</p>
                     ${order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ""}
                     <p><strong>Preis:</strong> ${price}€</p>
                     <p><strong>Status:</strong> 
                         <select onchange="this.nextElementSibling.style.display = 'inline'" data-order-id="${orderId}">
-                            <option value="neu" ${order.status === "neu" ? "selected" : ""}>neu</option>
-                            <option value="angenommen" ${order.status === "angenommen" ? "selected" : ""}>angenommen</option>
-                            <option value="in Vorbereitung" ${order.status === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
-                            <option value="fertig" ${order.status === "fertig" ? "selected" : ""}>fertig</option>
-                            <option value="abgelehnt" ${order.status === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
+                            <option value="neu" ${this.normalizeStatus(order.status) === "neu" ? "selected" : ""}>neu</option>
+                            <option value="angenommen" ${this.normalizeStatus(order.status) === "angenommen" ? "selected" : ""}>angenommen</option>
+                            <option value="in Vorbereitung" ${this.normalizeStatus(order.status) === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
+                            <option value="fertig" ${this.normalizeStatus(order.status) === "fertig" ? "selected" : ""}>fertig</option>
+                            <option value="abgelehnt" ${this.normalizeStatus(order.status) === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
                         </select>
                         <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" style="display:none; margin-left:8px;">Speichern</button>
                     </p>
@@ -319,6 +320,73 @@ class OrderManager {
             case "abgelehnt": return "#f44336";
             default: return "#666";
         }
+    }
+
+    // Parse wunschtermin from different stored formats and return Date or null
+    parseDesiredDate(order) {
+        try {
+            if (!order) return null;
+            // Newer format: order.wunschtermin.datum may be a Firestore Timestamp or string
+            if (order.wunschtermin && order.wunschtermin.datum) {
+                const d = order.wunschtermin.datum;
+                if (d && typeof d.toDate === 'function') {
+                    return d.toDate();
+                }
+                // string like 'YYYY-MM-DD'
+                const parsed = new Date(d);
+                if (!isNaN(parsed)) return parsed;
+            }
+
+            // Older/alternate: order.wunschtermin may be a plain string
+            if (order.wunschtermin && typeof order.wunschtermin === 'string') {
+                const parsed = new Date(order.wunschtermin);
+                if (!isNaN(parsed)) return parsed;
+            }
+
+            return null;
+        } catch (err) {
+            console.warn('parseDesiredDate error', err);
+            return null;
+        }
+    }
+
+    // Format wunschtermin for compact display (e.g., '20.09.2025' or 'Nicht angegeben')
+    formatDesiredDate(order) {
+        const d = this.parseDesiredDate(order);
+        if (!d) return 'Kein Wunschtermin';
+        try {
+            return d.toLocaleDateString('de-DE');
+        } catch (e) {
+            return d.toISOString().split('T')[0];
+        }
+    }
+
+    // Normalisiere Statuswerte (unterstützt Legacy-Varianten)
+    normalizeStatus(rawStatus) {
+        if (!rawStatus) return rawStatus;
+        const s = String(rawStatus).trim().toLowerCase();
+
+        // Mapping für bekannte Legacy-Varianten
+        const mapping = {
+            'in-bearbeitung': 'in Vorbereitung',
+            'in_bearbeitung': 'in Vorbereitung',
+            'inbearbeitung': 'in Vorbereitung',
+            'invorbereitung': 'in Vorbereitung',
+            'in vorbereitung': 'in Vorbereitung',
+            'in vorbereitunG': 'in Vorbereitung'
+        };
+
+        if (mapping[s]) return mapping[s];
+
+        // Wenn bereits der korrekte canonical-string in lower-case vorliegt
+        if (s === 'neu' || s === 'angenommen' || s === 'in vorbereitung' || s === 'fertig' || s === 'abgelehnt' || s === 'in vorbereitung') {
+            // return in proper casing
+            if (s === 'in vorbereitung' || s === 'invorbereitung') return 'in Vorbereitung';
+            return s === 'neu' ? 'neu' : s === 'angenommen' ? 'angenommen' : s === 'fertig' ? 'fertig' : s === 'abgelehnt' ? 'abgelehnt' : s;
+        }
+
+        // Default: Capitalize first letter (best effort)
+        return rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
     }
 
     // Bestellungen laden und anzeigen
@@ -364,7 +432,7 @@ class OrderManager {
                     // Erst nach Status sortieren (neue Bestellungen zuerst)
                     const statusPriority = {
                         "neu": 0,
-                        "in_bearbeitung": 1,
+                        "in Vorbereitung": 1,
                         "fertig": 2
                     };
 
@@ -373,6 +441,23 @@ class OrderManager {
 
                     if (priorityA !== priorityB) {
                         return priorityA - priorityB;
+                    }
+
+                    // Wenn beide gleich priorisiert sind und es sich um neue Bestellungen handelt,
+                    // sortiere nach Wunschtermin (früheste zuerst) damit die frühesten Wunschtermine oben stehen.
+                    if (priorityA === 0 && priorityB === 0) {
+                        const desiredA = this.parseDesiredDate(orderA);
+                        const desiredB = this.parseDesiredDate(orderB);
+
+                        // Treat missing desired date as far future so ones with dates come first
+                        const farFuture = new Date(8640000000000000);
+                        const aTime = desiredA ? desiredA.getTime() : farFuture.getTime();
+                        const bTime = desiredB ? desiredB.getTime() : farFuture.getTime();
+                        if (aTime !== bTime) return aTime - bTime; // earliest first
+                        // Fallback to created (newest first)
+                        const dateA = orderA.created ? new Date(orderA.created) : new Date(0);
+                        const dateB = orderB.created ? new Date(orderB.created) : new Date(0);
+                        return dateB - dateA;
                     }
 
                     // Bei gleichem Status: nach Datum sortieren (neuste zuerst)
@@ -401,12 +486,13 @@ class OrderManager {
     // Status einer Bestellung aktualisieren
     async updateOrderStatus(orderId, newStatus) {
         try {
+            const normalized = this.normalizeStatus(newStatus);
             await this.db.collection("orders").doc(orderId).update({
-                status: newStatus,
+                status: normalized,
                 updated: new Date().toISOString()
             });
 
-            showNotification(`Bestellstatus auf "${newStatus}" geändert`, "success");
+            showNotification(`Bestellstatus auf "${normalized}" geändert`, "success");
             this.loadOrders(); // Liste neu laden
         } catch (error) {
             console.error("Fehler beim Aktualisieren des Status:", error);
@@ -432,6 +518,11 @@ class OrderManager {
         };
         return occasionNames[occasion] || occasion;
     }
+}
+
+// Expose constructor for test helpers (non-breaking)
+if (typeof window.OrderManager === 'undefined' && typeof OrderManager !== 'undefined') {
+    window.OrderManager = OrderManager;
 }
 
 // Globale Funktionen für HTML-Callbacks

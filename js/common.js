@@ -232,6 +232,41 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
+// Hilfsfunktion: Extras formatieren (Nutella -> Nutella, fruchtfuellung -> Fruchtfüllung)
+function formatExtras(extrasArray, details = null) {
+    if (!extrasArray || !Array.isArray(extrasArray) || extrasArray.length === 0) return 'Keine';
+
+    // Versuche die Bezeichnungen aus priceConfig zu holen
+    try {
+        const parts = extrasArray.map(key => {
+            let label;
+            if (window.priceConfig && window.priceConfig.extras && window.priceConfig.extras[key]) {
+                label = window.priceConfig.extras[key].label || toTitleCase(key);
+            } else {
+                // Falls kein Label vorhanden, konvertiere Schlüssel zu Title Case
+                label = toTitleCase(key.replace(/_/g, ' '));
+            }
+
+            // Spezialfall: Mehrstöckig - füge Anzahl Stockwerke hinzu, falls in details vorhanden
+            if (key === 'mehrstoeckig' && details && (details.numberOfTiers || details.numberOfTiers === 0)) {
+                const n = Number(details.numberOfTiers) || 2;
+                const stockText = n === 1 ? `${n} Stockwerk` : `${n} Stockwerke`;
+                return `${label} (${stockText})`;
+            }
+
+            return label;
+        });
+
+        return parts.join(', ');
+    } catch (e) {
+        return extrasArray.map(e => toTitleCase(String(e))).join(', ');
+    }
+}
+
+function toTitleCase(str) {
+    return String(str).split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+}
+
 // Validierung für Telefonnummern
 function isValidPhone(phone) {
     const phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;

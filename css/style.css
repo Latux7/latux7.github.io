@@ -298,6 +298,46 @@ legend {
 .alert.success {
   color: var(--clr-success);
 }
+
+/* Date Warning Styles für Kapazitäts- und Vorlaufzeit-Feedback */
+.date-warning {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  animation: slideIn 0.3s ease-out;
+}
+
+.date-warning.success {
+  background: #f0f9f0;
+  border-left-color: #4caf50;
+  color: #2e7d2e;
+}
+
+.date-warning.error {
+  background: #ffeaea;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+.date-warning.warning {
+  background: #fff3cd;
+  border-left-color: #ff8c00;
+  color: #856404;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .alert.error {
   color: var(--clr-danger);
 }
@@ -664,6 +704,28 @@ details > div {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   padding: calc(var(--line-offset) + var(--baseline-adjust) + 8px) 18px 16px; /* align first baseline to grid */
   background-color: #fff;
+}
+
+/* Plain textarea variant without college-block lines */
+.notes-fieldset .plain-textarea {
+  min-height: 140px;
+  width: 100%;
+  /* allow vertical resize only; prevent changing width */
+  resize: vertical;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #dbeedb;
+  background: #f7f7f7; /* same as other inputs */
+  box-sizing: border-box;
+  font-size: 1rem;
+  line-height: 1.4;
+  display: block;
+}
+
+.notes-fieldset .plain-textarea:focus {
+  outline: none;
+  border-color: #cae9d1;
+  box-shadow: 0 0 0 3px rgba(146, 208, 80, 0.12);
 }
 
 /* Portfolio Galerie Styles */
@@ -1549,6 +1611,10 @@ details > div {
   background: #ff9800;
 }
 
+.day-order.status-in-vorbereitung {
+  background: #ff9800;
+}
+
 .day-order.status-fertig {
   background: #4caf50;
 }
@@ -1610,6 +1676,10 @@ details > div {
 }
 
 .legend-color.status-in-bearbeitung {
+  background: #ff9800;
+}
+
+.legend-color.status-in-vorbereitung {
   background: #ff9800;
 }
 

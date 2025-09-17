@@ -133,6 +133,48 @@ class OrderManager {
             sizeLabel.textContent = config.label;
             sizePrice.textContent = config.price + " €";
         }
+        // Update availability of the "mehrstoeckig" option depending on chosen size
+        try {
+            this.updateMehrstoeckigAvailability();
+        } catch (e) {
+            console.warn('updateMehrstoeckigAvailability failed', e);
+        }
+    }
+
+    // Enable the "mehrstoeckig" option only for "gross" cakes (largest tier)
+    updateMehrstoeckigAvailability() {
+        const cmInput = document.getElementById('diameter');
+        if (!cmInput) return;
+        const cm = Number(cmInput.value) || 0;
+        const tier = this.deriveTierFromCm(cm);
+
+        const mehrCheckbox = document.getElementById('mehrstoeckigCheckbox');
+        const tiersSelection = document.getElementById('tiersSelection');
+        if (!mehrCheckbox) return;
+
+        if (tier === 'gross') {
+            // Enable the option
+            mehrCheckbox.disabled = false;
+            // Remove explanatory note if present
+            mehrCheckbox.title = '';
+        } else {
+            // Disable and uncheck the option if size is too small
+            mehrCheckbox.checked = false;
+            mehrCheckbox.disabled = true;
+            mehrCheckbox.title = 'Mehrstöckig nur bei Größe Groß verfügbar';
+
+            // Hide tiers selection UI and reset to default
+            if (tiersSelection) {
+                tiersSelection.style.display = 'none';
+                const numberOfTiersSelect = document.getElementById('numberOfTiers');
+                if (numberOfTiersSelect) {
+                    numberOfTiersSelect.required = false;
+                    numberOfTiersSelect.value = '2';
+                }
+            }
+        }
+        // Recalculate price in case mehrstoeckig was unchecked
+        this.calculateSum();
     }
 
     calculateSum() {
@@ -178,10 +220,18 @@ class OrderManager {
         const show = lieferung && lieferung.value !== "";
         const deliveryFields = document.getElementById("deliveryFields");
 
-        deliveryFields.style.display = show ? "" : "none";
-        document.getElementById("strasse").required = show;
-        document.getElementById("plz").required = show;
-        document.getElementById("ort").required = show;
+        if (deliveryFields) {
+            deliveryFields.style.display = show ? "" : "none";
+        }
+
+        const strasse = document.getElementById("strasse");
+        if (strasse) strasse.required = show;
+
+        const plz = document.getElementById("plz");
+        if (plz) plz.required = show;
+
+        const ort = document.getElementById("ort");
+        if (ort) ort.required = show;
     }
 
     toggleTiersSelection() {
@@ -205,25 +255,42 @@ class OrderManager {
         const orderForm = document.getElementById("orderForm");
         const wunschDatumInput = document.getElementById("wunschDatum");
 
+        if (!orderForm) {
+            // If the order form isn't present on the page (some pages include order.js globally),
+            // don't attach listeners and fail gracefully.
+            console.warn('OrderManager: #orderForm not found - skipping event listener setup');
+            return;
+        }
+
         // Form change events
         orderForm.addEventListener("change", (e) => {
-            if (e.target.name === "lieferung") this.toggleDeliveryFields();
-            if (e.target.id === "diameter") this.updateSizeUI();
-            if (e.target.id === "mehrstoeckigCheckbox") this.toggleTiersSelection();
-            if (e.target.id === "numberOfTiers") this.calculateSum();
-            if (e.target.id === "wunschDatum") this.checkDateAvailability(e.target.value);
-            this.calculateSum();
+            try {
+                if (e.target.name === "lieferung") this.toggleDeliveryFields();
+                if (e.target.id === "diameter") this.updateSizeUI();
+                if (e.target.id === "mehrstoeckigCheckbox") this.toggleTiersSelection();
+                if (e.target.id === "numberOfTiers") this.calculateSum();
+                if (e.target.id === "wunschDatum") this.checkDateAvailability(e.target.value);
+                this.calculateSum();
+            } catch (err) {
+                console.error('OrderManager: Fehler in change-handler', err);
+            }
         });
 
         // Form submit
-        orderForm.addEventListener("submit", (e) => this.handleSubmit(e));
+        orderForm.addEventListener("submit", (e) => {
+            try {
+                this.handleSubmit(e);
+            } catch (err) {
+                console.error('OrderManager: Fehler in submit-handler', err);
+            }
+        });
     }
 
     // Verfügbarkeit des gewählten Datums prüfen
     async checkDateAvailability(dateString) {
         if (!dateString || !window.orderLimitManager) return;
 
-        console.log(`OrderManager: Prüfe Vorlaufzeit für ${dateString}`);
+        console.log(`OrderManager: Prüfe Vorlaufzeit und Kapazität für ${dateString}`);
 
         try {
             const status = await window.orderLimitManager.canAcceptOrder(dateString);
@@ -237,29 +304,42 @@ class OrderManager {
                 dateWarning.innerHTML = `
                     <strong>⚠️ Zu kurzfristig:</strong> 
                     ${new Date(dateString).toLocaleDateString('de-DE')} ist zu früh. 
-                    Mindestens 7 Tage Vorlaufzeit erforderlich.
+                    Mindestens ${status.minimumLeadDays || 7} Tage Vorlaufzeit erforderlich.
                     <br><small>Frühestmöglicher Termin: <strong>${new Date(status.minimumDate).toLocaleDateString('de-DE')}</strong>
                     <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Kalender öffnen</button></small>
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning error";
+            } else if (!status.canAccept && status.isCapacityFull) {
+                // Kapazität ist voll
+                wunschDatumInput.style.borderColor = "#ff8c00";
+                dateWarning.innerHTML = `
+                    <strong>🚫 Ausgebucht:</strong> 
+                    ${new Date(dateString).toLocaleDateString('de-DE')} ist bereits voll belegt.
+                    <br><small>Bestellungen: <strong>${status.ordersCount}/${status.maxOrders}</strong> - 
+                    <button onclick="showAvailabilityCalendar()" style="background: none; border: none; color: var(--clr-accent); text-decoration: underline; cursor: pointer;">Andere Termine anzeigen</button></small>
+                `;
+                dateWarning.style.display = "block";
+                dateWarning.className = "date-warning warning";
             } else if (status.canAccept) {
                 // Datum ist verfügbar
                 wunschDatumInput.style.borderColor = "#4caf50";
+                const availableSlots = status.maxOrders - status.ordersCount;
                 dateWarning.innerHTML = `
                     <strong>✅ Datum verfügbar:</strong> 
                     ${new Date(dateString).toLocaleDateString('de-DE')} ist verfügbar.
+                    <br><small>Verfügbare Plätze: <strong>${availableSlots}/${status.maxOrders}</strong></small>
                 `;
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning success";
 
-                // Nach 3 Sekunden ausblenden wenn alles okay ist
+                // Nach 4 Sekunden ausblenden wenn alles okay ist
                 setTimeout(() => {
                     if (dateWarning.className === "date-warning success") {
                         dateWarning.style.display = "none";
                         wunschDatumInput.style.borderColor = "";
                     }
-                }, 3000);
+                }, 4000);
             } else {
                 // Fallback für andere Probleme
                 wunschDatumInput.style.borderColor = "#f44336";
@@ -278,6 +358,8 @@ class OrderManager {
     // Erstelle Warning-Element für Datumsfeedback
     createDateWarningElement() {
         const wunschDatumInput = document.getElementById("wunschDatum");
+        if (!wunschDatumInput) return null;
+
         const dateWarning = document.createElement("div");
         dateWarning.id = "dateWarning";
         dateWarning.style.cssText = `
@@ -290,7 +372,9 @@ class OrderManager {
         `;
 
         // Nach dem Datum-Input einfügen
-        wunschDatumInput.parentNode.insertBefore(dateWarning, wunschDatumInput.nextSibling);
+        if (wunschDatumInput.parentNode) {
+            wunschDatumInput.parentNode.insertBefore(dateWarning, wunschDatumInput.nextSibling);
+        }
 
         // CSS für verschiedene Warning-Typen
         const style = document.createElement("style");
@@ -321,14 +405,28 @@ class OrderManager {
     }
 
     initializeForm() {
+        const orderForm = document.getElementById('orderForm');
+        if (!orderForm) {
+            console.warn('OrderManager: initializeForm - #orderForm not found, skipping form init');
+            return;
+        }
+
         this.toggleDeliveryFields();
         this.toggleTiersSelection();
         this.updateSizeUI();
         this.calculateSum();
 
+        // Ensure mehrstöckig availability reflects the initial size
+        try {
+            this.updateMehrstoeckigAvailability();
+        } catch (e) {
+            console.warn('Failed to update mehrstöckig availability on init', e);
+        }
+
         // Setze Minimum-Datum auf heute
         const heute = new Date().toISOString().split("T")[0];
-        document.getElementById("wunschDatum").min = heute;
+        const wunschDatumEl = document.getElementById("wunschDatum");
+        if (wunschDatumEl) wunschDatumEl.min = heute;
 
         // Datum aus URL-Parameter übernehmen (falls vom Kalender weitergeleitet)
         const urlParams = new URLSearchParams(window.location.search);
@@ -337,8 +435,10 @@ class OrderManager {
         if (dateParam) {
             const targetDate = new Date(dateParam);
             if (!isNaN(targetDate.getTime()) && dateParam >= heute) {
-                document.getElementById("wunschDatum").value = dateParam;
-                showNotification(`Datum ${targetDate.toLocaleDateString('de-DE')} aus Kalender übernommen`, 'success');
+                if (wunschDatumEl) {
+                    wunschDatumEl.value = dateParam;
+                    showNotification(`Datum ${targetDate.toLocaleDateString('de-DE')} aus Kalender übernommen`, 'success');
+                }
             }
         }
     }
@@ -406,6 +506,7 @@ class OrderManager {
                     uhrzeit: f.wunschUhrzeit.value || null,
                 },
                 anlass: f.occasion ? f.occasion.value : null,
+                sonderwunsch: f.sonderwunsch ? f.sonderwunsch.value.trim() : null,
                 gesamtpreis: gesamtpreis,
                 adresse: this.getDeliveryAddress(f),
                 status: "neu",
@@ -479,6 +580,9 @@ class OrderManager {
 
             this.showSuccess();
             this.resetForm(f);
+            // Clear the sonderwunsch textarea explicitly (reset should handle, but be explicit)
+            const sw = document.getElementById('sonderwunsch');
+            if (sw) sw.value = '';
 
         } catch (err) {
             console.error('Fehler beim Speichern der Bestellung:', err);
@@ -596,20 +700,29 @@ class OrderManager {
     }
 
     showSuccess() {
-        document.getElementById("orderSuccess").style.display = "block";
-        document.getElementById("orderError").style.display = "none";
+        const successEl = document.getElementById("orderSuccess");
+        const errorEl = document.getElementById("orderError");
+        if (successEl) successEl.style.display = "block";
+        if (errorEl) errorEl.style.display = "none";
     }
 
     showError() {
-        document.getElementById("orderSuccess").style.display = "none";
-        document.getElementById("orderError").style.display = "block";
+        const successEl = document.getElementById("orderSuccess");
+        const errorEl = document.getElementById("orderError");
+        if (successEl) successEl.style.display = "none";
+        if (errorEl) errorEl.style.display = "block";
     }
 
     resetForm(f) {
         f.reset();
         this.updateSizeUI();
-        document.getElementById("orderSum").textContent = "";
-        this.toggleDeliveryFields();
+        const orderSumEl = document.getElementById("orderSum");
+        if (orderSumEl) orderSumEl.textContent = "";
+        try {
+            this.toggleDeliveryFields();
+        } catch (e) {
+            console.warn('toggleDeliveryFields failed during resetForm', e);
+        }
     }
 }
 

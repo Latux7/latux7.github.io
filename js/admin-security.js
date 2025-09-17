@@ -13,10 +13,11 @@
     // Admin-spezifische Sicherheitsmaßnahmen
     const adminSecurity = {
 
-        // Prüfen ob auf Admin-Seite
+        // Prüfen ob auf Admin-Seite (unterstützt /admin, /admin.html und /admin/)
         isAdminPage() {
-            return window.location.pathname.includes('admin.html') ||
-                window.location.pathname.endsWith('admin.html');
+            const path = window.location.pathname.toLowerCase();
+            return path.includes('admin.html') || path.endsWith('admin.html') ||
+                path === '/admin' || path === '/admin/' || path.endsWith('/admin') || path.endsWith('/admin/');
         },
 
         // Prüfen ob Admin-Session gültig ist
