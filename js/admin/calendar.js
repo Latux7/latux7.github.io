@@ -362,86 +362,58 @@ class CalendarManager {
             const customerEmail = order.email || 'Unbekannt';
             const customerPhone = order.telefon || 'Nicht angegeben';
             const modalHTML = `
-                <div id="orderDetailsModal" style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0,0,0,0.8);
-                    z-index: 999999;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-family: 'Poppins', Arial, sans-serif;
-                ">
-                    <div style="
-                        background: white;
-                        padding: 30px;
-                        border-radius: 15px;
-                        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-                        max-width: 500px;
-                        width: 90%;
-                        max-height: 80vh;
-                        overflow-y: auto;
-                    ">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3 style="margin: 0; color: #333;">📅 Bestelldetails</h3>
-                            <button onclick="document.getElementById('orderDetailsModal').remove()" style="
-                                background: none;
-                                border: none;
-                                font-size: 24px;
-                                cursor: pointer;
-                                color: #666;
-                            ">×</button>
+                <div id="orderDetailsModal" class="order-details-modal-overlay">
+                    <div class="order-details-modal">
+                        <div class="order-details-modal-header">
+                            <h3 class="order-details-modal-title">📅 Bestelldetails</h3>
+                            <button onclick="document.getElementById('orderDetailsModal').remove()" class="order-details-modal-close">×</button>
                         </div>
-                        
-                        <div style="line-height: 1.6;">
-                            <p><strong>Kunde:</strong> ${customerName}</p>
-                            <p><strong>E-Mail:</strong> ${customerEmail}</p>
-                            <p><strong>Telefon:</strong> ${customerPhone}</p>
-                            <p><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum
+
+                        <div class="order-details-modal-content">
+                            <!-- Kundendaten -->
+                            <div class="order-details-section">
+                                <h4 class="order-details-section-title">👤 Kundendaten</h4>
+                                <div class="order-details-field"><strong>Name:</strong> ${escapeHtml(customerName)}</div>
+                                <div class="order-details-field"><strong>E-Mail:</strong> ${escapeHtml(customerEmail)}</div>
+                                <div class="order-details-field"><strong>Telefon:</strong> ${escapeHtml(customerPhone)}</div>
+                            </div>
+
+                            <!-- Bestellung -->
+                            <div class="order-details-section">
+                                <h4 class="order-details-section-title">🎂 Bestellung</h4>
+                                <div class="order-details-field"><strong>Wunschtermin:</strong> ${order.wunschtermin && order.wunschtermin.datum
                     ? new Date(order.wunschtermin.datum.toDate ? order.wunschtermin.datum.toDate() : order.wunschtermin.datum).toLocaleDateString('de-DE')
-                    : 'Nicht angegeben'}</p>
-                            <p><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</p>
-                            ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ''}
-                <p><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
+                    : 'Nicht angegeben'}</div>
+                                <div class="order-details-field"><strong>Uhrzeit:</strong> ${order.wunschtermin && order.wunschtermin.uhrzeit || 'Nicht angegeben'}</div>
+                                ${order.anlass ? `<div class="order-details-field"><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</div>` : ''}
+                                <div class="order-details-field"><strong>Größe:</strong> ${order.details && order.details.durchmesserCm
                     ? `${order.details.durchmesserCm} cm (${order.details.kategorie || this.deriveTierFromCm(order.details.durchmesserCm)})`
-                    : 'Unbekannt'}</p>
-                ${order.details && order.details.numberOfTiers ? `<p><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</p>` : ''}
-                            <p><strong>Status:</strong> <span style="
-                                padding: 4px 8px;
-                                border-radius: 4px;
-                                background: ${this.getStatusColor(order.status || 'neu')};
-                                color: white;
-                                font-weight: 600;
-                            ">${order.status || 'neu'}</span></p>
-                            <p><strong>Preis:</strong> ${order.gesamtpreis ? parseFloat(order.gesamtpreis).toFixed(2) + '€' : 'Nicht berechnet'}</p>
-                            ${order.details && order.details.extras && order.details.extras.length > 0 ? `<p><strong>Extras:</strong> ${formatExtras(order.details.extras, order.details)}</p>` : ''}
-                            ${order.sonderwunsch ? `<p><strong>Sonderwunsch:</strong> ${order.sonderwunsch}</p>` : ''}
-                            ${order.details && order.details.lieferung ? `<p><strong>Lieferart:</strong> ${order.details.lieferung === 'abholung' ? 'Abholung' : toTitleCase(order.details.lieferung)}</p>` : ''}
-                            ${order.details && order.details.lieferung && order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ''}
+                    : 'Unbekannt'}</div>
+                                ${order.details && order.details.numberOfTiers ? `<div class="order-details-field"><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</div>` : ''}
+                                <div class="order-details-field"><strong>Status:</strong> <span class="order-details-status" data-status="${order.status || 'neu'}">${order.status || 'neu'}</span></div>
+                                <div class="order-details-field"><strong>Preis:</strong> ${order.gesamtpreis ? parseFloat(order.gesamtpreis).toFixed(2) + '€' : 'Nicht berechnet'}</div>
+                                ${order.details && order.details.extras && order.details.extras.length > 0 ? `<div class="order-details-field"><strong>Extras:</strong> ${formatExtras(order.details.extras, order.details)}</div>` : ''}
+                            </div>
+
+                            <!-- Sonderwunsch -->
+                            ${order.sonderwunsch ? `
+                            <div class="order-details-section">
+                                <h4 class="order-details-section-title">✨ Sonderwunsch</h4>
+                                <div class="order-details-special-request">${escapeHtml(order.sonderwunsch)}</div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Lieferung -->
+                            <div class="order-details-section">
+                                <h4 class="order-details-section-title">🚚 Lieferung</h4>
+                                <div class="order-details-field"><strong>Lieferart:</strong> ${order.details && order.details.lieferung ? (order.details.lieferung === 'abholung' ? 'Abholung' : 'Lieferung') : 'Nicht angegeben'}</div>
+                                ${order.details && order.details.lieferung && order.details.lieferung !== 'abholung' && order.adresse ? `<div class="order-details-field"><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</div>` : ''}
+                            </div>
                         </div>
-                        
-                        <div style="margin-top: 25px; display: flex; gap: 10px;">
-                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'in Vorbereitung')" style="
-                                background: #ff9800;
-                                color: white;
-                                border: none;
-                                padding: 10px 15px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                flex: 1;
-                            ">In Vorbereitung</button>
-                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'fertig')" style="
-                                background: #4caf50;
-                                color: white;
-                                border: none;
-                                padding: 10px 15px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                flex: 1;
-                            ">Fertig</button>
+
+                        <div class="order-details-modal-actions">
+                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'in Vorbereitung')" class="btn btn-warning">In Vorbereitung</button>
+                            <button onclick="window.orderManager.updateOrderStatus('${orderId}', 'fertig')" class="btn btn-success">Fertig</button>
                         </div>
                     </div>
                 </div>

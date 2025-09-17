@@ -124,20 +124,20 @@ function renderEmbeddedCalendar() {
     let calendarHTML = `
         <div style="text-align: center; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <button onclick="navigateMonth(-1)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--clr-accent);">‹</button>
+                <button onclick="navigateMonth(-1)" style="background: none; border: 1px solid black; border-radius: 6px; font-size: 1.5rem; cursor: pointer; color: var(--clr-accent);">‹</button>
                 <h3 style="margin: 0; color: var(--clr-accent);">${monthNames[currentMonth]} ${currentYear}</h3>
-                <button onclick="navigateMonth(1)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--clr-accent);">›</button>
+                <button onclick="navigateMonth(1)" style="background: none; border: 1px solid black; border-radius: 6px; font-size: 1.5rem; cursor: pointer; color: var(--clr-accent);">›</button>
             </div>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 15px;">
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Mo</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Di</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Mi</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Do</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Fr</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">Sa</div>
-            <div style="padding: 8px; text-align: center; font-weight: bold; background: #f5f5f5;">So</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Mo</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Di</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Mi</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Do</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Fr</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">Sa</div>
+            <div style="padding: 8px; text-align: center; font-weight: bold;">So</div>
     `;
 
     // Leere Zellen für die Tage vor dem ersten Tag des Monats
@@ -168,18 +168,18 @@ function renderEmbeddedCalendar() {
 
         if (isPast || isTooEarly || isCapacityFull) {
             if (isCapacityFull && !isPast && !isTooEarly) {
-                dayStyle += 'background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; cursor: not-allowed;';
+                dayStyle += ' color: #856404; border: 1px solid #ffeaa7; cursor: not-allowed;';
             } else {
-                dayStyle += 'background: #f0f0f0; color: #999; cursor: not-allowed;';
+                dayStyle += 'color: #999; cursor: not-allowed;';
             }
         } else {
             // Verfügbar - Farbe je nach Auslastung
             if (orderCount === 0) {
-                dayStyle += 'background: #e8f5e8; color: #2e7d32; border: 1px solid #4caf50;';
+                dayStyle += 'color: #2e7d32; border: 1px solid #4caf50;';
             } else if (orderCount === 1) {
-                dayStyle += 'background: #fff8e1; color: #f57f17; border: 1px solid #ffeb3b;';
+                dayStyle += ' color: #f57f17; border: 1px solid #ffeb3b;';
             } else if (orderCount === 2) {
-                dayStyle += 'background: #ffe0b2; color: #ef6c00; border: 1px solid #ff9800;';
+                dayStyle += 'color: #ef6c00; border: 1px solid #ff9800;';
             }
             clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
         }
@@ -208,9 +208,9 @@ function renderEmbeddedCalendar() {
 
     // Legende hinzufügen mit Kapazitätsinformationen
     calendarHTML += `
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.8rem; margin-top: 15px; text-align: center;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 0.8rem; margin-top: 15px; text-align: center; border: 1px solid grey; border-radius: 6px; justify-items: center; padding: 10px">
             <div style="display: flex; align-items: center; gap: 5px;">
-                <div style="width: 12px; height: 12px; background: #e8f5e8; border-radius: 3px; border: 1px solid #4caf50;"></div>
+                <div style="width: 12px; height: 12px; background: #e8f5e8; border-radius: 3px; border: 1px solid #4caf50; "></div>
                 <span>Frei (3/3)</span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
@@ -264,58 +264,42 @@ function showSelectionModal(dateString) {
     const isAvailable = orderCount < maxOrders;
 
     const modalHTML = `
-        <div id="dateSelectionModal" style="
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(0,0,0,0.5); display: flex; align-items: center; 
-            justify-content: center; z-index: 1000;
-        ">
-            <div style="
-                background: white; padding: 30px; border-radius: 12px; 
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 450px; width: 90%;
-                text-align: center; animation: modalFadeIn 0.3s ease-out;
-            ">
-                <div style="font-size: 3rem; margin-bottom: 15px;">
-                    ${isAvailable ? '📅' : '❌'}
-                </div>
-                <h3 style="margin-bottom: 15px; color: var(--clr-accent);">${formattedDate}</h3>
-                
-                <div style="
-                    background: ${isAvailable ? '#e8f5e8' : '#ffebee'}; 
-                    padding: 20px; border-radius: 8px; margin-bottom: 20px;
-                    border-left: 4px solid ${isAvailable ? '#4caf50' : '#f44336'};
-                ">
-                    ${isAvailable ?
-            `<div style="color: #2e7d32; font-weight: bold; margin-bottom: 8px;">✅ Verfügbar!</div>
-                         <p style="margin: 0; line-height: 1.5;">
+        <div id="dateSelectionModal" class="date-selection-modal-overlay">
+            <div class="date-selection-modal">
+                <div class="date-selection-modal-content">
+                    <div class="date-selection-modal-icon">
+                        ${isAvailable ? '📅' : '❌'}
+                    </div>
+                    <h3 class="date-selection-modal-title">${formattedDate}</h3>
+                    
+                    <div class="date-selection-modal-status ${isAvailable ? 'available' : 'unavailable'}">
+                        ${isAvailable ?
+            `<div class="date-selection-modal-status-title">✅ Verfügbar!</div>
+                         <p>
                              <strong>${available} von ${maxOrders} Plätzen</strong> noch frei.<br>
                              Sie können für diesen Tag bestellen.
                          </p>` :
-            `<div style="color: #c62828; font-weight: bold; margin-bottom: 8px;">❌ Ausgebucht</div>
-                         <p style="margin: 0; line-height: 1.5;">
+            `<div class="date-selection-modal-status-title">❌ Ausgebucht</div>
+                         <p>
                              Dieser Tag ist leider bereits vollständig ausgebucht (${maxOrders}/${maxOrders} Plätze belegt).<br>
                              Bitte wählen Sie einen anderen Termin.
                          </p>`
         }
-                </div>
-                
-                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    ${isAvailable ?
-            `<button onclick="selectDateAndContinue('${dateString}')" style="
-                            padding: 12px 24px; background: var(--clr-accent); color: white; 
-                            border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-                            min-width: 120px;
-                        ">
+                    </div>
+                    
+                    <div class="date-selection-modal-actions">
+                        ${isAvailable ?
+            `<button onclick="selectDateAndContinue('${dateString}')" class="btn btn-primary">
                             🎂 Auswählen
                         </button>` :
-            `<p style="margin: 10px 0; color: #666;">Bitte wählen Sie einen anderen verfügbaren Termin.</p>`
+            `<p style="margin: 10px 0; color: var(--clr-muted);">
+                    Bitte wählen Sie einen anderen verfügbaren Termin.
+                </p>`
         }
-                    <button onclick="closeDateSelectionModal()" style="
-                        padding: 12px 24px; background: #ddd; color: #333; 
-                        border: none; border-radius: 6px; cursor: pointer;
-                        min-width: 120px;
-                    ">
-                        ${isAvailable ? 'Später' : 'Schließen'}
-                    </button>
+                        <button onclick="closeDateSelectionModal()" class="btn btn-secondary">
+                            ${isAvailable ? 'Später' : 'Schließen'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

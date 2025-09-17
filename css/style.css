@@ -124,7 +124,6 @@ html.dark .hero {
   border-color: rgba(255, 255, 255, 0.03);
   box-shadow: var(--shadow-sm);
 }
-
 html.dark .container {
   background: linear-gradient(
     180deg,
@@ -199,98 +198,144 @@ html.dark .calendar-weekdays {
 
 html.dark .calendar-day {
   background: rgba(255, 255, 255, 0.02);
+}
 
-  /* Admin panel helpers - prefer classes over inline styles for dark-mode compatibility */
-  .admin-review-item {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    background: var(--clr-surface);
-    color: var(--clr-text);
-  }
-  .admin-review-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .admin-review-stars {
-    color: #ffd700;
-  }
-  .admin-review-nps {
-    display: inline-block;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 700;
-  }
-  .admin-review-comment {
-    padding: 10px;
-    border-radius: 3px;
-    margin-top: 10px;
-    font-style: italic;
-    border-left: 3px solid #8b4513;
-    background: rgba(0, 0, 0, 0.02);
-  }
-  .admin-review-improvements {
-    margin-top: 8px;
-    padding: 8px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.02);
-    color: var(--clr-muted);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    color: #fff;
-  }
-  .badge-new {
-    background: #ff9800;
-  }
-  .badge-old {
-    background: #4caf50;
-  }
-
-  .detail-summary {
-    cursor: pointer;
-    font-weight: bold;
-    padding: 8px;
-    border-radius: 4px;
-    background: var(--clr-accent-soft);
-  }
-
-  .list-item {
-    padding: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    background: var(--clr-surface);
-  }
-
-  .danger-btn {
-    background: var(--clr-danger);
-    color: #fff;
-    border: none;
-    padding: 6px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  html.dark .admin-review-item {
-    border-color: rgba(255, 255, 255, 0.04);
-    background: #0b1112;
-  }
-  html.dark .admin-review-comment {
-    background: rgba(255, 255, 255, 0.02);
-    border-left-color: #b8860b;
-  }
-
+/* Admin panel helpers - prefer classes over inline styles for dark-mode compatibility */
+.admin-review-item {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: var(--clr-surface);
   color: var(--clr-text);
-  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+.admin-review-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.admin-review-stars {
+  color: #ffd700;
+}
+.admin-review-nps {
+  display: inline-block;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+.admin-review-comment {
+  padding: 10px;
+  border-radius: 3px;
+  margin-top: 10px;
+  font-style: italic;
+  border-left: 3px solid #8b4513;
+  background: rgba(0, 0, 0, 0.02);
+}
+.admin-review-improvements {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--clr-muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  color: #fff;
+}
+.badge-new {
+  background: #ff9800;
+}
+.badge-old {
+  background: #4caf50;
+}
+
+.detail-summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 4px;
+  background: var(--clr-accent-soft);
+}
+
+.list-item {
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: var(--clr-surface);
+}
+
+.danger-btn {
+  background: var(--clr-danger);
+  color: #fff;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+html.dark .admin-review-item {
+  border-color: rgba(255, 255, 255, 0.04);
+  background: #0b1112;
+}
+html.dark .admin-review-comment {
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: #b8860b;
+}
+
+/* Dark-mode list-item tweaks for contrast */
+html.dark .list-item {
+  border-color: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0)
+  );
+  color: var(--clr-text);
+}
+
+/* Breakdown list and items */
+.breakdown-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: var(--clr-accent-soft);
+  color: var(--clr-text);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+html.dark .breakdown-item {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Comparison table styles */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+.comparison-table th,
+.comparison-table td {
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+html.dark .comparison-table th,
+html.dark .comparison-table td {
+  border-color: rgba(255, 255, 255, 0.03);
 }
 
 html.dark .calendar-day.empty,
@@ -317,13 +362,63 @@ html.dark p,
 html.dark small,
 html.dark .muted,
 html.dark .muted-note {
-  color: var(--clr-muted);
+  color: var(--clr-text);
+}
+
+html.dark .btn,
+html.dark .btn:link,
+html.dark .btn:visited {
+  background: var(--clr-accent);
+  color: #071018;
+  box-shadow: var(--shadow-xs);
+}
+
+html.dark .btn:hover {
+  background: var(--clr-accent-strong);
+  color: #071018;
+  box-shadow: var(--shadow-sm);
 }
 
 html.dark .btn-outline {
   background: transparent;
   color: var(--clr-accent-strong);
-  border-color: rgba(143, 212, 107, 0.12);
+  border-color: rgba(143, 212, 107, 0.3);
+}
+
+html.dark .btn-outline:hover {
+  background: rgba(143, 212, 107, 0.1);
+  border-color: var(--clr-accent);
+  color: var(--clr-accent-strong);
+}
+
+html.dark .btn-danger {
+  background: var(--clr-danger);
+  color: #071018;
+}
+
+html.dark .btn-danger:hover {
+  background: #b71c1c;
+  color: #071018;
+}
+
+html.dark .btn-warning {
+  background: #ffb74d;
+  color: #071018;
+}
+
+html.dark .btn-warning:hover {
+  background: #ff9800;
+  color: #071018;
+}
+
+html.dark .btn-success {
+  background: #66bb6a;
+  color: #071018;
+}
+
+html.dark .btn-success:hover {
+  background: #4caf50;
+  color: #071018;
 }
 
 /* Fieldset / panels in dark mode: slightly lighter than surface but still muted */
@@ -575,6 +670,24 @@ input[type="submit"]:hover {
   font-size: 0.9rem;
 }
 
+.btn-warning {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #e68900;
+}
+
+.btn-success {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #3d8b40;
+}
+
 /* Forms */
 form {
   display: flex;
@@ -788,7 +901,6 @@ button:disabled,
 /* Details (accordion) */
 details {
   border-radius: var(--radius-md);
-  background: #fff;
   border: 1px solid #eef4ee;
   box-shadow: var(--shadow-xs);
 }
@@ -1718,7 +1830,6 @@ html.dark .month-comparison {
 }
 
 .comparison-table th {
-  background: #f8f9fa;
   font-weight: 600;
   color: var(--clr-text);
 }
@@ -1729,7 +1840,6 @@ html.dark .month-comparison {
 }
 
 .comparison-table .current-month {
-  background: #e6f4ea;
   font-weight: 600;
 }
 
@@ -1846,10 +1956,6 @@ html.dark .accounting-error {
 
 .limit-info.unavailable {
   background: linear-gradient(135deg, #ffebee, #fce4ec);
-}
-
-.deadline-info {
-  background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
 }
 
 .limit-icon,
@@ -2178,9 +2284,39 @@ html.dark .calendar-days {
 }
 
 html.dark .calendar-day {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--clr-text);
   border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+html.dark .calendar-day:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .calendar-day.empty {
+  background: rgba(255, 255, 255, 0.01);
+  cursor: default;
+}
+
+html.dark .calendar-day.today {
+  background: linear-gradient(
+    135deg,
+    rgba(143, 212, 107, 0.1),
+    rgba(143, 212, 107, 0.05)
+  );
+  border: 2px solid var(--clr-accent);
+}
+
+html.dark .calendar-day.past {
+  opacity: 0.6;
+}
+
+html.dark .calendar-day.has-orders {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 152, 0, 0.1),
+    rgba(255, 152, 0, 0.05)
+  );
 }
 
 html.dark .day-number {
@@ -2192,22 +2328,51 @@ html.dark .day-order-more {
   color: #071018;
 }
 
-/* stronger palette for order status chips on dark background */
+/* Vollständige Palette für Bestellstatus-Chips im Dark Mode */
 html.dark .day-order.status-neu {
-  background: #2b82d9;
+  background: #42a5f5;
 }
-html.dark .day-order.status-in-bearbeitung {
-  background: #f39c12;
+html.dark .day-order.status-in-bearbeitung,
+html.dark .day-order.status-in-vorbereitung {
+  background: #ffb74d;
 }
 html.dark .day-order.status-fertig {
-  background: #49a14d;
+  background: #66bb6a;
 }
 html.dark .day-order.status-abgeholt {
-  background: #8a8a8a;
+  background: #9e9e9e;
 }
 
-html.dark .calendar-legend {
-  border-top-color: rgba(255, 255, 255, 0.03);
+html.dark .day-order-more {
+  background: #666;
+  color: white;
+}
+
+html.dark .legend-color.today {
+  background: rgba(143, 212, 107, 0.2);
+  border: 1px solid rgba(143, 212, 107, 0.4);
+}
+
+html.dark .legend-color.has-orders {
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid rgba(255, 152, 0, 0.4);
+}
+
+html.dark .legend-color.status-neu {
+  background: rgba(66, 165, 245, 0.8);
+}
+
+html.dark .legend-color.status-in-bearbeitung,
+html.dark .legend-color.status-in-vorbereitung {
+  background: rgba(255, 183, 77, 0.8);
+}
+
+html.dark .legend-color.status-fertig {
+  background: rgba(102, 187, 106, 0.8);
+}
+
+html.dark .legend-color.status-abgeholt {
+  background: rgba(158, 158, 158, 0.8);
 }
 
 /* Admin panel dark adjustments */
@@ -2429,5 +2594,480 @@ html.dark .admin-section.orders details summary::-webkit-details-marker {
   .btn {
     padding: 12px 18px;
     font-size: 1rem;
+  }
+}
+
+/* Admin Order Details Modal */
+.order-details-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Poppins", Arial, sans-serif;
+  backdrop-filter: blur(2px);
+}
+
+.order-details-modal {
+  background: var(--clr-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  max-width: 650px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html.dark .order-details-modal {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.order-details-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 30px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html.dark .order-details-modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.order-details-modal-title {
+  margin: 0;
+  color: var(--clr-text);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.order-details-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--clr-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-details-modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--clr-text);
+}
+
+html.dark .order-details-modal-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.order-details-modal-content {
+  padding: 0 30px 30px;
+  line-height: 1.6;
+}
+
+.order-details-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+html.dark .order-details-section {
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+.order-details-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.order-details-section-title {
+  margin: 0 0 12px 0;
+  color: var(--clr-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.order-details-field {
+  margin-bottom: 8px;
+  color: var(--clr-text);
+}
+
+.order-details-field strong {
+  color: var(--clr-text);
+  font-weight: 600;
+  min-width: 120px;
+  display: inline-block;
+}
+
+.order-details-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.order-details-status[data-status="neu"] {
+  background: #2196f3;
+}
+
+.order-details-status[data-status="in vorbereitung"],
+.order-details-status[data-status="in bearbeitung"] {
+  background: #ff9800;
+}
+
+.order-details-status[data-status="fertig"] {
+  background: #4caf50;
+}
+
+.order-details-status[data-status="abgeholt"] {
+  background: #9e9e9e;
+}
+
+.order-details-special-request {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+html.dark .order-details-special-request {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.order-details-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 24px 30px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 20px;
+}
+
+html.dark .order-details-modal-actions {
+  border-top-color: rgba(255, 255, 255, 0.04);
+}
+
+.order-details-modal-actions .btn {
+  flex: 1;
+  padding: 12px 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.order-details-modal-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Embedded Calendar Date Selection Modal */
+.date-selection-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.date-selection-modal {
+  background: var(--clr-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+html.dark .date-selection-modal {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.date-selection-modal-content {
+  padding: 30px;
+}
+
+.date-selection-modal-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.date-selection-modal-title {
+  margin-bottom: 15px;
+  color: var(--clr-accent);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.date-selection-modal-status {
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid;
+  line-height: 1.5;
+}
+
+.date-selection-modal-status.available {
+  background: rgba(76, 175, 80, 0.1);
+  border-left-color: #4caf50;
+}
+
+.date-selection-modal-status.unavailable {
+  background: rgba(244, 67, 54, 0.1);
+  border-left-color: #f44336;
+}
+
+html.dark .date-selection-modal-status.available {
+  background: rgba(76, 175, 80, 0.15);
+}
+
+html.dark .date-selection-modal-status.unavailable {
+  background: rgba(244, 67, 54, 0.15);
+}
+
+.date-selection-modal-status-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.date-selection-modal-status.available .date-selection-modal-status-title {
+  color: #2e7d32;
+}
+
+.date-selection-modal-status.unavailable .date-selection-modal-status-title {
+  color: #c62828;
+}
+
+.date-selection-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.date-selection-modal-actions .btn {
+  padding: 12px 24px;
+  font-weight: 600;
+  border-radius: 6px;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.date-selection-modal-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.date-selection-modal-actions .btn-primary {
+  background: var(--clr-accent);
+  color: white;
+}
+
+.date-selection-modal-actions .btn-primary:hover {
+  background: var(--clr-accent-strong);
+}
+
+.date-selection-modal-actions .btn-secondary {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--clr-text);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.date-selection-modal-actions .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html.dark .date-selection-modal-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--clr-text);
+}
+
+html.dark .date-selection-modal-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ==========================
+   Dark-mode: Bestellen-Seite
+   Ziel: bessere Kontraste für Kalender, Formular und Modals
+   ========================== */
+
+/* Embedded calendar container */
+html.dark #embeddedCalendar,
+html.dark #embeddedCalendarContent {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  color: var(--clr-text);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: var(--shadow-md);
+}
+
+/* Calendar day tiles in embedded calendar */
+html.dark .calendar-day {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+html.dark .calendar-day:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: none; /* avoid too strong transforms in dark */
+}
+html.dark .calendar-day .day-number {
+  color: rgba(255, 255, 255, 0.9);
+}
+html.dark .calendar-day.today {
+  box-shadow: inset 0 0 0 3px rgba(143, 212, 107, 0.06);
+}
+
+/* Form container and fields on bestellen.html */
+html.dark form#orderForm,
+html.dark .order-form {
+  background: transparent;
+  color: var(--clr-text);
+}
+
+/* Inputs / selects / textareas in the order form */
+html.dark form#orderForm input,
+html.dark form#orderForm select,
+html.dark form#orderForm textarea,
+html.dark .order-form input,
+html.dark .order-form select,
+html.dark .order-form textarea {
+  background: linear-gradient(180deg, #0d1414, #0b1112);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--clr-text);
+  box-shadow: none;
+}
+
+/* Placeholder color for better contrast */
+html.dark form#orderForm ::placeholder,
+html.dark .order-form ::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Notes / Sonderwunsch Bereich */
+html.dark .notes-fieldset,
+html.dark .notes-fieldset .plain-textarea,
+html.dark .order-details-special-request {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--clr-text);
+}
+
+/* Toggle / calendar open button */
+html.dark #toggleCalendarBtn,
+html.dark .toggle-calendar-btn {
+  background: transparent;
+  color: var(--clr-accent-strong);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Date selection modal tweaks (additional safety for small screens) */
+html.dark .date-selection-modal {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Ensure legend items are visible */
+html.dark .calendar-legend,
+html.dark .legend-item {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Buttons in the order form */
+html.dark form#orderForm .btn,
+html.dark .order-form .btn {
+  box-shadow: none;
+}
+
+/* Slightly reduce contrast for very small decorative accents to avoid glare */
+html.dark .hero,
+html.dark .brand {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+/* Accessibility: focus states in dark mode */
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus,
+html.dark .btn:focus {
+  outline: 3px solid rgba(143, 212, 107, 0.12);
+  outline-offset: 2px;
+}
+
+/* Mobile stacking fix: ensure the calendar toggle is above other content on small screens */
+@media (max-width: 640px) {
+  #toggleCalendarBtn {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 9999; /* high value to avoid being covered */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    border-radius: 999px;
+    padding: 12px 14px;
+  }
+
+  /* Slightly lift embedded calendar container so toggle doesn't overlap important controls */
+  #embeddedCalendar {
+    margin-bottom: 86px; /* leave space for the fixed toggle */
   }
 }
