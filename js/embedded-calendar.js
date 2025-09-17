@@ -36,6 +36,8 @@ function showAvailabilityCalendar() {
     });
 
     // Immer aktuellste Werte laden
+    // Bind listener damit Änderungen an der Lieferart sofort den Kalender aktualisieren
+    try { bindDeliveryOptionChangeToCalendar(); } catch (e) { /* ignore */ }
     loadEmbeddedCalendar();
 }
 
@@ -129,6 +131,7 @@ function renderEmbeddedCalendar() {
                 <button onclick="navigateMonth(1)" style="background: none; border: 1px solid black; border-radius: 6px; font-size: 1.5rem; cursor: pointer; color: var(--clr-accent);">›</button>
             </div>
         </div>
+        <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
         
         <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 15px;">
             <div style="padding: 8px; text-align: center; font-weight: bold;">Mo</div>
@@ -166,7 +169,30 @@ function renderEmbeddedCalendar() {
         let dayClass = '';
         let clickHandler = '';
 
-        if (isPast || isTooEarly || isCapacityFull) {
+        // Bestellart aus dem versteckten Feld lesen (wird vom Kalender/Modals gesetzt)
+        const selectedHidden = document.getElementById('lieferung');
+        const selectedMethod = selectedHidden ? (selectedHidden.value === '' ? 'abholung' : selectedHidden.value) : '';
+
+        // Prüfe ob Tag für Lieferung / Abholung geeignet ist
+        const isDeliveryDay = window.orderRules && typeof window.orderRules.isDeliveryDay === 'function'
+            ? window.orderRules.isDeliveryDay(dateString)
+            : ((new Date(dateString + 'T12:00:00')).getDay() === 0 || (new Date(dateString + 'T12:00:00')).getDay() === 6);
+        const isPickupDay = window.orderRules && typeof window.orderRules.isPickupDay === 'function'
+            ? window.orderRules.isPickupDay(dateString)
+            : ([1, 3, 5].includes((new Date(dateString + 'T12:00:00')).getDay()));
+
+        // If no specific method selected, allow the day if either pickup or delivery is possible.
+        let methodAllowed;
+        if (selectedMethod === '') {
+            methodAllowed = isPickupDay || isDeliveryDay;
+        } else if (selectedMethod === 'abholung') {
+            methodAllowed = isPickupDay;
+        } else {
+            // a delivery option was selected (e.g. '20km' / '40km')
+            methodAllowed = isDeliveryDay;
+        }
+
+        if (isPast || isTooEarly || isCapacityFull || !methodAllowed) {
             if (isCapacityFull && !isPast && !isTooEarly) {
                 dayStyle += ' color: #856404; border: 1px solid #ffeaa7; cursor: not-allowed;';
             } else {
@@ -181,14 +207,23 @@ function renderEmbeddedCalendar() {
             } else if (orderCount === 2) {
                 dayStyle += 'color: #ef6c00; border: 1px solid #ff9800;';
             }
-            clickHandler = `onclick="selectDateFromCalendar('${dateString}')"`;
+            // Pass info about whether the day supports delivery and/or pickup
+            clickHandler = `onclick="handleCalendarDayClick('${dateString}', ${isDeliveryDay}, ${isPickupDay})"`;
         }
 
         const availableSlots = Math.max(0, maxOrders - orderCount);
         const statusText = isPast ? 'Vergangen' :
             isTooEarly ? 'Zu kurzfristig (mind. 7 Tage Vorlaufzeit erforderlich)' :
                 isCapacityFull ? 'Ausgebucht (3/3 Plätze belegt)' :
-                    `Verfügbar (${availableSlots}/${maxOrders} Plätze frei)`;
+                    (!methodAllowed ? (selectedMethod === '' || selectedMethod === 'abholung' ? 'Abholung an diesem Tag nicht möglich' : 'Lieferung an diesem Tag nicht möglich') : `Verfügbar (${availableSlots}/${maxOrders} Plätze frei)`);
+
+        // Badge-HTML: zeigt ob Tag für Lieferung oder Abholung vorgesehen ist
+        // Nur anzeigen, wenn Tag nicht in der Vergangenheit liegt und nicht zu früh ist
+        let badgeHTML = '';
+        if (!isPast && !isTooEarly) {
+            if (isDeliveryDay) badgeHTML += `<div style="font-size:1rem; background:#e3f2fd; color:#0d47a1; padding:1px 1px; border-radius:10px; display:inline-block;">🚚</div>`;
+            if (isPickupDay) badgeHTML += `<div style="font-size:1rem; background:#e8f5e9; color:#1b5e20; padding:1px 1px; border-radius:10px; display:inline-block;">🏠</div>`;
+        }
 
         calendarHTML += `
             <div ${clickHandler} 
@@ -198,7 +233,10 @@ function renderEmbeddedCalendar() {
                  onmouseout="this.style.transform='scale(1)'">
                 <div style="font-weight: bold; margin-bottom: 2px;">${day}</div>
                 <div style="font-size: 0.7rem; opacity: 0.8;">
-                    ${isCapacityFull ? '❌' : (!isPast && !isTooEarly ? `${availableSlots}/${maxOrders}` : '')}
+                    ${isCapacityFull ? '❌' : (!isPast && !isTooEarly && methodAllowed ? `${availableSlots}/${maxOrders}` : '')}
+                </div>
+                <div style="margin-top:6px; display:flex; gap:6px; justify-content:center;">
+                    ${badgeHTML}
                 </div>
             </div>
         `;
@@ -232,6 +270,7 @@ function renderEmbeddedCalendar() {
         </div>
         <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--clr-muted);">
             <p><strong>Hinweis:</strong> Mindestens 7 Tage Vorlaufzeit • Maximal 3 Bestellungen pro Tag</p>
+            <p>🚚 Lieferung möglich • 🏠 Abholung möglich</p>
         </div>
     `;
 
@@ -242,9 +281,136 @@ function renderEmbeddedCalendar() {
  * Datum aus Kalender auswählen
  */
 function selectDateFromCalendar(dateString) {
-    // Modal mit Bestätigung zeigen
-    showSelectionModal(dateString);
+    // Delegate to the unified day click handler. Determine availability via orderRules if present.
+    const supportsDelivery = window.orderRules && typeof window.orderRules.isDeliveryDay === 'function'
+        ? window.orderRules.isDeliveryDay(dateString)
+        : ((new Date(dateString + 'T12:00:00')).getDay() === 0 || (new Date(dateString + 'T12:00:00')).getDay() === 6);
+    const supportsPickup = window.orderRules && typeof window.orderRules.isPickupDay === 'function'
+        ? window.orderRules.isPickupDay(dateString)
+        : ([1, 3, 5, 6, 0].includes((new Date(dateString + 'T12:00:00')).getDay()));
+
+    handleCalendarDayClick(dateString, supportsDelivery, supportsPickup);
 }
+
+/**
+ * Handle a click on a calendar day. If only one method is available, fill date + method.
+ * If both are available, show a small modal to choose pickup or delivery.
+ */
+function handleCalendarDayClick(dateString, supportsDelivery, supportsPickup) {
+    // If neither supported, fallback to existing selection modal
+    if (!supportsDelivery && !supportsPickup) {
+        showSelectionModal(dateString);
+        return;
+    }
+
+    // If only delivery supported
+    if (supportsDelivery && !supportsPickup) {
+        selectDateAndMethod(dateString, 'delivery');
+        return;
+    }
+
+    // If only pickup supported
+    if (supportsPickup && !supportsDelivery) {
+        selectDateAndMethod(dateString, 'pickup');
+        return;
+    }
+
+    // If both supported, show choice modal
+    showMethodChoiceModal(dateString);
+}
+
+/**
+ * Show a small modal letting the user choose between delivery and pickup for the selected date.
+ */
+function showMethodChoiceModal(dateString) {
+    const date = new Date(dateString + 'T12:00:00');
+    const formattedDate = date.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // remove previous modal if exists
+    const prev = document.getElementById('methodChoiceModal');
+    if (prev) prev.remove();
+
+    const modalHTML = `
+        <div id="methodChoiceModal" class="date-selection-modal-overlay">
+            <div class="date-selection-modal">
+                <div class="date-selection-modal-content">
+                    <h3 class="date-selection-modal-title">${formattedDate}</h3>
+                    <p>Bitte wählen Sie, ob Sie die Bestellung liefern lassen oder abholen möchten.</p>
+                    <div style="display:flex; gap:10px; justify-content:center; margin-top:12px">
+                        <button onclick="selectDateAndMethod('${dateString}', 'pickup')" class="btn btn-secondary">Abholung</button>
+                        <button onclick="selectDateAndMethod('${dateString}', 'delivery')" class="btn btn-primary">Lieferung</button>
+                    </div>
+                    <div style="text-align:center; margin-top:10px">
+                        <button onclick="document.getElementById('methodChoiceModal') && document.getElementById('methodChoiceModal').remove()" class="btn">Abbrechen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+/**
+ * Fill the date and set the delivery method (pickup/delivery) in the order form.
+ * method: 'pickup' or 'delivery'
+ */
+function selectDateAndMethod(dateString, method) {
+    // Close method choice modal if present
+    const mc = document.getElementById('methodChoiceModal');
+    if (mc) mc.remove();
+
+    // Fill date
+    const wunschInput = document.getElementById('wunschDatum');
+    if (wunschInput) {
+        wunschInput.value = dateString;
+        // Trigger both input and change so page listeners update availability and validation reliably
+        wunschInput.dispatchEvent(new Event('input', { bubbles: true }));
+        wunschInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Use hidden input#lieferung instead of radios
+    const hidden = document.getElementById('lieferung');
+    const selectedInfo = document.getElementById('selectedDeliveryInfo');
+    if (method === 'pickup') {
+        if (hidden) hidden.value = '';
+        if (hidden) {
+            hidden.dispatchEvent(new Event('lieferungchange'));
+            hidden.dispatchEvent(new Event('change', { bubbles: true }));
+            try { if (window.orderManager && typeof window.orderManager.calculateSum === 'function') window.orderManager.calculateSum(); } catch (e) { /* ignore */ }
+        }
+        if (selectedInfo) selectedInfo.innerHTML = 'Ausgewählt: <strong>Abholung</strong>';
+    } else if (method === 'delivery') {
+        // Ask for range (20km/40km)
+        showDeliveryRangeModal(dateString);
+        return; // selection will continue after range chosen
+    }
+
+    // Close calendar and scroll to form
+    hideAvailabilityCalendar();
+    scrollToForm();
+
+    // Small success feedback
+    showSuccessNotification(`Wunschtermin ${new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE')} ausgewählt (${method === 'delivery' ? 'Lieferung' : 'Abholung'})`);
+}
+
+// Wenn die Lieferart geändert wird, soll der eingebettete Kalender nach Möglichkeit live aktualisiert
+function bindDeliveryOptionChangeToCalendar() {
+    const hidden = document.getElementById('lieferung');
+    if (!hidden) return;
+
+    // When scripts set hidden.value they should dispatch a 'lieferungchange' event
+    hidden.addEventListener('lieferungchange', () => {
+        const calendarDiv = document.getElementById('embeddedCalendar');
+        const contentDiv = document.getElementById('embeddedCalendarContent');
+        if (calendarDiv && calendarDiv.style.display && calendarDiv.style.display !== 'none' && contentDiv) {
+            renderEmbeddedCalendar();
+        }
+    });
+}
+
+// Versuche beim Laden der Datei die Listener zu binden (falls DOM bereits vorhanden ist)
+setTimeout(() => bindDeliveryOptionChangeToCalendar(), 300);
 
 /**
  * Modal für Datumsauswahl anzeigen
@@ -357,6 +523,54 @@ function confirmDateSelection(dateString) {
  */
 function selectDateAndContinue(dateString) {
     confirmDateSelection(dateString);
+}
+
+/**
+ * Zeigt ein Modal zur Auswahl des Lieferbereichs (20km / 40km) an und setzt das versteckte Feld.
+ */
+function showDeliveryRangeModal(dateString) {
+    const prev = document.getElementById('deliveryRangeModal');
+    if (prev) prev.remove();
+    const date = new Date(dateString + 'T12:00:00');
+    const formatted = date.toLocaleDateString('de-DE');
+    const modal = `
+        <div id="deliveryRangeModal" class="date-selection-modal-overlay">
+            <div class="date-selection-modal">
+                <div class="date-selection-modal-content">
+                    <h3>Lieferbereich wählen</h3>
+                    <p>Für ${formatted} wählen Sie bitte die gewünschte Lieferreichweite:</p>
+                    <div style="display:flex; gap:10px; justify-content:center; margin-top:12px">
+                        <button onclick="confirmDeliveryRange('${dateString}','20km')" class="btn btn-secondary">Lieferung 20 km (+${(window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung['20km']) ? window.priceConfig.lieferung['20km'].price : 10}€)</button>
+                        <button onclick="confirmDeliveryRange('${dateString}','40km')" class="btn btn-primary">Lieferung 40 km (+${(window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung['40km']) ? window.priceConfig.lieferung['40km'].price : 20}€)</button>
+                    </div>
+                    <div style="text-align:center; margin-top:10px">
+                        <button onclick="document.getElementById('deliveryRangeModal') && document.getElementById('deliveryRangeModal').remove()" class="btn">Abbrechen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modal);
+}
+
+function confirmDeliveryRange(dateString, rangeValue) {
+    const hidden = document.getElementById('lieferung');
+    const selectedInfo = document.getElementById('selectedDeliveryInfo');
+    if (hidden) {
+        hidden.value = rangeValue;
+        // dispatch custom event and a standard change event (bubbling) to notify listeners
+        hidden.dispatchEvent(new Event('lieferungchange'));
+        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+        try { if (window.orderManager && typeof window.orderManager.calculateSum === 'function') window.orderManager.calculateSum(); } catch (e) { /* ignore */ }
+    }
+    if (selectedInfo) {
+        const price = (rangeValue === '20km') ? (window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung['20km'] ? window.priceConfig.lieferung['20km'].price : 10) : (window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung['40km'] ? window.priceConfig.lieferung['40km'].price : 20);
+        selectedInfo.innerHTML = `Ausgewählt: <strong>Lieferung (${rangeValue.replace('km', ' km')})</strong> — Zuschlag: <strong>${price} €</strong>`;
+    }
+    const m = document.getElementById('deliveryRangeModal'); if (m) m.remove();
+    hideAvailabilityCalendar();
+    scrollToForm();
+    showSuccessNotification(`Lieferung ${rangeValue} ausgewählt für ${new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE')}`);
 }
 
 /**

@@ -278,45 +278,60 @@ class OrderManager {
         return `
             <details class="list-item order-card" style="margin-bottom:12px;">
                 <summary class="order-card-header" role="button">
-                    <div class="order-card-left">
-                        <div class="order-title">Bestellung ${escapeHtml(orderId.substr(-6))} · ${escapeHtml(customerName)} ${customerBadge}</div>
-                        <div class="order-meta">
-                            <div class="order-meta-line">Wunschtermin: ${this.formatDesiredDate(order)}</div>
-                            <div class="order-meta-line">Erstellt: ${created}</div>
+                    <div class="order-card-content">
+                        <div class="order-header-line">
+                            <div class="order-title">Bestellung ${escapeHtml(orderId.substr(-6))}</div>
+                            <div class="order-price">${price} €</div>
                         </div>
-                    </div>
-                    <div class="order-card-right">
-                        <div class="order-price">${price} €</div>
-                        <span class="order-status-badge ${statusClass}">${escapeHtml(statusNormalized)}</span>
+                        <div class="order-customer">${escapeHtml(customerName)}</div>
+                        <div class="order-date">Wunschtermin: ${this.formatDesiredDate(order)}</div>
                     </div>
                 </summary>
                 <div class="order-card-body">
-                    <p><strong>Kunde:</strong> ${escapeHtml(customerName)}</p>
-                    <p><strong>E-Mail:</strong> ${escapeHtml(customerEmail)}</p>
-                    <p><strong>Telefon:</strong> ${escapeHtml(customerPhone)}</p>
-                    <p><strong>Erstellt:</strong> ${created}</p>
-                    <p><strong>Wunschtermin:</strong> ${wunschtermin}</p>
-                    ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ""}
-                    <p><strong>Größe:</strong> ${size}</p>
-                    ${order.details && order.details.numberOfTiers ? `<p><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</p>` : ''}
-                    <p><strong>Extras:</strong> ${extras}</p>
-                    <p><strong>Lieferung:</strong> ${liefertext}</p>
-                    ${order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ""}
-                    <p><strong>Preis:</strong> ${price} €</p>
-                    <p><strong>Status:</strong>
-                        <select onchange="this.nextElementSibling.style.display = 'inline'" data-order-id="${orderId}">
-                            <option value="neu" ${statusNormalized === "neu" ? "selected" : ""}>neu</option>
-                            <option value="angenommen" ${statusNormalized === "angenommen" ? "selected" : ""}>angenommen</option>
-                            <option value="in Vorbereitung" ${statusNormalized === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
-                            <option value="fertig" ${statusNormalized === "fertig" ? "selected" : ""}>fertig</option>
-                            <option value="abgelehnt" ${statusNormalized === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
-                        </select>
-                        <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" class="btn-small" style="display:none; margin-left:8px;">Speichern</button>
-                    </p>
-                    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
-                        <button class="btn-small" onclick="archiveOrder('${orderId}')">Archivieren</button>
-                        <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${escapeHtml(order.status || '')}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
-                        <button class="btn-small danger-btn" onclick="deleteOrder('${orderId}')">Löschen</button>
+                    <div class="order-section">
+                        <h4>Kontakt</h4>
+                        <p style="margin-bottom:4px;"><strong>Kunde:</strong> ${escapeHtml(customerName)} ${isFirstTime ? '<span class="badge badge-new small-badge" aria-hidden="true">NEUKUNDE</span>' : ''}</p>
+                        <p style="margin-bottom:4px;"><strong>E-Mail:</strong> ${escapeHtml(customerEmail)}</p>
+                        <p style="margin-bottom:4px;"><strong>Telefon:</strong> ${escapeHtml(customerPhone)}</p>
+                    </div>
+                    <hr class="order-divider" />
+
+                    <div class="order-section">
+                        <h4>Termin</h4>
+                        <p><strong>Erstellt:</strong> ${created}</p>
+                        <p><strong>Wunschtermin:</strong> ${wunschtermin}</p>
+                        ${order.anlass ? `<p><strong>Anlass:</strong> ${this.getOccasionDisplayName(order.anlass)}</p>` : ""}
+                    </div>
+                    <hr class="order-divider" />
+
+                    <div class="order-section">
+                        <h4>Bestelldetails</h4>
+                        <p><strong>Größe:</strong> ${size}</p>
+                        ${order.details && order.details.numberOfTiers ? `<p><strong>Stockwerke:</strong> ${escapeHtml(String(order.details.numberOfTiers))}</p>` : ''}
+                        <p><strong>Extras:</strong> ${extras}</p>
+                        <p><strong>Lieferung:</strong> ${liefertext}</p>
+                        ${order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ""}
+                    </div>
+                    <hr class="order-divider" />
+
+                    <div class="order-section">
+                        <h4>Preis & Aktionen</h4>
+                        <p><strong>Preis:</strong> ${price} €</p>
+                        <p><strong>Status:</strong>
+                            <select onchange="this.nextElementSibling.style.display = 'inline'" data-order-id="${orderId}">
+                                <option value="neu" ${statusNormalized === "neu" ? "selected" : ""}>neu</option>
+                                <option value="angenommen" ${statusNormalized === "angenommen" ? "selected" : ""}>angenommen</option>
+                                <option value="in Vorbereitung" ${statusNormalized === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
+                                <option value="fertig" ${statusNormalized === "fertig" ? "selected" : ""}>fertig</option>
+                                <option value="abgelehnt" ${statusNormalized === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
+                            </select>
+                            <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" class="btn-small" style="display:none; margin-left:8px;">Speichern</button>
+                        </p>
+                        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap">
+                            <button class="btn-small" onclick="archiveOrder('${orderId}')">Archivieren</button>
+                            <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${escapeHtml(order.status || '')}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
+                            <button class="btn-small danger-btn" onclick="deleteOrder('${orderId}')">Löschen</button>
+                        </div>
                     </div>
                 </div>
             </details>

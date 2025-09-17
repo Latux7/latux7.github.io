@@ -9,6 +9,8 @@
 html,
 body {
   height: 100%;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 html:focus-within {
@@ -194,6 +196,26 @@ textarea {
   color: var(--clr-accent-strong);
 }
 
+/* Admin order detail separators */
+.order-card-body {
+  padding: 12px 16px;
+}
+.order-section h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: var(--clr-accent-strong);
+}
+.order-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.02));
+  margin: 8px 0;
+}
+.order-section p {
+  margin: 2px 0;
+  font-size: 0.85rem;
+}
+
 /* Comparison table styles */
 .comparison-table {
   width: 100%;
@@ -238,6 +260,8 @@ textarea {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: var(--space-5) var(--container-padding-x) var(--space-4);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header / Brand */
@@ -402,31 +426,107 @@ input[type="submit"]:hover {
 
 /* Admin order card styles */
 .order-card {
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: linear-gradient(180deg, #ffffff, #fbfffa);
   box-shadow: var(--shadow-soft);
+  box-sizing: border-box;
+  margin-bottom: 8px;
 }
 .order-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 8px 12px;
   cursor: pointer;
+  position: relative;
 }
-.order-card-left {
-  flex: 1;
+.order-card-content {
+  width: 100%;
   min-width: 0;
+}
+.order-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 .order-title {
   font-weight: 700;
   color: var(--clr-text);
+  font-size: 0.85rem;
+}
+.order-customer {
+  font-weight: 600;
+  color: var(--clr-text);
+  font-size: 0.95rem;
+  margin-bottom: 1px;
+}
+.order-date {
+  font-size: 0.8rem;
+  color: var(--clr-muted);
+}
+.order-price {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--clr-accent-strong);
   white-space: nowrap;
+}
+.order-title-price {
+  color: var(--clr-accent-strong);
+  font-weight: 800;
+  margin-left: 6px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.badge {
+  margin-left: 6px;
+}
+
+/* compact variant used inside the Contact section to avoid pushing layout */
+.small-badge {
+  padding: 1px 4px;
+  font-size: 0.65rem;
+  border-radius: 4px;
+  vertical-align: middle;
+  display: inline-block;
+  margin-left: 4px;
+}
+
+/* ensure header elements (title + meta + right column) don't overflow card */
+.order-card-header * {
+  box-sizing: border-box;
+}
+
+/* prevent any long inline elements from escaping the header — force wrapping where needed */
+.order-card-left {
   overflow: hidden;
+  min-width: 0;
+}
+.order-title {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
   text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* make sure right column items wrap and don't push outside */
+.order-card-right {
+  max-width: 38%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 720px) {
+  /* hide the NEUKUNDE badge on very small screens to save vertical space */
+  .order-title .badge {
+    display: none;
+  }
 }
 .order-meta {
   font-size: 0.9rem;
@@ -439,15 +539,55 @@ input[type="submit"]:hover {
   align-items: flex-end;
   gap: 6px;
 }
+.order-card-right {
+  /* keep right column from growing and ensure it doesn't push the left column out */
+  flex: 0 0 auto;
+  min-width: 0;
+}
 .order-price {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--clr-accent-strong);
 }
 .order-card-body {
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-top: 1px solid rgba(0, 0, 0, 0.04);
   background: transparent;
+}
+
+/* Compact header status select */
+.order-status-compact select {
+  padding: 6px 8px;
+  font-size: 0.86rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+}
+
+/* Responsive order card layout */
+@media (max-width: 720px) {
+  .order-card {
+    margin-bottom: 6px;
+  }
+  .order-card-header {
+    padding: 6px 10px;
+  }
+  .order-card-body {
+    padding: 6px 10px;
+  }
+  .order-section h4 {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+  }
+  .order-customer {
+    font-size: 0.9rem;
+  }
+  .order-price {
+    font-size: 0.95rem;
+  }
+  .order-section p {
+    font-size: 0.8rem;
+  }
 }
 .order-status-badge {
   display: inline-block;
@@ -456,6 +596,13 @@ input[type="submit"]:hover {
   color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
+}
+/* prevent the badge from overflowing the header; use ellipsis if needed */
+.order-status-badge {
+  white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .status-neu {
   background: #ff9800;
@@ -486,6 +633,9 @@ input[type="submit"]:hover {
   }
   .order-price {
     font-size: 1rem;
+  }
+  .list-item.order-card {
+    padding: 6px 0;
   }
 }
 .btn-danger:hover {
@@ -837,6 +987,10 @@ summary {
   list-style: none;
   padding: 10px 14px;
   cursor: pointer;
+}
+summary {
+  box-sizing: border-box;
+  overflow: hidden;
 }
 summary::-webkit-details-marker {
   display: none;
@@ -1906,6 +2060,165 @@ h2[onclick*="toggleSection"] {
   }
 }
 
+/* Embedded Calendar Modal */
+.embedded-calendar-modal {
+  margin: 20px 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.embedded-calendar-content {
+  border: 2px solid var(--clr-accent);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.embedded-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.embedded-calendar-header h3 {
+  margin: 0;
+  color: var(--clr-accent);
+  font-size: 1.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--clr-muted);
+  padding: 5px;
+  flex: 0 0 auto;
+}
+
+.calendar-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--clr-muted);
+}
+
+.loading-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.calendar-tip {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive embedded calendar */
+@media (max-width: 768px) {
+  .embedded-calendar-modal {
+    margin: 15px 0;
+  }
+  .embedded-calendar-content {
+    padding: 15px;
+    border-radius: 10px;
+  }
+  .embedded-calendar-header h3 {
+    font-size: 1.1rem;
+  }
+  .calendar-close-btn {
+    font-size: 1.3rem;
+  }
+  .calendar-loading {
+    padding: 30px 15px;
+  }
+  .calendar-tip {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .embedded-calendar-content {
+    padding: 5px;
+    border-radius: 8px;
+  }
+  .embedded-calendar-header {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .embedded-calendar-header h3 {
+    font-size: 1rem;
+  }
+  .calendar-loading {
+    padding: 20px 10px;
+  }
+  .loading-icon {
+    font-size: 1.5rem;
+  }
+  .calendar-tip {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+  /* Make calendar cells larger again since emojis save space */
+  .embedded-calendar-content > div > div {
+    padding: 5px 1px !important;
+    font-size: 0.7rem !important;
+  }
+  .embedded-calendar-content > div > div > div:first-child {
+    font-size: 0.8rem !important;
+  }
+  /* Reduce grid gap on mobile */
+  .embedded-calendar-content div[style*="display:grid"] {
+    gap: 1px !important;
+  }
+  /* Make emoji badges larger */
+  .embedded-calendar-content div[style*="font-size:1rem"] {
+    font-size: 1.2rem !important;
+    padding: 2px 3px !important;
+  }
+  /* Stack delivery/pickup badges vertically on mobile */
+  .embedded-calendar-content div[style*="display:flex"] {
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+  /* Stack delivery range buttons vertically on mobile */
+  .date-selection-modal-content div[style*="display:flex"] {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+}
+
+/* Larger calendar on desktop */
+@media (min-width: 481px) {
+  .embedded-calendar-content > div > div {
+    padding: 8px 4px !important;
+    font-size: 0.8rem !important;
+  }
+  .embedded-calendar-content > div > div > div:first-child {
+    font-size: 0.9rem !important;
+  }
+  .embedded-calendar-content div[style*="display:grid"] {
+    gap: 2px !important;
+  }
+  .embedded-calendar-content div[style*="font-size:1rem"] {
+    font-size: 1.3rem !important;
+    padding: 3px 5px !important;
+  }
+  .embedded-calendar-content {
+    padding: 20px;
+  }
+}
+
 /* Calendar */
 .calendar-container {
   background: #fff;
@@ -1914,6 +2227,9 @@ h2[onclick*="toggleSection"] {
   padding: 20px;
   box-shadow: var(--shadow-xs);
   margin: 20px 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .calendar-header {
   display: flex;
@@ -1946,40 +2262,46 @@ h2[onclick*="toggleSection"] {
 
 .calendar-grid {
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
   margin-bottom: 10px;
+  width: 100%;
 }
 .weekday {
   text-align: center;
   font-weight: 600;
-  padding: 10px 5px;
+  padding: 8px 2px;
   background: #f8f9fa;
   color: var(--clr-muted);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   border-radius: 4px;
+  min-width: 0;
 }
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  /* Ensure rows don't become excessively tall; allow them to grow if content needs but keep a reasonable minimum */
   grid-auto-rows: minmax(56px, auto);
   gap: 1px;
   background: #e5e7eb;
+  width: 100%;
 }
 .calendar-day {
   background: #fff;
-  /* shorter minimum height so calendar isn't so tall on mobile */
   min-height: 56px;
-  padding: 8px;
+  padding: 6px;
   position: relative;
   cursor: pointer;
   transition: background 0.2s ease;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .calendar-day:hover {
   background: #f8f9fa;
@@ -2208,9 +2530,30 @@ h2[onclick*="toggleSection"] {
 
 /* Responsive Calendar extras */
 @media (max-width: 768px) {
+  .calendar-container {
+    padding: 12px;
+    margin: 15px 0;
+  }
+  .calendar-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+  .calendar-header h3 {
+    font-size: 1.2rem;
+  }
+  .calendar-nav {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
   .calendar-day {
-    min-height: 80px;
-    padding: 4px;
+    min-height: 50px;
+    padding: 3px;
+    font-size: 0.85rem;
+  }
+  .weekday {
+    padding: 6px 1px;
+    font-size: 0.75rem;
   }
   .day-number {
     font-size: 0.8rem;
@@ -2225,6 +2568,30 @@ h2[onclick*="toggleSection"] {
   }
   .legend-item {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 8px;
+    margin: 10px 0;
+  }
+  .calendar-header h3 {
+    font-size: 1.1rem;
+  }
+  .calendar-nav {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+  .calendar-day {
+    min-height: 45px;
+    padding: 2px;
+    font-size: 0.8rem;
+  }
+  .weekday {
+    padding: 4px 1px;
+    font-size: 0.7rem;
   }
 }
 

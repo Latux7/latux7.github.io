@@ -161,7 +161,7 @@
                 <button type="submit" style="background:linear-gradient(135deg,#8B4513,#D2691E);color:white;border:none;padding:15px 30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;width:100%;transition:transform 0.2s ease;">Zugang gew\u00e4hren</button>
             </form>
             <div id="passwordError" style="color:#e74c3c;font-size:14px;margin-top:10px;display:none;">\u274c Falsches Passwort. Bitte versuchen Sie es erneut.</div>
-            <div style="color:#999;font-size:12px;margin-top:20px;border-top:1px solid #eee;padding-top:15px;"><p>Nur f\u00fcr autorisierte Benutzer</p></div>
+            <div style="color:#999;font-size:12px;margin-top:20px;border-top:1px solid #eee;padding-top:15px;"><p>Bitte achten Sie auf Groß- und Kleinschreibung.</p> <p>Nur f\u00fcr autorisierte Benutzer</p></div>
         `;
 
         overlay.appendChild(modal);

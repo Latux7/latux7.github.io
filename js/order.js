@@ -4,6 +4,8 @@ class OrderManager {
     constructor() {
         this.db = null;
         this.prices = {};
+        // expose instance for other scripts to call into (safe helper)
+        window.orderManager = this;
         this.init();
     }
 
@@ -29,8 +31,24 @@ class OrderManager {
         // Initial-Zustand setzen
         this.initializeForm();
 
+        // Bind delivery radio change to a small UI hint flash
+        this.bindDeliveryHintFlash();
+
         // Vorlaufzeit-Info anzeigen
         this.checkOrderDeadline();
+    }
+
+    bindDeliveryHintFlash() {
+        const hidden = document.getElementById('lieferung');
+        const info = document.getElementById('selectedDeliveryInfo');
+        if (!hidden || !info) return;
+
+        hidden.addEventListener('lieferungchange', () => {
+            info.style.transition = 'background 0.3s ease';
+            const old = info.style.background;
+            info.style.background = 'rgba(255, 249, 196, 0.9)';
+            setTimeout(() => { info.style.background = old; }, 900);
+        });
     }
 
     async checkOrderDeadline() {
@@ -86,14 +104,22 @@ class OrderManager {
             }
         });
 
-        // Lieferungsoptionen aktualisieren
-        Object.entries(window.priceConfig.lieferung).forEach(([key, config]) => {
-            const radio = document.querySelector(`input[value="${key}"]`);
-            if (radio && radio.parentElement) {
-                const label = radio.parentElement;
-                label.innerHTML = `<input type="radio" name="lieferung" value="${key}" /> ${config.label} (+${config.price}&nbsp;€)`;
+        // Lieferungsoptionen: wir verwenden jetzt den Kalender zur Auswahl.
+        // Aktualisiere die lesbare Anzeige im #selectedDeliveryInfo mit verfügbaren Optionen und Preisen
+        const selectedInfo = document.getElementById('selectedDeliveryInfo');
+        if (selectedInfo) {
+            const parts = Object.entries(window.priceConfig.lieferung).map(([key, config]) => {
+                return `${config.label} (+${config.price} €)`;
+            });
+            selectedInfo.innerHTML = selectedInfo.innerHTML || 'Keine Lieferung ausgewählt (Standard: Abholung). Wählen Sie im Kalender Datum und Lieferart.';
+            // append small helper explaining delivery pricing
+            const help = `<div style="margin-top:6px; font-size:0.9rem; color:var(--clr-muted);">Lieferoptionen: ${parts.join(' • ')}</div>`;
+            // Avoid duplicating the help text
+            if (!selectedInfo.dataset.priceset) {
+                selectedInfo.insertAdjacentHTML('beforeend', help);
+                selectedInfo.dataset.priceset = '1';
             }
-        });
+        }
 
         // Durchmesser-Bereich aktualisieren
         const diameterInput = document.getElementById("diameter");
@@ -185,9 +211,10 @@ class OrderManager {
 
         if (tier) sum += this.prices.tiers[tier];
 
-        // Lieferung
-        if (f.lieferung.value) {
-            sum += this.prices.lieferung[f.lieferung.value] || 0;
+        // Lieferung - use hidden #lieferung if present, otherwise fallback to form radios
+        const deliveryVal = this.getSelectedDeliveryValue(f);
+        if (deliveryVal) {
+            sum += this.prices.lieferung[deliveryVal] || 0;
         }
 
         // Extras
@@ -251,8 +278,8 @@ class OrderManager {
     }
 
     toggleDeliveryFields() {
-        const lieferung = document.querySelector('input[name="lieferung"]:checked');
-        const show = lieferung && lieferung.value !== "";
+        const hidden = document.getElementById('lieferung');
+        const show = hidden && hidden.value !== "";
         const deliveryFields = document.getElementById("deliveryFields");
 
         if (deliveryFields) {
@@ -300,6 +327,7 @@ class OrderManager {
         // Form change events
         orderForm.addEventListener("change", (e) => {
             try {
+                // We now use a hidden field #lieferung - listen for that custom event elsewhere
                 if (e.target.name === "lieferung") this.toggleDeliveryFields();
                 if (e.target.id === "diameter") this.updateSizeUI();
                 if (e.target.id === "mehrstoeckigCheckbox") this.toggleTiersSelection();
@@ -310,6 +338,17 @@ class OrderManager {
                 console.error('OrderManager: Fehler in change-handler', err);
             }
         });
+
+        // Listen to the hidden delivery field custom event to toggle fields and recalc price
+        const hidden = document.getElementById('lieferung');
+        if (hidden) {
+            hidden.addEventListener('lieferungchange', () => {
+                try {
+                    this.toggleDeliveryFields();
+                    this.calculateSum();
+                } catch (e) { console.warn('Error handling lieferungchange', e); }
+            });
+        }
 
         // Form submit
         orderForm.addEventListener("submit", (e) => {
@@ -324,6 +363,19 @@ class OrderManager {
     // Verfügbarkeit des gewählten Datums prüfen
     async checkDateAvailability(dateString) {
         if (!dateString || !window.orderLimitManager) return;
+
+        // Clear any previous date warning immediately to avoid stale messages
+        try {
+            const dateWarning = document.getElementById('dateWarning');
+            if (dateWarning) {
+                dateWarning.style.display = 'none';
+                dateWarning.className = '';
+            }
+            const wunschDatumInput = document.getElementById('wunschDatum');
+            if (wunschDatumInput) wunschDatumInput.style.borderColor = '';
+        } catch (e) {
+            // ignore
+        }
 
         // Check lead time and capacity for selected date
 
@@ -357,24 +409,80 @@ class OrderManager {
                 dateWarning.style.display = "block";
                 dateWarning.className = "date-warning warning";
             } else if (status.canAccept) {
-                // Datum ist verfügbar
-                wunschDatumInput.style.borderColor = "#4caf50";
-                const availableSlots = status.maxOrders - status.ordersCount;
-                dateWarning.innerHTML = `
-                    <strong>✅ Datum verfügbar:</strong> 
-                    ${new Date(dateString).toLocaleDateString('de-DE')} ist verfügbar.
-                    <br><small>Verfügbare Plätze: <strong>${availableSlots}/${status.maxOrders}</strong></small>
-                `;
-                dateWarning.style.display = "block";
-                dateWarning.className = "date-warning success";
+                // Prüfen ob die aktuell gewählte Lieferart zur gewählten Datum passt
+                try {
+                    const isDeliveryDay = window.orderRules && typeof window.orderRules.isDeliveryDay === 'function'
+                        ? window.orderRules.isDeliveryDay(dateString)
+                        : ((new Date(dateString + 'T12:00:00')).getDay() === 0 || (new Date(dateString + 'T12:00:00')).getDay() === 6);
+                    const isPickupDay = window.orderRules && typeof window.orderRules.isPickupDay === 'function'
+                        ? window.orderRules.isPickupDay(dateString)
+                        : ([1, 3, 5, 6, 0].includes((new Date(dateString + 'T12:00:00')).getDay()));
 
-                // Nach 4 Sekunden ausblenden wenn alles okay ist
-                setTimeout(() => {
-                    if (dateWarning.className === "date-warning success") {
-                        dateWarning.style.display = "none";
-                        wunschDatumInput.style.borderColor = "";
+                    const selectedHidden = document.getElementById('lieferung');
+                    const selectedMethod = selectedHidden ? (selectedHidden.value === '' ? 'abholung' : selectedHidden.value) : '';
+
+                    // If a method is selected but incompatible with the date -> show specific error
+                    if (selectedMethod) {
+                        if (selectedMethod !== 'abholung' && !isDeliveryDay) {
+                            wunschDatumInput.style.borderColor = "#f44336";
+                            dateWarning.innerHTML = `
+                                <strong>🚫 Lieferung nicht möglich:</strong>
+                                Für ${new Date(dateString).toLocaleDateString('de-DE')} ist Lieferung nicht möglich. Bitte wählen Sie ein anderes Datum oder Abholung.
+                            `;
+                            dateWarning.style.display = "block";
+                            dateWarning.className = "date-warning error";
+                            return;
+                        }
+                        if (selectedMethod === 'abholung' && !isPickupDay) {
+                            wunschDatumInput.style.borderColor = "#f44336";
+                            dateWarning.innerHTML = `
+                                <strong>🚫 Abholung nicht möglich:</strong>
+                                Für ${new Date(dateString).toLocaleDateString('de-DE')} ist Abholung nicht möglich. Bitte wählen Sie ein anderes Datum oder Lieferung.
+                            `;
+                            dateWarning.style.display = "block";
+                            dateWarning.className = "date-warning error";
+                            return;
+                        }
                     }
-                }, 4000);
+
+                    // If no method selected, try to auto-select when only one is available, otherwise prompt user
+                    if (!selectedMethod) {
+                        if (!isDeliveryDay && !isPickupDay) {
+                            // Neither method available -> show error (should rarely happen because we already checked)
+                            wunschDatumInput.style.borderColor = "#f44336";
+                            dateWarning.innerHTML = `
+                                <strong>⚠️ Nicht verfügbar:</strong>
+                                Für ${new Date(dateString).toLocaleDateString('de-DE')} ist weder Abholung noch Lieferung möglich.
+                                <br><small><button onclick="showAvailabilityCalendar()" style="background:none;border:none;color:var(--clr-accent);text-decoration:underline;cursor:pointer">Andere Termine anzeigen</button></small>
+                            `;
+                            dateWarning.style.display = "block";
+                            dateWarning.className = "date-warning error";
+                        } else if (isDeliveryDay && !isPickupDay) {
+                            // Only delivery -> auto-select delivery
+                            // Set hidden field to default delivery option (20km preferred)
+                            const hidden = document.getElementById('lieferung');
+                            if (hidden) {
+                                hidden.value = '20km';
+                                // dispatch both custom and standard change events
+                                hidden.dispatchEvent(new Event('lieferungchange'));
+                                hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                                showNotification('Lieferung automatisch ausgewählt, da nur Lieferung an diesem Datum möglich.', 'info');
+                            }
+                        } else if (isPickupDay && !isDeliveryDay) {
+                            // Only pickup -> auto-select pickup (no-delivery radio)
+                            const hidden = document.getElementById('lieferung');
+                            if (hidden) {
+                                hidden.value = '';
+                                // dispatch both custom and standard change events
+                                hidden.dispatchEvent(new Event('lieferungchange'));
+                                hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                                showNotification('Abholung automatisch ausgewählt, da nur Abholung an diesem Datum möglich.', 'info');
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Fehler beim Prüfen von Liefer-/Abholregeln im Datum-Check', err);
+                }
             } else {
                 // Fallback für andere Probleme
                 wunschDatumInput.style.borderColor = "#f44336";
@@ -476,6 +584,56 @@ class OrderManager {
                 }
             }
         }
+
+        // Ensure selectedDeliveryInfo reflects current hidden delivery selection on init
+        try {
+            const hidden = document.getElementById('lieferung');
+            const selectedInfo = document.getElementById('selectedDeliveryInfo');
+            const selectedUnderDate = document.getElementById('selectedDeliveryUnderDate');
+            if (hidden && selectedInfo) {
+                const updateInfo = () => {
+                    const val = hidden.value;
+                    if (!val || val === '') {
+                        selectedInfo.innerHTML = 'Ausgewählt: <strong>Abholung</strong>' + (selectedInfo.dataset.priceset ? '' : selectedInfo.innerHTML);
+                    } else {
+                        const price = this.prices.lieferung[val] || (window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung[val] ? window.priceConfig.lieferung[val].price : 0);
+                        selectedInfo.innerHTML = `Ausgewählt: <strong>Lieferung (${val.replace('km', ' km')})</strong> — Zuschlag: <strong>${price} €</strong>`;
+                    }
+                };
+
+                updateInfo();
+                hidden.addEventListener('lieferungchange', updateInfo);
+                // Also update the under-date helper when either the date or delivery changes
+                const updateUnderDate = () => {
+                    if (!selectedUnderDate) return;
+                    const wunsch = document.getElementById('wunschDatum');
+                    if (!wunsch || !wunsch.value) {
+                        selectedUnderDate.style.display = 'none';
+                        return;
+                    }
+                    const val = hidden.value;
+                    if (!val || val === '') {
+                        selectedUnderDate.innerHTML = 'Ausgewählt: <strong>Abholung</strong>';
+                        selectedUnderDate.style.display = '';
+                    } else {
+                        const price = this.prices.lieferung[val] || (window.priceConfig && window.priceConfig.lieferung && window.priceConfig.lieferung[val] ? window.priceConfig.lieferung[val].price : 0);
+                        selectedUnderDate.innerHTML = `Ausgewählt: <strong>Lieferung (${val.replace('km', ' km')})</strong> — Zuschlag: <strong>${price} €</strong>`;
+                        selectedUnderDate.style.display = '';
+                    }
+                };
+                if (selectedUnderDate) {
+                    hidden.addEventListener('lieferungchange', updateUnderDate);
+                    const wunsch = document.getElementById('wunschDatum');
+                    if (wunsch) {
+                        wunsch.addEventListener('change', updateUnderDate);
+                    }
+                    // initialize visibility
+                    updateUnderDate();
+                }
+            }
+        } catch (e) {
+            console.warn('Could not initialize selectedDeliveryInfo', e);
+        }
     }
 
     async handleSubmit(e) {
@@ -534,11 +692,11 @@ class OrderManager {
                     kategorie: tier,
                     extras: extras,
                     numberOfTiers: numberOfTiers,
-                    lieferung: f.lieferung.value,
+                    lieferung: this.getSelectedDeliveryValue(f),
                 },
                 wunschtermin: {
-                    datum: f.wunschDatum.value,
-                    uhrzeit: f.wunschUhrzeit.value || null,
+                    datum: f.wunschDatum ? f.wunschDatum.value : '',
+                    uhrzeit: f.wunschUhrzeit ? f.wunschUhrzeit.value || null : null,
                 },
                 anlass: f.occasion ? f.occasion.value : null,
                 sonderwunsch: f.sonderwunsch ? f.sonderwunsch.value.trim() : null,
@@ -662,6 +820,39 @@ class OrderManager {
             }
         }
 
+        // Prüfe ob Datum/Wochentag zur gewählten Lieferart passt
+        try {
+            const selectedHidden = document.getElementById('lieferung');
+            const selectedMethod = selectedHidden ? (selectedHidden.value === '' ? 'abholung' : selectedHidden.value) : '';
+            const selectedTime = f.wunschUhrzeit ? f.wunschUhrzeit.value : null;
+
+            if (window.orderRules && typeof window.orderRules.isDeliveryDay === 'function') {
+                if (selectedMethod && selectedMethod !== 'abholung') {
+                    // Lieferung gewählt
+                    if (!window.orderRules.isDeliveryDay(wunschDatum)) {
+                        showNotification('Lieferungen sind nur Samstags und Sonntags möglich. Bitte wählen Sie ein passendes Datum oder Abholung.', 'error');
+                        return false;
+                    }
+                    if (selectedTime && !window.orderRules.isTimeAllowedForMethod(selectedTime, 'delivery')) {
+                        showNotification('Für Lieferungen sind nur Zeitfenster 09:00–11:00 oder 17:00–18:00 möglich.', 'error');
+                        return false;
+                    }
+                } else {
+                    // Abholung oder keine Angabe
+                    if (!window.orderRules.isPickupDay(wunschDatum) && selectedMethod === 'abholung') {
+                        showNotification('Abholung ist nur Montags, Mittwochs oder Freitags möglich. Bitte wählen Sie ein passendes Datum.', 'error');
+                        return false;
+                    }
+                    if (selectedTime && !window.orderRules.isTimeAllowedForMethod(selectedTime, 'pickup')) {
+                        showNotification('Für Abholungen sind Zeitfenster zwischen 16:00–17:00 oder 18:00–19:00 vorgesehen.', 'error');
+                        return false;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Fehler beim Prüfen der Liefer-/Abholregeln:', e);
+        }
+
         // E-Mail validieren
         if (!isValidEmail(f.email.value)) {
             showNotification("Bitte geben Sie eine gültige E-Mail-Adresse ein.", "error");
@@ -711,27 +902,47 @@ class OrderManager {
     }
 
     getDeliveryAddress(f) {
-        if (f.lieferung.value !== "") {
+        const val = this.getSelectedDeliveryValue(f);
+        if (val !== "") {
             return {
-                street: f.strasse.value,
-                plz: f.plz.value,
-                city: f.ort.value,
+                street: f.strasse ? f.strasse.value : '',
+                plz: f.plz ? f.plz.value : '',
+                city: f.ort ? f.ort.value : '',
             };
         }
         return null;
     }
 
     getDeliveryAddressString(f) {
-        if (f.lieferung.value !== "" && f.lieferung.value !== "abholung") {
-            const street = f.strasse?.value || "";
-            const plz = f.plz?.value || "";
-            const city = f.ort?.value || "";
+        const val = this.getSelectedDeliveryValue(f);
+        if (val !== "" && val !== "abholung") {
+            const street = f.strasse ? f.strasse.value : '';
+            const plz = f.plz ? f.plz.value : '';
+            const city = f.ort ? f.ort.value : '';
 
             if (street || plz || city) {
                 return `${street}, ${plz} ${city}`.replace(/^,\s*/, '').replace(/\s*,\s*$/, '');
             }
         }
         return "Abholung";
+    }
+
+    // Helper to determine selected delivery value: prefer hidden #lieferung, fallback to form radios if present
+    getSelectedDeliveryValue(f) {
+        try {
+            const hidden = document.getElementById('lieferung');
+            if (hidden && hidden.value !== undefined) {
+                return hidden.value;
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        // fallback: try form field
+        try {
+            if (f && f.lieferung && f.lieferung.value !== undefined) return f.lieferung.value;
+        } catch (e) { }
+        return '';
     }
 
     showSuccess() {

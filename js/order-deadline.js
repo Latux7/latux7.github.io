@@ -9,6 +9,70 @@ class OrderDeadlineManager {
         this.init();
     }
 
+    // Regeln für verfügbare Tage/Uhrzeiten (kann von anderen Skripten gelesen werden)
+    // Lieferungen: nur Sa & So, Slots: 09:00-11:00 oder 17:00-18:00
+    // Abholung: Mo, Mi, Fr, zwei Slots zwischen 16-19 (16:00-17:00 und 18:00-19:00)
+    isDeliveryDay(dateStringOrDate) {
+        const d = typeof dateStringOrDate === 'string' ? new Date(dateStringOrDate + 'T12:00:00') : new Date(dateStringOrDate);
+        const day = d.getDay(); // 0 = So, 6 = Sa
+        return day === 0 || day === 6;
+    }
+
+    isPickupDay(dateStringOrDate) {
+        const d = typeof dateStringOrDate === 'string' ? new Date(dateStringOrDate + 'T12:00:00') : new Date(dateStringOrDate);
+        const day = d.getDay(); // 1 = Mo, 3 = Mi, 5 = Fr
+        // Allow pickup on Mon, Wed, Fri and also on weekends (Sa, So) per updated rules
+        return day === 1 || day === 3 || day === 5 || day === 6 || day === 0;
+    }
+
+    // Gibt erlaubte Zeitfenster für eine Bestellart zurück
+    getAllowedTimeSlots(method) {
+        // method: 'delivery' oder 'pickup'
+        if (method === 'delivery') {
+            return [
+                { from: '09:00', to: '11:00', label: '09:00–11:00' },
+                { from: '17:00', to: '18:00', label: '17:00–18:00' }
+            ];
+        }
+        if (method === 'pickup') {
+            return [
+                { from: '16:00', to: '17:00', label: '16:00–17:00' },
+                { from: '18:00', to: '19:00', label: '18:00–19:00' }
+            ];
+        }
+        return [];
+    }
+
+    // Prüft, ob eine Uhrzeit innerhalb der erlaubten Slots liegt
+    isTimeAllowedForMethod(timeString, method) {
+        if (!timeString) return true; // keine Uhrzeit angegeben -> nicht blocken, nur Hinweis
+        const slots = this.getAllowedTimeSlots(method);
+        const [h, m] = (timeString || '').split(':').map((x) => parseInt(x, 10));
+        if (isNaN(h)) return false;
+        const minutes = h * 60 + (m || 0);
+        for (const s of slots) {
+            const [sf, sm] = s.from.split(':').map((x) => parseInt(x, 10));
+            const [tf, tm] = s.to.split(':').map((x) => parseInt(x, 10));
+            const start = sf * 60 + (sm || 0);
+            const end = tf * 60 + (tm || 0);
+            if (minutes >= start && minutes <= end) return true;
+        }
+        return false;
+    }
+
+    // Expose a lightweight global helper for other scripts (calendar, form)
+    exposeRulesGlobally() {
+        try {
+            window.orderRules = window.orderRules || {};
+            window.orderRules.isDeliveryDay = this.isDeliveryDay.bind(this);
+            window.orderRules.isPickupDay = this.isPickupDay.bind(this);
+            window.orderRules.getAllowedTimeSlots = this.getAllowedTimeSlots.bind(this);
+            window.orderRules.isTimeAllowedForMethod = this.isTimeAllowedForMethod.bind(this);
+        } catch (e) {
+            // ignore
+        }
+    }
+
     init() {
         // Firebase App erst initialisieren, dann Firestore verwenden
         if (typeof initializeFirebaseApp === 'function') {
@@ -19,6 +83,8 @@ class OrderDeadlineManager {
                 this.db = initializeFirebaseApp();
             }, 1000);
         }
+        // Expose rules after init
+        setTimeout(() => this.exposeRulesGlobally(), 800);
     }
 
     // Datum in 7 Tagen als String im Format YYYY-MM-DD
