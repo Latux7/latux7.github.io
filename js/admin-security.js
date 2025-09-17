@@ -12,8 +12,8 @@
     const FALLBACK_ADMIN_HASH = 'dbf7408ad5bb4580a4e6672c91bea0cfd23eddb065ccf36131793feac622f9e3'; // hash of 'tortenadmin2025' - remove after migration
     const ADMIN_SESSION_KEY = "lauras_admin_session";
     const ADMIN_SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 Stunden
-    const MAX_LOGIN_ATTEMPTS = 10;
-    const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 Minuten Sperrzeit
+    const MAX_LOGIN_ATTEMPTS = Infinity; // kept for compatibility but not enforced
+    const LOCKOUT_DURATION = 0; // not used
 
     // Admin-spezifische Sicherheitsmaßnahmen
     const adminSecurity = {
@@ -63,42 +63,23 @@
             localStorage.removeItem(ADMIN_SESSION_KEY);
         },
 
-        // Login-Versuche verwalten
+        // Login attempt tracking disabled: keep compat functions but do not enforce lockouts
         getLoginAttempts() {
-            const attempts = localStorage.getItem('admin_login_attempts');
-            return attempts ? JSON.parse(attempts) : { count: 0, lastAttempt: 0 };
+            // return a harmless default
+            return { count: 0, lastAttempt: 0 };
         },
 
         incrementLoginAttempts() {
-            const attempts = this.getLoginAttempts();
-            attempts.count++;
-            attempts.lastAttempt = Date.now();
-            localStorage.setItem('admin_login_attempts', JSON.stringify(attempts));
-            return attempts;
+            // no-op: do not persist or increment
+            return { count: 0, lastAttempt: 0 };
         },
 
         clearLoginAttempts() {
-            localStorage.removeItem('admin_login_attempts');
+            // nothing to clear
         },
 
         isLockedOut() {
-            const attempts = this.getLoginAttempts();
-            const now = Date.now();
-
-            if (attempts.count >= MAX_LOGIN_ATTEMPTS) {
-                const timeSinceLastAttempt = now - attempts.lastAttempt;
-                if (timeSinceLastAttempt < LOCKOUT_DURATION) {
-                    return {
-                        locked: true,
-                        timeRemaining: LOCKOUT_DURATION - timeSinceLastAttempt
-                    };
-                } else {
-                    // Sperrzeit abgelaufen - Versuche zurücksetzen
-                    this.clearLoginAttempts();
-                    return { locked: false };
-                }
-            }
-
+            // never locked
             return { locked: false };
         },
 
@@ -151,32 +132,19 @@
                             color: white;
                         ">🔒</div>
                         
-                        <h1 style="
-                            color: #e74c3c;
-                            margin-bottom: 10px;
-                            font-size: 24px;
-                            font-weight: 600;
-                        ">⚠️ RESTRICTED ACCESS</h1>
-                        
-                        <h2 style="
-                            color: #2c3e50;
-                            margin-bottom: 20px;
-                            font-size: 18px;
-                        ">Admin-Bereich</h2>
-                        
                         <p style="
                             color: #666;
                             margin-bottom: 30px;
                             font-size: 14px;
                             line-height: 1.5;
-                        ">Dieser Bereich ist nur für autorisierte Administratoren zugänglich.<br>
-                        Geben Sie den Admin-Code ein:</p>
+                        ">
+                        Geben Sie den Code ein:</p>
                         
                         <form id="adminSecurityForm" style="margin-bottom: 20px;">
                             <input 
                                 type="password" 
                                 id="adminCodeInput" 
-                                placeholder="Admin-Code eingeben..."
+                                placeholder="Code eingeben..."
                                 style="
                                     width: 100%;
                                     padding: 15px;
@@ -205,7 +173,7 @@
                                 cursor: pointer;
                                 width: 100%;
                                 transition: all 0.3s ease;
-                            ">🔓 Admin-Zugang</button>
+                            ">🔓 Anmelden</button>
                         </form>
                         
                         <div id="adminSecurityError" style="
@@ -218,22 +186,6 @@
                             border-radius: 5px;
                             border: 1px solid #fecaca;
                         "></div>
-                        
-                        <div style="
-                            margin-top: 25px;
-                            padding-top: 20px;
-                            border-top: 1px solid #eee;
-                            font-size: 12px;
-                            color: #999;
-                        ">
-                            <p>🛡️ <strong>Sicherheitshinweise:</strong></p>
-                            <p>• Max. ${MAX_LOGIN_ATTEMPTS} Versuche • 15min Sperre bei Fehlversuchen</p>
-                            <p>• Alle Zugriffe werden protokolliert</p>
-                            <p>• Bei unbefugtem Zugriff: Zur Startseite zurückkehren</p>
-                            <a href="index.html" style="color: #3498db; text-decoration: none; font-weight: 600;">
-                                ← Zurück zur Startseite
-                            </a>
-                        </div>
                     </div>
                 </div>
             `;
@@ -250,53 +202,6 @@
                 e.preventDefault();
                 this.handleAdminLogin(input.value.trim(), errorDiv, input);
             });
-        },
-
-        // Sperrzeit-Modal anzeigen
-        showLockoutModal(timeRemaining) {
-            const minutes = Math.ceil(timeRemaining / 60000);
-
-            document.body.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(135deg, #8b0000, #dc143c);
-                    z-index: 999999;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-family: 'Poppins', Arial, sans-serif;
-                    text-align: center;
-                ">
-                    <div style="max-width: 500px; padding: 40px;">
-                        <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
-                        <h1 style="margin-bottom: 20px; font-size: 28px;">ZUGRIFF GESPERRT</h1>
-                        <p style="font-size: 18px; margin-bottom: 20px; opacity: 0.9;">
-                            Zu viele fehlgeschlagene Anmeldeversuche!
-                        </p>
-                        <p style="font-size: 16px; margin-bottom: 30px;">
-                            Versuchen Sie es in <strong>${minutes} Minuten</strong> erneut.
-                        </p>
-                        <a href="index.html" style="
-                            display: inline-block;
-                            background: rgba(255,255,255,0.2);
-                            color: white;
-                            padding: 15px 30px;
-                            border-radius: 8px;
-                            text-decoration: none;
-                            font-weight: 600;
-                            transition: background 0.3s ease;
-                        ">Zur Startseite</a>
-                        <div style="margin-top: 30px; font-size: 12px; opacity: 0.7;">
-                            Sicherheitsprozedur aktiviert • Alle Versuche werden protokolliert
-                        </div>
-                    </div>
-                </div>
-            `;
         },
 
         // Admin-Login verarbeiten
@@ -337,7 +242,6 @@
                 if (remaining > 0) {
                     errorDiv.innerHTML = `
                         ❌ <strong>Falscher Admin-Code!</strong><br>
-                        Noch ${remaining} Versuch${remaining !== 1 ? 'e' : ''} übrig.
                     `;
                     errorDiv.style.display = 'block';
                 } else {

@@ -142,7 +142,7 @@
                         margin-bottom: 30px;
                         font-size: 16px;
                         line-height: 1.5;
-                    ">Diese Website befindet sich noch in der Entwicklung.<br>
+                    ">Diese Website befindet sich noch in der Entwicklung.<br><br>
                     Bitte geben Sie das Zugangspasswort ein:</p>
                     
                     <form id="websitePasswordForm" style="margin-bottom: 20px;">
@@ -192,7 +192,6 @@
                         border-top: 1px solid #eee;
                         padding-top: 15px;
                     ">
-                        <p>🔒 Sicher & Verschlüsselt</p>
                         <p>Nur für autorisierte Benutzer</p>
                     </div>
                 </div>
