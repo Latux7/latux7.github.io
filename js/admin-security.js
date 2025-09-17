@@ -56,11 +56,15 @@
                 source: 'firestore'
             };
             localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(sessionData));
+            // cleanup admin overlay if present
+            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
         },
 
         // Admin-Session löschen
         clearAdminSession() {
             localStorage.removeItem(ADMIN_SESSION_KEY);
+            // ensure overlay removed
+            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
         },
 
         // Login attempt tracking disabled: keep compat functions but do not enforce lockouts
@@ -92,105 +96,48 @@
                 return;
             }
 
-            // Hauptinhalt verstecken
-            document.body.style.overflow = 'hidden';
+            if (document.getElementById('adminSecurityOverlay')) return;
 
-            const modalHTML = `
-                <div id="adminSecurityModal" style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(135deg, #1a1a1a, #2c3e50);
-                    z-index: 999999;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-family: 'Poppins', Arial, sans-serif;
-                ">
-                    <div style="
-                        background: white;
-                        padding: 40px;
-                        border-radius: 15px;
-                        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-                        text-align: center;
-                        max-width: 450px;
-                        width: 90%;
-                        border: 3px solid #e74c3c;
-                    ">
-                        <div style="
-                            width: 80px;
-                            height: 80px;
-                            background: linear-gradient(135deg, #e74c3c, #c0392b);
-                            border-radius: 50%;
-                            margin: 0 auto 20px auto;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 40px;
-                            color: white;
-                        ">🔒</div>
-                        
-                        <p style="
-                            color: #666;
-                            margin-bottom: 30px;
-                            font-size: 14px;
-                            line-height: 1.5;
-                        ">
-                        Geben Sie den Code ein:</p>
-                        
-                        <form id="adminSecurityForm" style="margin-bottom: 20px;">
-                            <input 
-                                type="password" 
-                                id="adminCodeInput" 
-                                placeholder="Code eingeben..."
-                                style="
-                                    width: 100%;
-                                    padding: 15px;
-                                    border: 2px solid #e74c3c;
-                                    border-radius: 8px;
-                                    font-size: 16px;
-                                    margin-bottom: 20px;
-                                    box-sizing: border-box;
-                                    text-align: center;
-                                    font-family: monospace;
-                                    background: #f8f9fa;
-                                "
-                                autocomplete="off"
-                                required
-                                maxlength="50"
-                            >
-                            
-                            <button type="submit" style="
-                                background: linear-gradient(135deg, #e74c3c, #c0392b);
-                                color: white;
-                                border: none;
-                                padding: 15px 30px;
-                                border-radius: 8px;
-                                font-size: 16px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                width: 100%;
-                                transition: all 0.3s ease;
-                            ">🔓 Anmelden</button>
-                        </form>
-                        
-                        <div id="adminSecurityError" style="
-                            color: #e74c3c;
-                            font-size: 14px;
-                            margin-top: 15px;
-                            display: none;
-                            background: #fdf2f2;
-                            padding: 10px;
-                            border-radius: 5px;
-                            border: 1px solid #fecaca;
-                        "></div>
-                    </div>
-                </div>
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'adminSecurityOverlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.right = '0';
+            overlay.style.bottom = '0';
+            overlay.style.background = 'linear-gradient(135deg, #1a1a1a, #2c3e50)';
+            overlay.style.zIndex = '999999';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.fontFamily = "'Poppins', Arial, sans-serif";
+
+            const modal = document.createElement('div');
+            modal.style.background = 'white';
+            modal.style.padding = '40px';
+            modal.style.borderRadius = '15px';
+            modal.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5)';
+            modal.style.textAlign = 'center';
+            modal.style.maxWidth = '450px';
+            modal.style.width = '90%';
+            modal.style.border = '3px solid #e74c3c';
+
+            modal.innerHTML = `
+                <div style="width:80px;height:80px;background:linear-gradient(135deg,#e74c3c,#c0392b);border-radius:50%;margin:0 auto 20px auto;display:flex;align-items:center;justify-content:center;font-size:40px;color:white;">🔒</div>
+                <p style="color:#666;margin-bottom:30px;font-size:14px;line-height:1.5;">Geben Sie den Code ein:</p>
+                <form id="adminSecurityForm" style="margin-bottom:20px;">
+                    <input type="password" id="adminCodeInput" placeholder="Code eingeben..." style="width:100%;padding:15px;border:2px solid #e74c3c;border-radius:8px;font-size:16px;margin-bottom:20px;box-sizing:border-box;text-align:center;font-family:monospace;background:#f8f9fa;" autocomplete="off" required maxlength="50">
+                    <button type="submit" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;padding:15px 30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;width:100%;transition:all 0.3s ease;">🔓 Anmelden</button>
+                </form>
+                <div id="adminSecurityError" style="color:#e74c3c;font-size:14px;margin-top:15px;display:none;background:#fdf2f2;padding:10px;border-radius:5px;border:1px solid #fecaca;"></div>
             `;
 
-            document.body.innerHTML = modalHTML;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            const previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
 
             const form = document.getElementById('adminSecurityForm');
             const input = document.getElementById('adminCodeInput');
@@ -202,6 +149,12 @@
                 e.preventDefault();
                 this.handleAdminLogin(input.value.trim(), errorDiv, input);
             });
+
+            // cleanup handler
+            overlay._cleanup = function () {
+                try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+                document.body.style.overflow = previousOverflow || '';
+            };
         },
 
         // Admin-Login verarbeiten
@@ -213,9 +166,11 @@
                     // compute SHA-256 of enteredCode and compare
                     sha256Hex(enteredCode).then(hex => {
                         if (hex === ADMIN_ACCESS_HASH) {
-                            this.clearLoginAttempts();
-                            this.createAdminSession();
-                            window.location.reload();
+                                this.clearLoginAttempts();
+                                // cleanup admin overlay if present
+                                try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
+                                this.createAdminSession();
+                                window.location.reload();
                         } else {
                             onFailed();
                         }
@@ -223,6 +178,7 @@
                 } else if (ADMIN_ACCESS_CODE) {
                     if (enteredCode === ADMIN_ACCESS_CODE) {
                         this.clearLoginAttempts();
+                        try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
                         this.createAdminSession();
                         window.location.reload();
                     } else {
@@ -293,6 +249,7 @@
         // Session verlängern bei Aktivität
         extendAdminSession() {
             if (this.isAdminPage() && this.checkAdminSession()) {
+                // refresh timestamp and ensure overlay cleaned
                 this.createAdminSession();
             }
         }
