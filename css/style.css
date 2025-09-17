@@ -60,8 +60,8 @@ body {
   --max-content-width: 1280px;
   --transition-fast: 0.18s;
   --transition-base: 0.2s;
-  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-soft: 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.04);
   --btn-padding-vertical: 10px;
   --btn-padding-horizontal: 24px;
 }
@@ -77,11 +77,11 @@ html.dark {
   --clr-accent-soft: rgba(143, 212, 107, 0.06);
   --clr-danger: #ef9a9a;
   --clr-success: #66bb6a;
-  --shadow-xs: 0 1px 6px rgba(0,0,0,0.6);
-  --shadow-sm: 0 6px 18px rgba(0,0,0,0.6);
-  --shadow-md: 0 10px 30px rgba(0,0,0,0.6);
-  --shadow-card: 0 4px 18px rgba(0,0,0,0.6);
-  --shadow-soft: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-xs: 0 1px 6px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.6);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Smooth theme transition for supported properties */
@@ -93,30 +93,45 @@ button,
 input,
 select,
 textarea {
-  transition: background var(--transition-base), color var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  transition: background var(--transition-base), color var(--transition-base),
+    box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 /* Dark-specific element tweaks */
 html.dark body {
-  background: radial-gradient(1000px 600px at -10% -10%, rgba(0,8,10,0.2) 0%, transparent 50%), radial-gradient(900px 500px at 110% -20%, rgba(4,12,8,0.2) 0%, transparent 50%), var(--clr-bg);
+  background: radial-gradient(
+      1000px 600px at -10% -10%,
+      rgba(0, 8, 10, 0.2) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      900px 500px at 110% -20%,
+      rgba(4, 12, 8, 0.2) 0%,
+      transparent 50%
+    ),
+    var(--clr-bg);
   color: var(--clr-text);
 }
 
 html.dark nav a {
   color: var(--clr-text);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   box-shadow: var(--shadow-soft);
 }
 
 html.dark .hero {
   background: linear-gradient(180deg, #0f1718, #0b1112);
-  border-color: rgba(255,255,255,0.03);
+  border-color: rgba(255, 255, 255, 0.03);
   box-shadow: var(--shadow-sm);
 }
 
 html.dark .container {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow: var(--shadow-md);
 }
 
@@ -125,7 +140,7 @@ html.dark select,
 html.dark textarea {
   background: linear-gradient(180deg, #0d1414, #0b1112);
   color: var(--clr-text);
-  border-color: rgba(255,255,255,0.04);
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 /* Improve native select dropdown look on many browsers by styling the control and options where possible */
@@ -133,8 +148,14 @@ html.dark select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.08) 50%), linear-gradient(135deg, rgba(255,255,255,0.08) 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+  background-image: linear-gradient(
+      45deg,
+      transparent 50%,
+      rgba(255, 255, 255, 0.08) 50%
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px),
+    calc(100% - 13px) calc(1em + 2px);
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   padding-right: 40px;
@@ -150,12 +171,12 @@ html.dark option {
 html.dark .calendar-container {
   background: linear-gradient(180deg, #0b1213, #071018);
   color: var(--clr-text);
-  border: 1px solid rgba(143,212,107,0.06);
+  border: 1px solid rgba(143, 212, 107, 0.06);
   box-shadow: var(--shadow-md);
 }
 
 html.dark .calendar-header {
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 html.dark .calendar-header h3 {
@@ -163,9 +184,9 @@ html.dark .calendar-header h3 {
 }
 
 html.dark .calendar-nav {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--clr-text);
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 html.dark .calendar-grid {
@@ -173,110 +194,122 @@ html.dark .calendar-grid {
 }
 
 html.dark .calendar-weekdays {
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 html.dark .calendar-day {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
 
-/* Admin panel helpers - prefer classes over inline styles for dark-mode compatibility */
-.admin-review-item {
-  border: 1px solid rgba(0,0,0,0.08);
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  background: var(--clr-surface);
+  /* Admin panel helpers - prefer classes over inline styles for dark-mode compatibility */
+  .admin-review-item {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background: var(--clr-surface);
+    color: var(--clr-text);
+  }
+  .admin-review-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .admin-review-stars {
+    color: #ffd700;
+  }
+  .admin-review-nps {
+    display: inline-block;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  .admin-review-comment {
+    padding: 10px;
+    border-radius: 3px;
+    margin-top: 10px;
+    font-style: italic;
+    border-left: 3px solid #8b4513;
+    background: rgba(0, 0, 0, 0.02);
+  }
+  .admin-review-improvements {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--clr-muted);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    color: #fff;
+  }
+  .badge-new {
+    background: #ff9800;
+  }
+  .badge-old {
+    background: #4caf50;
+  }
+
+  .detail-summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 4px;
+    background: var(--clr-accent-soft);
+  }
+
+  .list-item {
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: var(--clr-surface);
+  }
+
+  .danger-btn {
+    background: var(--clr-danger);
+    color: #fff;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  html.dark .admin-review-item {
+    border-color: rgba(255, 255, 255, 0.04);
+    background: #0b1112;
+  }
+  html.dark .admin-review-comment {
+    background: rgba(255, 255, 255, 0.02);
+    border-left-color: #b8860b;
+  }
+
   color: var(--clr-text);
-}
-.admin-review-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.admin-review-stars { color: #FFD700; }
-.admin-review-nps {
-  display: inline-block;
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 700;
-}
-.admin-review-comment {
-  padding: 10px;
-  border-radius: 3px;
-  margin-top: 10px;
-  font-style: italic;
-  border-left: 3px solid #8B4513;
-  background: rgba(0,0,0,0.02);
-}
-.admin-review-improvements {
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 3px;
-  background: rgba(0,0,0,0.02);
-  color: var(--clr-muted);
-}
-
-.badge {
-  display:inline-block;
-  padding:2px 6px;
-  border-radius:4px;
-  font-size:0.8em;
-  color: #fff;
-}
-.badge-new { background: #ff9800; }
-.badge-old { background: #4caf50; }
-
-.detail-summary {
-  cursor: pointer;
-  font-weight: bold;
-  padding: 8px;
-  border-radius: 4px;
-  background: var(--clr-accent-soft);
-}
-
-.list-item {
-  padding: 12px;
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  background: var(--clr-surface);
-}
-
-.danger-btn {
-  background: var(--clr-danger);
-  color: #fff;
-  border: none;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-html.dark .admin-review-item { border-color: rgba(255,255,255,0.04); background: #0b1112; }
-html.dark .admin-review-comment { background: rgba(255,255,255,0.02); border-left-color: #b8860b; }
-
-  color: var(--clr-text);
-  border: 1px solid rgba(255,255,255,0.02);
+  border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 html.dark .calendar-day.empty,
 html.dark .calendar-day.past {
-  background: rgba(255,255,255,0.01);
-  color: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.01);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 html.dark .calendar-day.today {
-  box-shadow: 0 0 0 3px rgba(143,212,107,0.06) inset;
+  box-shadow: 0 0 0 3px rgba(143, 212, 107, 0.06) inset;
 }
 
 html.dark .calendar-day.has-orders {
-  background: rgba(143,212,107,0.06);
-  border-color: rgba(143,212,107,0.12);
+  background: rgba(143, 212, 107, 0.06);
+  border-color: rgba(143, 212, 107, 0.12);
 }
 
 html.dark .calendar-legend {
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 html.dark .brand .subtitle,
@@ -290,29 +323,33 @@ html.dark .muted-note {
 html.dark .btn-outline {
   background: transparent;
   color: var(--clr-accent-strong);
-  border-color: rgba(143,212,107,0.12);
+  border-color: rgba(143, 212, 107, 0.12);
 }
 
 /* Fieldset / panels in dark mode: slightly lighter than surface but still muted */
 html.dark fieldset {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 /* Date-warning and alerts: use softer backgrounds with clear left border */
 html.dark .date-warning.success {
-  background: rgba(34,85,45,0.12);
-  border-left-color: rgba(102,187,106,0.9);
+  background: rgba(34, 85, 45, 0.12);
+  border-left-color: rgba(102, 187, 106, 0.9);
   color: var(--clr-text);
 }
 html.dark .date-warning.error {
-  background: rgba(183,28,28,0.09);
-  border-left-color: rgba(244,67,54,0.9);
+  background: rgba(183, 28, 28, 0.09);
+  border-left-color: rgba(244, 67, 54, 0.9);
   color: var(--clr-text);
 }
 html.dark .date-warning.warning {
-  background: rgba(189,124,0,0.08);
-  border-left-color: rgba(255,152,0,0.9);
+  background: rgba(189, 124, 0, 0.08);
+  border-left-color: rgba(255, 152, 0, 0.9);
   color: var(--clr-text);
 }
 
@@ -322,8 +359,12 @@ html.dark .order-summary {
 }
 
 /* Make alerts readable */
-html.dark .alert.success { color: var(--clr-success); }
-html.dark .alert.error { color: var(--clr-danger); }
+html.dark .alert.success {
+  color: var(--clr-success);
+}
+html.dark .alert.error {
+  color: var(--clr-danger);
+}
 
 /* Floating theme toggle: style hint (actual button created by JS) */
 #themeToggle {
@@ -346,7 +387,7 @@ html.dark .alert.error { color: var(--clr-danger); }
 }
 
 html.dark #themeToggle {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--clr-text);
   box-shadow: var(--shadow-sm);
 }
@@ -484,7 +525,8 @@ input[type="submit"] {
   font-weight: 600;
   cursor: pointer;
   margin-top: 16px;
-  transition: background var(--transition-base), box-shadow var(--transition-base), transform 0.02s;
+  transition: background var(--transition-base),
+    box-shadow var(--transition-base), transform 0.02s;
   box-shadow: var(--shadow-xs);
 }
 button:hover,
@@ -1150,7 +1192,8 @@ details > div {
 }
 
 /* Make images/videos responsive across the site */
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
   display: block;
@@ -1474,8 +1517,12 @@ img, video {
 
 /* Admin dashboard dark-mode card overrides */
 html.dark .stat-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow: var(--shadow-sm);
   color: var(--clr-text);
 }
@@ -1585,8 +1632,12 @@ html.dark .stat-card.main-revenue {
 }
 
 html.dark .detail-section {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--clr-text);
 }
 
@@ -1635,8 +1686,12 @@ html.dark .detail-section {
 }
 
 html.dark .month-comparison {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .month-comparison h3 {
@@ -1705,8 +1760,12 @@ html.dark .month-comparison {
 }
 
 html.dark .accounting-error {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,100,100,0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 100, 100, 0.12);
   color: var(--clr-text);
 }
 
@@ -2101,7 +2160,7 @@ html.dark .accounting-error {
 /* Dark-mode overrides for calendar and admin sections (apply when html.dark) */
 html.dark .calendar-container {
   background: linear-gradient(180deg, #071219, #081317);
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   color: var(--clr-text);
 }
 
@@ -2111,7 +2170,7 @@ html.dark .calendar-header h3 {
 
 html.dark .weekday {
   background: transparent;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 html.dark .calendar-days {
@@ -2119,13 +2178,13 @@ html.dark .calendar-days {
 }
 
 html.dark .calendar-day {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--clr-text);
-  border: 1px solid rgba(255,255,255,0.02);
+  border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 html.dark .day-number {
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 html.dark .day-order,
@@ -2134,30 +2193,50 @@ html.dark .day-order-more {
 }
 
 /* stronger palette for order status chips on dark background */
-html.dark .day-order.status-neu { background: #2b82d9; }
-html.dark .day-order.status-in-bearbeitung { background: #f39c12; }
-html.dark .day-order.status-fertig { background: #49a14d; }
-html.dark .day-order.status-abgeholt { background: #8a8a8a; }
+html.dark .day-order.status-neu {
+  background: #2b82d9;
+}
+html.dark .day-order.status-in-bearbeitung {
+  background: #f39c12;
+}
+html.dark .day-order.status-fertig {
+  background: #49a14d;
+}
+html.dark .day-order.status-abgeholt {
+  background: #8a8a8a;
+}
 
-html.dark .calendar-legend { border-top-color: rgba(255,255,255,0.03); }
+html.dark .calendar-legend {
+  border-top-color: rgba(255, 255, 255, 0.03);
+}
 
 /* Admin panel dark adjustments */
 html.dark .admin-section {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow: var(--shadow-sm);
 }
 
 html.dark .admin-section-header {
-  background: rgba(255,255,255,0.01);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-html.dark .admin-section-title { color: var(--clr-text); }
+html.dark .admin-section-title {
+  color: var(--clr-text);
+}
 
-html.dark .admin-section.collapsed { background: rgba(255,255,255,0.01); }
+html.dark .admin-section.collapsed {
+  background: rgba(255, 255, 255, 0.01);
+}
 
-html.dark .admin-section-header:hover { background: rgba(255,255,255,0.02); }
+html.dark .admin-section-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
 
 .admin-section.collapsed {
   background: #f8f9fa;
@@ -2260,18 +2339,22 @@ html.dark .admin-section-header:hover { background: rgba(255,255,255,0.02); }
 
 /* Dark-mode specific fixes for admin orders list (override inline light backgrounds) */
 html.dark .admin-section.orders details summary {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  ) !important;
   background-color: var(--clr-surface) !important;
   color: var(--clr-text) !important;
   padding: 8px !important;
   border-radius: 4px !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
 html.dark .admin-section.orders details > div {
   background: var(--clr-surface) !important;
   color: var(--clr-text) !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Make selects, options and inline buttons inside order details readable */
@@ -2279,21 +2362,20 @@ html.dark .admin-section.orders details select,
 html.dark .admin-section.orders details select option {
   background: var(--clr-bg) !important;
   color: var(--clr-text) !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark .admin-section.orders details .btn-small,
 html.dark .admin-section.orders details .btn-danger {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--clr-text);
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Ensure details summary marker is visible */
 html.dark .admin-section.orders details summary::-webkit-details-marker {
   color: var(--clr-text);
 }
-
 
 /* Mobile responsive für Admin-Bereiche */
 @media (max-width: 768px) {
@@ -2339,11 +2421,12 @@ html.dark .admin-section.orders details summary::-webkit-details-marker {
 /* Reduce heavy shadows and animations on very small screens for performance */
 @media (max-width: 480px) {
   :root {
-    --shadow-sm: 0 1px 4px rgba(0,0,0,0.04);
-    --shadow-md: 0 3px 10px rgba(0,0,0,0.04);
-    --shadow-card: 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.04);
   }
-  button, .btn {
+  button,
+  .btn {
     padding: 12px 18px;
     font-size: 1rem;
   }

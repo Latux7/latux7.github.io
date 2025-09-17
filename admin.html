@@ -135,8 +135,6 @@
           <div id="ordersList">Lade Bestellungen...</div>
         </div>
 
-        
-
         <!-- Benachrichtigungs-Einstellungen Modal -->
         <div
           id="notificationSettingsModal"
@@ -310,17 +308,50 @@
             <div id="accountingStats">Lade Buchhaltungsdaten...</div>
 
             <!-- Expenses UI moved under Buchhaltung & Umsatz -->
-            <div id="expensesSection" style="margin-top: 16px;">
-              <h3 style="margin-bottom: 8px;">💸 Ausgaben & Einnahmen erfassen</h3>
+            <div id="expensesSection" style="margin-top: 16px">
+              <h3 style="margin-bottom: 8px">
+                💸 Ausgaben & Einnahmen erfassen
+              </h3>
 
-              <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap;">
-                <div style="flex:0 0 160px;">
-                  <label style="font-size:0.85em; color:#444">Betrag (€)</label>
-                  <input id="expenseAmount" type="number" step="0.01" placeholder="0.00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" />
+              <div
+                style="
+                  display: flex;
+                  gap: 12px;
+                  align-items: flex-end;
+                  margin-bottom: 12px;
+                  flex-wrap: wrap;
+                "
+              >
+                <div style="flex: 0 0 160px">
+                  <label style="font-size: 0.85em; color: #444"
+                    >Betrag (€)</label
+                  >
+                  <input
+                    id="expenseAmount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    style="
+                      width: 100%;
+                      padding: 8px;
+                      border-radius: 6px;
+                      border: 1px solid #ddd;
+                    "
+                  />
                 </div>
-                <div style="flex:0 0 200px;">
-                  <label style="font-size:0.85em; color:#444">Kategorie</label>
-                  <select id="expenseCategory" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                <div style="flex: 0 0 200px">
+                  <label style="font-size: 0.85em; color: #444"
+                    >Kategorie</label
+                  >
+                  <select
+                    id="expenseCategory"
+                    style="
+                      width: 100%;
+                      padding: 8px;
+                      border-radius: 6px;
+                      border: 1px solid #ddd;
+                    "
+                  >
                     <option value="Zutaten">Zutaten</option>
                     <option value="Miete">Miete</option>
                     <option value="Personal">Personal</option>
@@ -328,31 +359,114 @@
                     <option value="Umsatz">Umsatz</option>
                   </select>
                 </div>
-                <div style="flex:0 0 180px;">
-                  <label style="font-size:0.85em; color:#444">Datum</label>
-                  <input id="expenseDate" type="date" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" />
+                <div style="flex: 0 0 180px">
+                  <label style="font-size: 0.85em; color: #444">Datum</label>
+                  <input
+                    id="expenseDate"
+                    type="date"
+                    style="
+                      width: 100%;
+                      padding: 8px;
+                      border-radius: 6px;
+                      border: 1px solid #ddd;
+                    "
+                  />
                 </div>
-                <div style="flex:1; min-width:220px;">
-                  <label style="font-size:0.85em; color:#444">Notiz</label>
-                  <input id="expenseNote" type="text" placeholder="Optional" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" />
+                <div style="flex: 1; min-width: 220px">
+                  <label style="font-size: 0.85em; color: #444">Notiz</label>
+                  <input
+                    id="expenseNote"
+                    type="text"
+                    placeholder="Optional"
+                    style="
+                      width: 100%;
+                      padding: 8px;
+                      border-radius: 6px;
+                      border: 1px solid #ddd;
+                    "
+                  />
                 </div>
 
                 <div>
-                  <button id="addExpenseBtn" style="background:#92d050; color:white; border:none; padding:10px 14px; border-radius:6px; cursor:pointer;">Speichern</button>
+                  <button
+                    id="addExpenseBtn"
+                    style="
+                      background: #92d050;
+                      color: white;
+                      border: none;
+                      padding: 10px 14px;
+                      border-radius: 6px;
+                      cursor: pointer;
+                    "
+                  >
+                    Speichern
+                  </button>
                 </div>
               </div>
 
-              <div style="display:flex; gap:16px; align-items:center; margin-bottom:12px;">
-                <div class="stat-card" id="expensesTotalCard" style="padding:10px 14px; border-radius:8px; background:#f8f9fa; border:1px solid #eee;">Ausgaben: <strong id="expensesTotal">0 €</strong></div>
-                <div class="stat-card" id="revenueCard" style="padding:10px 14px; border-radius:8px; background:#f8f9fa; border:1px solid #eee;">Umsatz: <strong><span id="revenueAmount">0 €</span></strong></div>
-                <div class="stat-card" id="profitCard" style="padding:10px 14px; border-radius:8px; background:#fff; border:1px solid #eee;">Gewinn: <strong id="profitAmount">0 €</strong></div>
+              <div
+                style="
+                  display: flex;
+                  gap: 16px;
+                  align-items: center;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  class="stat-card"
+                  id="expensesTotalCard"
+                  style="
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                    background: #f8f9fa;
+                    border: 1px solid #eee;
+                  "
+                >
+                  Ausgaben: <strong id="expensesTotal">0 €</strong>
+                </div>
+                <div
+                  class="stat-card"
+                  id="revenueCard"
+                  style="
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                    background: #f8f9fa;
+                    border: 1px solid #eee;
+                  "
+                >
+                  Umsatz: <strong><span id="revenueAmount">0 €</span></strong>
+                </div>
+                <div
+                  class="stat-card"
+                  id="profitCard"
+                  style="
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                    background: #fff;
+                    border: 1px solid #eee;
+                  "
+                >
+                  Gewinn: <strong id="profitAmount">0 €</strong>
+                </div>
                 <div>
-                  <button id="exportExpensesCsv" style="background:#3498db; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">Export CSV</button>
+                  <button
+                    id="exportExpensesCsv"
+                    style="
+                      background: #3498db;
+                      color: white;
+                      border: none;
+                      padding: 8px 12px;
+                      border-radius: 6px;
+                      cursor: pointer;
+                    "
+                  >
+                    Export CSV
+                  </button>
                 </div>
               </div>
 
-              <div id="expensesList" style="margin-top:8px;">
-                <p style="color:#666;">Noch keine Einträge.</p>
+              <div id="expensesList" style="margin-top: 8px">
+                <p style="color: #666">Noch keine Einträge.</p>
               </div>
             </div>
           </div>
@@ -424,8 +538,8 @@
       <script src="js/admin/archive.js"></script>
       <script src="js/admin/accounting.js"></script>
       <script src="js/admin/calendar.js"></script>
-  <script src="js/admin/expenses.js"></script>
-  <script src="js/admin/admin.js"></script>
+      <script src="js/admin/expenses.js"></script>
+      <script src="js/admin/admin.js"></script>
 
       <script>
         // Kollabierbare Sektionen
