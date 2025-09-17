@@ -11,7 +11,7 @@ class NotificationManager {
         // EmailJS initialisieren
         if (typeof emailjs !== 'undefined' && window.emailConfig) {
             emailjs.init(window.emailConfig.publicKey);
-            console.log('EmailJS initialisiert');
+            // EmailJS initialized
         } else {
             console.warn('EmailJS oder emailConfig nicht verfügbar');
         }
@@ -46,7 +46,7 @@ class NotificationManager {
                     sonderwunsch: orderData.sonderwunsch
                 };
 
-                console.log('Sende Admin-Benachrichtigung mit Daten:', combinedOrderData);
+                // Sending admin notification with data
 
                 // Verwende direkt die getOrderEmailJSData Funktion
                 const templateData = window.emailTemplateManager.getOrderEmailJSData(combinedOrderData);
@@ -58,7 +58,7 @@ class NotificationManager {
                     to_name: "Admin"
                 };
 
-                console.log('EmailJS Template-Daten:', emailData);
+                // Prepared EmailJS template data
 
                 await emailjs.send(
                     window.emailConfig.serviceId,
@@ -66,7 +66,7 @@ class NotificationManager {
                     emailData,
                     window.emailConfig.publicKey
                 );
-                console.log("Admin E-Mail-Benachrichtigung (Bestellung) gesendet");
+                // Admin email notification (order) sent
             }
 
             // Sound-Benachrichtigung im Browser (always-on)
@@ -140,7 +140,7 @@ class NotificationManager {
                     emailData,
                     window.emailConfig.publicKey
                 );
-                console.log('Admin E-Mail-Benachrichtigung (Bewertung) gesendet');
+                // Admin email notification (review) sent
             }
 
             // Sound-Benachrichtigung im Browser (always-on)
@@ -165,7 +165,7 @@ class NotificationManager {
             if (this.lastOrderCount > 0 && currentOrderCount > this.lastOrderCount) {
                 // Neue Bestellung(en) gefunden!
                 const newOrders = currentOrderCount - this.lastOrderCount;
-                console.log(`${newOrders} neue Bestellung(en) gefunden!`);
+                // Detected new orders: ${newOrders}
 
                 // Hole die Details der neuesten Bestellung
                 const latestOrderSnap = await db
@@ -231,7 +231,7 @@ class NotificationManager {
             this.checkForNewOrders();
         }, config.checkInterval);
 
-        console.log(`Benachrichtigungsüberwachung gestartet (${config.checkInterval / 1000}s Intervall)`);
+        // Notification monitoring started
         // Keep notifications persistent — no UI toggle required
     }
 
@@ -240,7 +240,7 @@ class NotificationManager {
         if (this.notificationInterval) {
             clearInterval(this.notificationInterval);
             this.notificationInterval = null;
-            console.log("Benachrichtigungsüberwachung gestoppt");
+            // Notification monitoring stopped
             showNotification("Benachrichtigungsüberwachung deaktiviert", "success");
         }
     }

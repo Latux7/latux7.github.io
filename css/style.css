@@ -314,6 +314,7 @@ nav a {
   text-decoration: none;
   font-weight: 600;
   box-shadow: var(--shadow-xs);
+  min-width: 120px;
 }
 nav a:hover {
   background: var(--clr-accent);
@@ -356,7 +357,6 @@ input[type="submit"] {
   font-family: inherit;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 16px;
   box-shadow: var(--shadow-xs);
   transition: background var(--transition-base),
     box-shadow var(--transition-base), transform 0.02s;
@@ -399,6 +399,95 @@ input[type="submit"]:hover {
   background: var(--clr-danger);
   color: #fff;
 }
+
+/* Admin order card styles */
+.order-card {
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(180deg, #ffffff, #fbfffa);
+  box-shadow: var(--shadow-soft);
+}
+.order-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+.order-card-left {
+  flex: 1;
+  min-width: 0;
+}
+.order-title {
+  font-weight: 700;
+  color: var(--clr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.order-meta {
+  font-size: 0.9rem;
+  color: var(--clr-muted);
+  margin-top: 4px;
+}
+.order-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.order-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--clr-accent-strong);
+}
+.order-card-body {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  background: transparent;
+}
+.order-status-badge {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.status-neu {
+  background: #ff9800;
+}
+.status-angenommen {
+  background: #8b4513;
+}
+.status-in-vorbereitung {
+  background: #ffb74d;
+}
+.status-fertig {
+  background: #4caf50;
+}
+.status-abgelehnt {
+  background: #f44336;
+}
+
+@media (max-width: 720px) {
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .order-card-right {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-price {
+    font-size: 1rem;
+  }
+}
 .btn-danger:hover {
   background: #b71c1c;
 }
@@ -412,6 +501,27 @@ input[type="submit"]:hover {
 }
 .btn-warning:hover {
   background: #e68900;
+}
+.btn-admin-logout {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(180deg, #ef6c57, #e74c3c);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(231, 76, 60, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-width: 120px;
+}
+.btn-admin-logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(231, 76, 60, 0.22);
+}
+.btn-admin-logout .logout-text {
+  font-size: 0.95rem;
 }
 .btn-success {
   background: #4caf50;
@@ -599,6 +709,13 @@ legend {
   background: #ffeaea;
   border-left-color: #f44336;
   color: #c62828;
+}
+
+/* Section divider used across admin pages */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.06));
+  border-radius: 2px;
 }
 .date-warning.warning {
   background: #fff3cd;
@@ -1389,6 +1506,87 @@ video {
 .stat-content {
   flex: 1;
 }
+
+/* File-picker area: prevent long filenames from causing overflow */
+.file-picker-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow: hidden;
+  min-width: 0; /* allow children to shrink inside flex containers */
+}
+.file-picker-wrapper .filename {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Make file picker flexible so it doesn't push the save button out of view */
+.file-picker-wrapper input[type="file"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.file-picker-wrapper .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Small screens: stack file input and save button if space is tight */
+/* Stack file input and save button earlier to prevent overflow on common phones */
+@media (max-width: 600px) {
+  .file-picker-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .file-picker-wrapper input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .file-picker-wrapper .btn {
+    width: 100%;
+  }
+}
+
+/* Extra safety for very narrow screens: force save button full-width */
+@media (max-width: 420px) {
+  .file-picker-wrapper {
+    gap: 6px;
+  }
+  .file-picker-wrapper .btn {
+    width: 100%;
+  }
+}
+
+/* Allow stat-cards to wrap into multiple rows on small screens */
+.expenses-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Allow controls to shrink instead of forcing overflow */
+.expenses-controls > * {
+  min-width: 0;
+}
+
+@media (max-width: 800px) {
+  .stat-card {
+    display: flex;
+    min-width: 0;
+  }
+  /* On narrower screens stack the controls vertically to avoid overflow */
+  .expenses-controls {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .expenses-controls > div,
+  .expenses-controls > button,
+  .expenses-controls .stat-card {
+    flex: 1 1 140px;
+  }
+}
 .stat-value {
   font-size: 1.8rem;
   font-weight: 700;
@@ -1551,6 +1749,39 @@ video {
   }
 }
 
+/* More compact accounting cards for small phones */
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 10px;
+    border-radius: 8px;
+    gap: 8px;
+  }
+  .stat-icon {
+    font-size: 1.6rem;
+  }
+  .stat-value {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  .detail-section,
+  .month-comparison,
+  .accounting-error {
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .accounting-controls {
+    padding: 10px 0;
+    gap: 8px;
+  }
+  .accounting-controls .btn {
+    min-width: 140px;
+    padding: 8px 12px;
+  }
+}
+
 /* Order limit and lead time */
 .order-limit-status,
 .order-deadline-info {
@@ -1564,6 +1795,32 @@ video {
 }
 .order-limit-status.unavailable {
   border: 2px solid #f44336;
+}
+
+/* Make admin collapsible section headers sticky so they stay visible while scrolling
+   Targets h2 elements that use the toggleSection(...) onclick (no HTML edits needed).
+*/
+h2[onclick*="toggleSection"] {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 12px;
+  z-index: 60;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.98)
+  );
+  padding: 8px 0;
+  /* ensure the header doesn't collapse visuals when sticky */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Slightly stronger visual while sticky on very small screens */
+@media (max-width: 480px) {
+  h2[onclick*="toggleSection"] {
+    top: 8px;
+    padding: 6px 0;
+  }
 }
 .order-deadline-info {
   border: 2px solid #2196f3;
@@ -1708,12 +1965,15 @@ video {
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  /* Ensure rows don't become excessively tall; allow them to grow if content needs but keep a reasonable minimum */
+  grid-auto-rows: minmax(56px, auto);
   gap: 1px;
   background: #e5e7eb;
 }
 .calendar-day {
   background: #fff;
-  min-height: 100px;
+  /* shorter minimum height so calendar isn't so tall on mobile */
+  min-height: 56px;
   padding: 8px;
   position: relative;
   cursor: pointer;
@@ -1746,10 +2006,13 @@ video {
   color: var(--clr-text);
 }
 .day-orders {
-  flex: 1;
+  /* Limit internal orders area so it doesn't expand the whole calendar cell
+     when many small .day-order items exist. Keep scroll inside the cell. */
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  max-height: 96px;
+  overflow-y: auto;
 }
 
 .day-order {
@@ -2268,12 +2531,23 @@ video {
   padding: 16px;
   box-shadow: var(--shadow-card);
 }
+.expenses-panel {
+  /* defensive: ensure the panel never forces horizontal overflow */
+  overflow-x: auto;
+}
 .expenses-controls {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 12px;
+}
+/* Ensure control items can shrink instead of pushing out */
+.expenses-controls > * {
+  min-width: 0;
+}
+.expenses-controls .btn {
+  flex: 0 1 auto;
 }
 .expenses-controls .btn {
   padding: 8px 12px;
@@ -2294,6 +2568,62 @@ video {
 }
 .expense-row:last-child {
   border-bottom: none;
+}
+
+/* Ensure controls in expenses panel wrap into multiple lines on small screens */
+@media (max-width: 800px) {
+  .expenses-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .expenses-controls .btn {
+    width: 100%;
+    text-align: center;
+    margin-top: 6px;
+  }
+  .expenses-list {
+    overflow-x: auto; /* allow scrolling for wide lists */
+  }
+}
+
+/* Catch any element that might be absolutely/fixed positioned inside panels and ensure it's visible */
+.expenses-panel * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Limit file input/button group to avoid pushing layout */
+.expenses-panel input[type="file"],
+.expenses-panel .file-picker-wrapper,
+.expenses-panel #expenseReceiptInput {
+  max-width: 100%;
+}
+
+/* Global safety: prevent images or long inline content from overflowing */
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables / preformatted text safety */
+table,
+pre,
+code {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* Ensure buttons in admin sidebars don't overflow and instead scale */
+@media (max-width: 640px) {
+  .site-header nav a,
+  .btn,
+  .btn-small {
+    white-space: nowrap;
+  }
 }
 .expense-select-checkbox {
   width: 18px;

@@ -68,7 +68,7 @@ class ArchiveManager {
             cutoffTime.setDate(cutoffTime.getDate() - 7);
             const cutoffISOString = cutoffTime.toISOString();
 
-            console.log(`Auto-Archivierung: Suche nach fertigen Bestellungen älter als ${cutoffTime.toLocaleDateString('de-DE')}`);
+            // Auto-archive: searching for finished orders older than cutoff
 
             // Hole alle fertigen Bestellungen (ohne Zeitfilter da Firebase Index-Problem)
             const finishedOrdersSnap = await this.db
@@ -241,7 +241,7 @@ class ArchiveManager {
                     ${order.autoArchived ? ' | <span class="badge badge-new">Auto-archiviert</span>' : ""}
                 </div>
                 <div style="font-size:1em;font-weight:600;">
-                    Bestellung #${doc.id.substr(-6)}
+                // Auto-archive started (every 30 minutes)
                 </div>
                 <div style="margin:4px 0;">
                     <strong>Kunde:</strong> ${order.customerId || "Unbekannt"} | 
@@ -249,7 +249,7 @@ class ArchiveManager {
                     <strong>Wert:</strong> ${order.gesamtpreis || "nicht berechnet"} €
                 </div>
                 <div style="margin:4px 0;" class="muted">
-                    <strong>Größe:</strong> ${size} | 
+                    // Auto-archive stopped
                     <strong>Extras:</strong> ${extras}
                 </div>
             </div>

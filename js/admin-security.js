@@ -4,7 +4,12 @@
     'use strict';
 
     // Konfiguration
-    const ADMIN_ACCESS_CODE = "tortenadmin2025"; // Geheimer Admin-Code
+    // Admin access code is now loaded from Firestore (collection `site_secrets`, doc `admin`).
+    // The document should contain `adminHash` (hex SHA-256). A legacy plaintext
+    // `code` field is supported during migration.
+    let ADMIN_ACCESS_CODE = null; // legacy plaintext (not recommended)
+    let ADMIN_ACCESS_HASH = null; // preferred: hex SHA-256
+    const FALLBACK_ADMIN_HASH = 'dbf7408ad5bb4580a4e6672c91bea0cfd23eddb065ccf36131793feac622f9e3'; // hash of 'tortenadmin2025' - remove after migration
     const ADMIN_SESSION_KEY = "lauras_admin_session";
     const ADMIN_SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 Stunden
     const MAX_LOGIN_ATTEMPTS = 3;
@@ -47,7 +52,8 @@
             const sessionData = {
                 timestamp: Date.now(),
                 granted: true,
-                code: ADMIN_ACCESS_CODE
+                // Do not store plaintext codes in localStorage; keep marker only
+                source: 'firestore'
             };
             localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(sessionData));
         },
@@ -295,13 +301,35 @@
 
         // Admin-Login verarbeiten
         handleAdminLogin(enteredCode, errorDiv, input) {
-            if (enteredCode === ADMIN_ACCESS_CODE) {
-                // Korrekter Code - Admin-Session erstellen und Seite direkt neu laden
-                this.clearLoginAttempts();
-                this.createAdminSession();
-                window.location.reload();
+            // Validate by comparing hashes when available. If only plaintext is
+            // present (legacy), compare directly.
+            const validate = () => {
+                if (ADMIN_ACCESS_HASH) {
+                    // compute SHA-256 of enteredCode and compare
+                    sha256Hex(enteredCode).then(hex => {
+                        if (hex === ADMIN_ACCESS_HASH) {
+                            this.clearLoginAttempts();
+                            this.createAdminSession();
+                            window.location.reload();
+                        } else {
+                            onFailed();
+                        }
+                    }).catch(() => onFailed());
+                } else if (ADMIN_ACCESS_CODE) {
+                    if (enteredCode === ADMIN_ACCESS_CODE) {
+                        this.clearLoginAttempts();
+                        this.createAdminSession();
+                        window.location.reload();
+                    } else {
+                        onFailed();
+                    }
+                } else {
+                    // No secret available - deny access
+                    onFailed();
+                }
+            };
 
-            } else {
+            const onFailed = () => {
                 // Falscher Code
                 const attempts = this.incrementLoginAttempts();
                 const remaining = MAX_LOGIN_ATTEMPTS - attempts.count;
@@ -330,7 +358,9 @@
                     input.style.borderColor = '#e74c3c';
                     input.style.background = '#f8f9fa';
                 }, 1000);
-            }
+            };
+
+            validate();
         },
 
         // Admin-Schutz initialisieren
@@ -339,10 +369,21 @@
                 return; // Nicht auf Admin-Seite
             }
 
-            // Prüfen ob bereits eingeloggt
-            if (!this.checkAdminSession()) {
-                this.showAdminLoginModal();
-            }
+            // Load admin secret first, then show login if not authenticated
+            loadAdminSecret().then(() => {
+                if (!this.checkAdminSession()) {
+                    this.showAdminLoginModal();
+                }
+            }).catch(err => {
+                console.warn('Could not load admin secret:', err);
+                // fallback to hardcoded hash during migration
+                if (!ADMIN_ACCESS_HASH && !ADMIN_ACCESS_CODE) {
+                    ADMIN_ACCESS_HASH = FALLBACK_ADMIN_HASH;
+                }
+                if (!this.checkAdminSession()) {
+                    this.showAdminLoginModal();
+                }
+            });
         },
 
         // Session verlängern bei Aktivität
@@ -393,5 +434,54 @@
         }
     `;
     document.head.appendChild(shakeStyle);
+
+    // --- Helper: Load admin secret from Firestore ---
+    function sha256Hex(str) {
+        const enc = new TextEncoder();
+        const data = enc.encode(str);
+        return crypto.subtle.digest('SHA-256', data).then(buf => {
+            const hex = Array.prototype.map.call(new Uint8Array(buf), x => ('00' + x.toString(16)).slice(-2)).join('');
+            return hex;
+        });
+    }
+
+    function loadAdminSecret() {
+        return new Promise((resolve, reject) => {
+            if (ADMIN_ACCESS_HASH || ADMIN_ACCESS_CODE) return resolve(true);
+
+            try {
+                if (typeof firebase === 'undefined') {
+                    return reject(new Error('Firebase SDK not available'));
+                }
+
+                if (!firebase.apps || !firebase.apps.length) {
+                    if (window.firebaseConfig) {
+                        try { firebase.initializeApp(window.firebaseConfig); } catch (e) { /* ignore */ }
+                    }
+                }
+
+                const db = firebase.firestore();
+                db.collection('site_secrets').doc('admin').get()
+                    .then(doc => {
+                        if (doc && doc.exists) {
+                            const data = doc.data();
+                            if (data) {
+                                if (data.adminHash) {
+                                    ADMIN_ACCESS_HASH = String(data.adminHash);
+                                    return resolve(true);
+                                }
+                                if (data.code) {
+                                    ADMIN_ACCESS_CODE = String(data.code);
+                                    return resolve(true);
+                                }
+                            }
+                        }
+                        return reject(new Error('No admin secret found'));
+                    }).catch(err => reject(err));
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
 
 })();

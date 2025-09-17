@@ -8,22 +8,22 @@ class OrderManager {
 
     init() {
         // Firebase App erst initialisieren, dann Firestore verwenden
-        console.log('OrderManager: Initialisiere Firebase...');
+        // Initialization logs removed for production
 
         if (typeof initializeFirebaseApp === 'function') {
             this.db = initializeFirebaseApp();
-            console.log('OrderManager: Firebase über initializeFirebaseApp initialisiert');
+            // Firebase initialized via initializeFirebaseApp
         } else {
             // Fallback: Firebase direkt verwenden falls schon initialisiert
             if (!firebase.apps.length) {
                 firebase.initializeApp(window.firebaseConfig);
-                console.log('OrderManager: Firebase direkt initialisiert');
+                // Firebase directly initialized
             }
             this.db = firebase.firestore();
         }
 
         if (this.db) {
-            console.log('OrderManager: Firestore erfolgreich initialisiert');
+            // Firestore initialized
         } else {
             console.error('OrderManager: Firestore-Initialisierung fehlgeschlagen!');
         }
@@ -163,7 +163,7 @@ class OrderManager {
                 templateParams.review_link = reviewLink;
             }
 
-            console.log("Sende E-Mail mit Template:", templateId, templateParams);
+            // Sending email with template
 
             const response = await emailjs.send(config.serviceId, templateId, templateParams, {
                 publicKey: config.publicKey,
@@ -171,7 +171,7 @@ class OrderManager {
                 to_name: customerName,
             });
 
-            console.log("E-Mail erfolgreich gesendet:", response);
+            // Email successfully sent
             showNotification("E-Mail erfolgreich an " + customerEmail + " gesendet!", "success");
         } catch (error) {
             console.error("E-Mail Versand Fehler:", error);
@@ -269,15 +269,28 @@ class OrderManager {
         const created = order.created ? formatDateTime(new Date(order.created)) : "Unbekannt";
 
         const customerBadge = isFirstTime
-            ? '<span class="badge badge-new" style="margin-left:8px;">NEUKUNDE</span>'
-            : '<span class="badge badge-old" style="margin-left:8px;">STAMMKUNDE</span>';
+            ? '<span class="badge badge-new" aria-hidden="true">NEUKUNDE</span>'
+            : '<span class="badge badge-old" aria-hidden="true">STAMMKUNDE</span>';
+
+        const statusNormalized = this.normalizeStatus(order.status || '');
+        const statusClass = 'status-' + String(statusNormalized).toLowerCase().replace(/\s+/g, '-');
 
         return `
-            <details class="list-item" style="margin-bottom:16px;">
-                <summary class="detail-summary">
-                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <strong>Wunschtermin:</strong> ${this.formatDesiredDate(order)} - <span class="order-status ${this.normalizeStatus(order.status)}">${order.status}</span>
+            <details class="list-item order-card" style="margin-bottom:12px;">
+                <summary class="order-card-header" role="button">
+                    <div class="order-card-left">
+                        <div class="order-title">Bestellung ${escapeHtml(orderId.substr(-6))} · ${escapeHtml(customerName)} ${customerBadge}</div>
+                        <div class="order-meta">
+                            <div class="order-meta-line">Wunschtermin: ${this.formatDesiredDate(order)}</div>
+                            <div class="order-meta-line">Erstellt: ${created}</div>
+                        </div>
+                    </div>
+                    <div class="order-card-right">
+                        <div class="order-price">${price} €</div>
+                        <span class="order-status-badge ${statusClass}">${escapeHtml(statusNormalized)}</span>
+                    </div>
                 </summary>
-                <div style="padding: 16px; border: 1px solid #ddd; border-top: none;">
+                <div class="order-card-body">
                     <p><strong>Kunde:</strong> ${escapeHtml(customerName)}</p>
                     <p><strong>E-Mail:</strong> ${escapeHtml(customerEmail)}</p>
                     <p><strong>Telefon:</strong> ${escapeHtml(customerPhone)}</p>
@@ -289,20 +302,20 @@ class OrderManager {
                     <p><strong>Extras:</strong> ${extras}</p>
                     <p><strong>Lieferung:</strong> ${liefertext}</p>
                     ${order.adresse ? `<p><strong>Adresse:</strong> ${escapeHtml(order.adresse.street)}, ${escapeHtml(order.adresse.plz)} ${escapeHtml(order.adresse.city)}</p>` : ""}
-                    <p><strong>Preis:</strong> ${price}€</p>
-                    <p><strong>Status:</strong> 
+                    <p><strong>Preis:</strong> ${price} €</p>
+                    <p><strong>Status:</strong>
                         <select onchange="this.nextElementSibling.style.display = 'inline'" data-order-id="${orderId}">
-                            <option value="neu" ${this.normalizeStatus(order.status) === "neu" ? "selected" : ""}>neu</option>
-                            <option value="angenommen" ${this.normalizeStatus(order.status) === "angenommen" ? "selected" : ""}>angenommen</option>
-                            <option value="in Vorbereitung" ${this.normalizeStatus(order.status) === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
-                            <option value="fertig" ${this.normalizeStatus(order.status) === "fertig" ? "selected" : ""}>fertig</option>
-                            <option value="abgelehnt" ${this.normalizeStatus(order.status) === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
+                            <option value="neu" ${statusNormalized === "neu" ? "selected" : ""}>neu</option>
+                            <option value="angenommen" ${statusNormalized === "angenommen" ? "selected" : ""}>angenommen</option>
+                            <option value="in Vorbereitung" ${statusNormalized === "in Vorbereitung" ? "selected" : ""}>in Vorbereitung</option>
+                            <option value="fertig" ${statusNormalized === "fertig" ? "selected" : ""}>fertig</option>
+                            <option value="abgelehnt" ${statusNormalized === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
                         </select>
                         <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" class="btn-small" style="display:none; margin-left:8px;">Speichern</button>
                     </p>
-                    <div style="margin-top: 12px;">
+                    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
                         <button class="btn-small" onclick="archiveOrder('${orderId}')">Archivieren</button>
-                        <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${order.status}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
+                        <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${escapeHtml(order.status || '')}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
                         <button class="btn-small danger-btn" onclick="deleteOrder('${orderId}')">Löschen</button>
                     </div>
                 </div>
@@ -392,7 +405,7 @@ class OrderManager {
     // Bestellungen laden und anzeigen
     async loadOrders() {
         try {
-            console.log('OrderManager: Lade Bestellungen...');
+            // Load orders (loading indicator shown)
             showLoading('ordersList', 'Lade Bestellungen...');
 
             if (!this.db) {
@@ -401,8 +414,7 @@ class OrderManager {
                 return;
             }
 
-            // Teste Firebase-Verbindung
-            console.log('OrderManager: Teste Firebase-Verbindung...');
+            // Teste Firebase-Verbindung (logs removed)
 
             // Vereinfachte Abfrage ohne Composite Index
             // Erst alle aktiven Bestellungen laden, dann clientseitig filtern und sortieren
@@ -411,10 +423,10 @@ class OrderManager {
                 .orderBy("created", "desc")
                 .get();
 
-            console.log('OrderManager: Datenbankabfrage abgeschlossen. Anzahl Dokumente:', ordersSnapshot.size);
+            // Database query completed. Documents: (hidden)
 
             if (ordersSnapshot.empty) {
-                console.log('OrderManager: Keine Bestellungen in der Datenbank gefunden');
+                // No orders found
                 document.getElementById('ordersList').innerHTML = '<p>Keine Bestellungen vorhanden.</p>';
                 return;
             }
@@ -466,17 +478,17 @@ class OrderManager {
                     return dateB - dateA;
                 });
 
-            console.log('OrderManager: Gefilterte aktive Bestellungen:', activeOrders.length);
+            // Filtered active orders count available
 
             let html = "";
             for (const doc of activeOrders) {
                 const order = doc.data();
-                console.log('OrderManager: Verarbeite Bestellung:', doc.id, order);
+                // Processing order: (id hidden)
                 html += await this.renderOrder(doc, order);
             }
 
             document.getElementById('ordersList').innerHTML = html;
-            console.log('OrderManager: Bestellungen erfolgreich geladen und angezeigt');
+            // Orders loaded and rendered
         } catch (error) {
             console.error("OrderManager: Fehler beim Laden der Bestellungen:", error);
             document.getElementById('ordersList').innerHTML = '<p style="color: red;">Fehler beim Laden der Bestellungen: ' + error.message + '</p>';

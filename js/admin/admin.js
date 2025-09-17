@@ -221,7 +221,7 @@ class AdminDashboard {
             });
 
             reviewsList.innerHTML = reviewsHTML;
-            console.log('✅ Bewertungen erfolgreich geladen');
+            // Reviews loaded
 
         } catch (error) {
             console.error('Fehler beim Laden der Bewertungen:', error);
@@ -309,7 +309,7 @@ class AdminDashboard {
             window.orderManager.loadOrders();
         }, 60000);
 
-        console.log("Auto-Refresh gestartet (alle 60 Sekunden)");
+        // Auto-refresh started
     }
 
     // Automatische Aktualisierung stoppen
@@ -317,7 +317,7 @@ class AdminDashboard {
         if (this.refreshInterval) {
             clearInterval(this.refreshInterval);
             this.refreshInterval = null;
-            console.log("Auto-Refresh gestoppt");
+            // Auto-refresh stopped
         }
     }
 

@@ -432,7 +432,7 @@ function isDateInPast(year, month, day) {
  */
 async function loadOrdersCountForMonth(month, year) {
     try {
-        console.log(`📊 Lade Bestellungen für ${month + 1}/${year}...`);
+        // Load orders for the requested month
 
         const db = firebase.firestore();
         const startDate = new Date(year, month, 1);
@@ -442,7 +442,7 @@ async function loadOrdersCountForMonth(month, year) {
         const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
         const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
-        console.log(`🔍 Suche Bestellungen zwischen ${startDateStr} und ${endDateStr}...`);
+        // Searching orders between start and end dates
 
         // Reset für aktuellen Monat
         ordersCountData = {};
@@ -456,7 +456,7 @@ async function loadOrdersCountForMonth(month, year) {
                 .where('wunschtermin', '<=', endDateStr)
                 .get();
 
-            console.log(`📝 String-Format Bestellungen gefunden: ${stringQuery.size}`);
+            // Found string-format orders: (count hidden)
 
             stringQuery.forEach(doc => {
                 if (countedDocIds.has(doc.id)) return;
@@ -465,11 +465,11 @@ async function loadOrdersCountForMonth(month, year) {
                 if (wunschtermin && typeof wunschtermin === 'string') {
                     ordersCountData[wunschtermin] = (ordersCountData[wunschtermin] || 0) + 1;
                     countedDocIds.add(doc.id);
-                    console.log(`📅 String-Bestellung gefunden für: ${wunschtermin} (doc ${doc.id})`);
+                    // Found string-format order for date (doc id hidden)
                 }
             });
         } catch (stringError) {
-            console.log('ℹ️ String-Format Abfrage nicht möglich (normale bei älteren Daten)');
+            console.debug('String-format query not possible', stringError);
         }
 
         // Abfrage 2: Alte Bestellungen mit Timestamp-Format (wunschtermin.datum)
@@ -482,7 +482,7 @@ async function loadOrdersCountForMonth(month, year) {
                 .where('wunschtermin.datum', '<=', endTimestamp)
                 .get();
 
-            console.log(`🕒 Timestamp-Format Bestellungen gefunden: ${timestampQuery.size}`);
+            // Found timestamp-format orders: (count hidden)
 
             timestampQuery.forEach(doc => {
                 if (countedDocIds.has(doc.id)) return;
@@ -492,21 +492,21 @@ async function loadOrdersCountForMonth(month, year) {
                     const dateString = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
                     ordersCountData[dateString] = (ordersCountData[dateString] || 0) + 1;
                     countedDocIds.add(doc.id);
-                    console.log(`📅 Timestamp-Bestellung gefunden für: ${dateString} (doc ${doc.id})`);
+                    // Found timestamp-format order for date (doc id hidden)
                 }
             });
         } catch (timestampError) {
-            console.log('ℹ️ Timestamp-Format Abfrage nicht möglich');
+            console.debug('Timestamp-format query not possible', timestampError);
         }
 
-        console.log(`📊 Vorläufige Bestellungen geladen:`, ordersCountData);
+        // Preliminary orders loaded
 
         // Falls wichtige Daten fehlen (z.B. neue Dokumentstruktur), führe eine breite Fallback-Suche durch
         // Diese lädt bis zu 1000 Bestellungen und durchsucht JSON-Strings nach Datums-Mustern YYYY-MM-DD
         try {
             const fallbackLimit = 1000;
             const allQuery = await db.collection('orders').limit(fallbackLimit).get();
-            console.log(`🔎 Fallback-Scan: ${allQuery.size} Dokumente überprüft (Limit ${fallbackLimit})`);
+            // Fallback scan completed (document count hidden)
 
             allQuery.forEach(doc => {
                 if (countedDocIds.has(doc.id)) return; // bereits gezählt
@@ -541,13 +541,12 @@ async function loadOrdersCountForMonth(month, year) {
 
                 if (seen.size > 0) {
                     countedDocIds.add(doc.id);
-                    console.log(`📅 Fallback fand Daten ${Array.from(seen).join(', ')} in Doc ${doc.id}`);
+                    // Fallback found date patterns in document (doc id hidden)
                 }
             });
-
-            console.log(`📊 Finale Bestellungen nach Fallback:`, ordersCountData);
+            // Final orders after fallback
         } catch (fbError) {
-            console.log('ℹ️ Fallback-Scan fehlgeschlagen:', fbError);
+            console.warn('Fallback scan failed', fbError);
         }
 
     } catch (error) {
@@ -604,18 +603,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Debug-Hilfsfunktionen
 window.printOrdersCountData = function () {
-    console.log('ordersCountData:', ordersCountData);
+    console.debug('ordersCountData (debug):', ordersCountData);
     return ordersCountData;
 };
 
 window.debugCalendarDate = async function (dateString) {
-    console.log('Debug: Prüfe Datum', dateString);
+    console.debug('Debug: Prüfe Datum', dateString);
     try {
         const db = firebase.firestore();
         // Suche nach String-Feld
         const byString = await db.collection('orders').where('wunschtermin', '==', dateString).get();
-        console.log('String-Feld Treffer:', byString.size);
-        byString.forEach(d => console.log(' ->', d.id, d.data()));
+        console.debug('String-field hits (debug):', byString.size);
+        // Optionally inspect results during interactive debugging
+        // byString.forEach(d => console.debug(' ->', d.id, d.data()));
 
         // Suche nach Timestamp-Feld
         // Versuche direkte Timestamp-Vergleich (falls gespeichert)
@@ -628,10 +628,10 @@ window.debugCalendarDate = async function (dateString) {
                 .where('wunschtermin.datum', '>=', startTs)
                 .where('wunschtermin.datum', '<=', endTs)
                 .get();
-            console.log('Timestamp-Feld Treffer:', byTs.size);
-            byTs.forEach(d => console.log(' ->', d.id, d.data()));
+            console.debug('Timestamp-field hits (debug):', byTs.size);
+            // byTs.forEach(d => console.debug(' ->', d.id, d.data()));
         } catch (e) {
-            console.log('Timestamp-Abfrage schlug fehl:', e);
+            console.debug('Timestamp query failed (debug):', e);
         }
 
         // Fallback: brute-force scan (limit 500)
@@ -641,10 +641,10 @@ window.debugCalendarDate = async function (dateString) {
             const s = JSON.stringify(d.data());
             if (s.includes(dateString)) {
                 found++;
-                console.log('Fallback-Treffer:', d.id, d.data());
+                // console.debug('Fallback hit (doc):', d.id, d.data());
             }
         });
-        console.log('Fallback Treffer insgesamt:', found);
+        console.debug('Fallback hits total (debug):', found);
     } catch (err) {
         console.error('Debug-Abfrage Fehler:', err);
     }

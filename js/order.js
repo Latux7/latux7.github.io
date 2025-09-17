@@ -14,7 +14,7 @@ class OrderManager {
         // EmailJS initialisieren für Admin-Benachrichtigungen
         if (typeof emailjs !== 'undefined' && window.emailConfig) {
             emailjs.init(window.emailConfig.publicKey);
-            console.log('EmailJS für Bestellformular initialisiert');
+            // EmailJS initialized for order form
         }
 
         // Preise aus Konfiguration laden
@@ -325,7 +325,7 @@ class OrderManager {
     async checkDateAvailability(dateString) {
         if (!dateString || !window.orderLimitManager) return;
 
-        console.log(`OrderManager: Prüfe Vorlaufzeit und Kapazität für ${dateString}`);
+        // Check lead time and capacity for selected date
 
         try {
             const status = await window.orderLimitManager.canAcceptOrder(dateString);
@@ -626,7 +626,7 @@ class OrderManager {
     }
 
     validateForm(f) {
-        console.log('🔍 Validiere Formular...');
+        // Validate form
 
         // Name validieren
         if (!f.name.value.trim()) {
@@ -636,7 +636,7 @@ class OrderManager {
 
         // Wunschtermin validieren (WICHTIG!)
         const wunschDatum = f.wunschDatum.value;
-        console.log('🗓️ Validiere Wunschtermin:', wunschDatum);
+        // Validate requested date
 
         if (!wunschDatum || wunschDatum.trim() === '') {
             console.log('❌ Kein Wunschtermin eingegeben');
@@ -674,7 +674,7 @@ class OrderManager {
             return false;
         }
 
-        console.log('✅ Formular-Validierung erfolgreich');
+        // Form validation successful
         return true;
     }
 

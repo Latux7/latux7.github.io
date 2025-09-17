@@ -340,7 +340,8 @@ class EmailTemplateManager {
 
     // EmailJS-Daten für Bestellungen - Vereinfacht für garantierte Kompatibilität
     getOrderEmailJSData(orderData) {
-        console.log('EmailTemplateManager: Verarbeite Bestellungsdaten:', orderData);
+        // Demote verbose processing log to console.debug to avoid noisy production output
+        console.debug('EmailTemplateManager: Verarbeite Bestellungsdaten:', orderData);
 
         return {
             // Header-Bereich

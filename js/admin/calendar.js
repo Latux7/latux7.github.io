@@ -9,33 +9,29 @@ class CalendarManager {
     }
 
     init() {
-        console.log('CalendarManager: Initialisiere Firebase...');
+        // CalendarManager init
 
         // Firebase App erst initialisieren, dann Firestore verwenden
         if (typeof initializeFirebaseApp === 'function') {
             this.db = initializeFirebaseApp();
-            console.log('CalendarManager: Firebase über initializeFirebaseApp initialisiert');
         } else {
             console.warn('CalendarManager: initializeFirebaseApp nicht verfügbar, verwende Fallback');
             setTimeout(() => {
                 if (typeof initializeFirebaseApp === 'function') {
                     this.db = initializeFirebaseApp();
-                    console.log('CalendarManager: Firebase über Fallback initialisiert');
                 } else {
                     // Direkte Initialisierung falls die Funktion immer noch nicht verfügbar ist
                     if (!firebase.apps.length) {
                         firebase.initializeApp(window.firebaseConfig);
                     }
                     this.db = firebase.firestore();
-                    console.log('CalendarManager: Firebase direkt initialisiert');
+                    // debug: firebase directly initialized
                 }
                 this.loadCalendarData();
             }, 1000);
         }
 
-        if (this.db) {
-            console.log('CalendarManager: Firestore erfolgreich initialisiert');
-        } else {
+        if (!this.db) {
             console.error('CalendarManager: Firestore-Initialisierung fehlgeschlagen!');
         }
     }
@@ -43,7 +39,7 @@ class CalendarManager {
     // Bestellungen für einen Monat laden
     async loadOrdersForMonth(year, month) {
         try {
-            console.log(`CalendarManager: Lade Bestellungen für ${month + 1}/${year}`);
+            // load orders for month
 
             if (!this.db) {
                 console.error('CalendarManager: Firebase noch nicht initialisiert');
@@ -54,7 +50,7 @@ class CalendarManager {
             const startDate = new Date(year, month, 1);
             const endDate = new Date(year, month + 1, 0, 23, 59, 59);
 
-            console.log(`CalendarManager: Datumbereich: ${startDate.toDateString()} bis ${endDate.toDateString()}`);
+            // datumbereich start/end
 
             let orders = [];
 
@@ -64,14 +60,14 @@ class CalendarManager {
                 const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
                 const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
 
-                console.log(`CalendarManager: Suche nach wunschtermin.datum (Timestamp) zwischen ${startDate.toDateString()} und ${endDate.toDateString()}`);
+                // searching for timestamp based wunschtermin
 
                 const ordersSnapshot1 = await this.db.collection('orders')
                     .where('wunschtermin.datum', '>=', startTimestamp)
                     .where('wunschtermin.datum', '<=', endTimestamp)
                     .get();
 
-                console.log(`CalendarManager: Methode 1 (wunschtermin.datum Timestamp): ${ordersSnapshot1.size} Bestellungen`);
+                // method 1 results
 
                 ordersSnapshot1.forEach(doc => {
                     const orderData = doc.data();
@@ -89,14 +85,14 @@ class CalendarManager {
                     const startDateString = startDate.toISOString().split('T')[0];
                     const endDateString = endDate.toISOString().split('T')[0];
 
-                    console.log(`CalendarManager: Suche nach wunschtermin.datum (String) zwischen ${startDateString} und ${endDateString}`);
+                    // searching for string based wunschtermin
 
                     const ordersSnapshot2 = await this.db.collection('orders')
                         .where('wunschtermin.datum', '>=', startDateString)
                         .where('wunschtermin.datum', '<=', endDateString)
                         .get();
 
-                    console.log(`CalendarManager: Methode 1b (wunschtermin.datum String): ${ordersSnapshot2.size} Bestellungen`);
+                    // method 1b results
 
                     ordersSnapshot2.forEach(doc => {
                         const orderData = doc.data();
@@ -120,7 +116,7 @@ class CalendarManager {
                         .where('created', '<=', endDate.toISOString())
                         .get();
 
-                    console.log(`CalendarManager: Fallback (created): ${ordersSnapshot2.size} Bestellungen`);
+                    // fallback (created) results
 
                     ordersSnapshot2.forEach(doc => {
                         const orderData = doc.data();
@@ -138,10 +134,7 @@ class CalendarManager {
                 }
             }
 
-            console.log(`CalendarManager: Gesamt gefundene Bestellungen: ${orders.length}`);
-            orders.forEach(order => {
-                console.log(`CalendarManager: Bestellung ${order.id} für ${order.displayDate}${order.isFallback ? ' (Fallback)' : ''}`);
-            });
+            // orders loaded: orders.length
 
             return orders;
 

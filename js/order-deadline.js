@@ -1,5 +1,5 @@
 // order-deadline.js - Mindest-Vorlaufzeit-System für Bestellungen
-console.log('🔄 OrderDeadlineManager wird geladen - Version 2024');
+// OrderDeadlineManager loading (production logs silenced)
 
 class OrderDeadlineManager {
     constructor() {
@@ -45,7 +45,8 @@ class OrderDeadlineManager {
         minDate.setHours(0, 0, 0, 0);
 
         const isEarly = selectedDate < minDate;
-        console.log(`🗓️ Datum-Validierung: Gewählt=${dateString}, Minimum=${this.getMinimumOrderDate()}, Zu früh=${isEarly}`);
+        // Date validation result (debug-level)
+        // console.debug(`Datum-Validierung: Gewählt=${dateString}, Minimum=${this.getMinimumOrderDate()}, Zu früh=${isEarly}`);
 
         return isEarly;
     }    // Prüfen ob ein Datum für Bestellungen gültig ist (Vorlaufzeit UND Kapazität)
@@ -83,7 +84,7 @@ class OrderDeadlineManager {
         const ordersCount = await this.countOrdersForDate(dateString);
         const isCapacityFull = ordersCount >= this.maxOrdersPerDay;
 
-        console.log(`OrderDeadlineManager: ${dateString} - Bestellungen: ${ordersCount}/${this.maxOrdersPerDay}, Voll: ${isCapacityFull}`);
+        // Capacity check result for date (counts hidden)
 
         return {
             canAccept: !isDateTooEarly && !isCapacityFull,
@@ -143,11 +144,11 @@ class OrderDeadlineManager {
             // Versuche Datum aus dem Formular zu lesen - korrekte ID verwenden
             const dateInput = document.getElementById('wunschDatum'); // KORRIGIERT: wunschDatum statt wunschtermin
             selectedDate = dateInput ? dateInput.value : null;
-            console.log('🔍 Datum aus Formular gelesen:', selectedDate);
+            // Date read from form (debug-level)
         }
 
         if (!selectedDate || selectedDate.trim() === '') {
-            console.log('❌ Kein Datum gefunden - zeige Modal');
+            // No date found - showing modal
             this.showDateRequiredModal();
             return false;
         }
@@ -156,16 +157,16 @@ class OrderDeadlineManager {
 
         if (!validation.canAccept) {
             if (validation.isDateTooEarly) {
-                console.log('❌ Datum zu früh - zeige Vorlaufzeit-Modal');
+                // Date too early - showing lead-time modal
                 this.showDateTooEarlyModal(validation);
             } else if (validation.isCapacityFull) {
-                console.log('❌ Kapazität voll - zeige Kapazitäts-Modal');
+                // Capacity full - showing capacity modal
                 this.showCapacityFullModal(validation);
             }
             return false;
         }
 
-        console.log('✅ Datum verfügbar - Bestellung kann fortgesetzt werden');
+        // Date available - proceed
         return true;
     }
 
@@ -285,7 +286,7 @@ class OrderDeadlineManager {
         if (dateInput) {
             const minDate = this.getMinimumOrderDate();
             dateInput.setAttribute('min', minDate);
-            console.log(`OrderDeadlineManager: Kalender Mindestdatum gesetzt auf: ${minDate}`);
+            // Calendar minimum date set (value hidden)
         } else {
             console.warn('OrderDeadlineManager: Datum-Input mit ID "wunschDatum" nicht gefunden');
         }
@@ -311,7 +312,7 @@ class OrderDeadlineManager {
                 totalCount += snapshot.size;
             }
 
-            console.log(`📊 Bestellungen für ${dateString}: ${totalCount}/${this.maxOrdersPerDay}`);
+            // Orders count for date computed (count hidden)
             return totalCount;
         } catch (error) {
             console.error('OrderDeadlineManager: Fehler beim Zählen der Bestellungen:', error);
@@ -337,7 +338,7 @@ class OrderDeadlineManager {
     // Konfiguration: Maximale Bestellungen pro Tag ändern
     setMaxOrdersPerDay(newMax) {
         this.maxOrdersPerDay = newMax;
-        console.log(`📈 Maximale Bestellungen pro Tag geändert auf: ${newMax}`);
+        // Max orders per day updated
         return this.maxOrdersPerDay;
     }
 }

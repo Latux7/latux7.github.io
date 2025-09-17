@@ -197,19 +197,37 @@ class ExpensesManager {
         if (this.receiptInput) this.receiptInput.value = '';
     }
 
-    removeExpense(id) {
-        // find expense and delete associated storage files if any
-        const toRemove = this.expenses.find(e => e.id === id);
-        if (toRemove && Array.isArray(toRemove.receipts)) {
-            toRemove.receipts.forEach(r => {
-                if (r.storagePath) {
-                    this.deleteReceiptFromFirebase(r.storagePath).catch(err => console.warn('Failed to delete receipt from storage', err));
-                }
-            });
-        }
+    async removeExpense(id) {
+        // Show a confirmation because expense entries are important bookkeeping records
+        const message = 'Möchten Sie diesen Ausgabeneintrag wirklich löschen? Alle zugehörigen Belege werden ebenfalls entfernt.';
 
-        this.expenses = this.expenses.filter(e => e.id !== id);
-        this.save();
+        // Fallback to native confirm if the nicer showConfirmation helper isn't available
+        const confirmHelper = (typeof showConfirmation === 'function')
+            ? (msg, onConfirm, onCancel) => showConfirmation(msg, onConfirm, onCancel)
+            : (msg, onConfirm, onCancel) => { if (confirm(msg)) onConfirm(); else if (onCancel) onCancel(); };
+
+        confirmHelper(message, async () => {
+            // find expense and delete associated storage files if any
+            const toRemove = this.expenses.find(e => e.id === id);
+            if (toRemove && Array.isArray(toRemove.receipts)) {
+                // attempt to delete receipts from Firebase Storage where applicable
+                await Promise.allSettled(toRemove.receipts.map(async (r) => {
+                    if (r.storagePath) {
+                        try {
+                            await this.deleteReceiptFromFirebase(r.storagePath);
+                        } catch (err) {
+                            console.warn('Failed to delete receipt from storage', err);
+                        }
+                    }
+                }));
+            }
+
+            this.expenses = this.expenses.filter(e => e.id !== id);
+            this.save();
+        }, () => {
+            // cancelled by user - do nothing
+            return;
+        });
     }
 
     // Delete a file from Firebase Storage by storage path (returns promise)

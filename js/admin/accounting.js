@@ -9,34 +9,31 @@ class AccountingManager {
     }
 
     init() {
-        console.log('AccountingManager: Initialisiere Firebase...');
+        // debug: AccountingManager init
 
         // Firebase App erst initialisieren, dann Firestore verwenden
         if (typeof initializeFirebaseApp === 'function') {
             this.db = initializeFirebaseApp();
-            console.log('AccountingManager: Firebase über initializeFirebaseApp initialisiert');
         } else {
             console.warn('AccountingManager: initializeFirebaseApp nicht verfügbar, verwende Fallback');
             // Fallback für den Fall, dass Firebase noch nicht geladen ist
             setTimeout(() => {
                 if (typeof initializeFirebaseApp === 'function') {
                     this.db = initializeFirebaseApp();
-                    console.log('AccountingManager: Firebase über Fallback initialisiert');
+                    // debug: Firebase initialized via fallback
                 } else {
                     // Direkte Initialisierung falls die Funktion immer noch nicht verfügbar ist
                     if (!firebase.apps.length) {
                         firebase.initializeApp(window.firebaseConfig);
                     }
                     this.db = firebase.firestore();
-                    console.log('AccountingManager: Firebase direkt initialisiert');
+                    // debug: Firebase directly initialized
                 }
                 this.loadAccountingData();
             }, 1000);
         }
 
-        if (this.db) {
-            console.log('AccountingManager: Firestore erfolgreich initialisiert');
-        } else {
+        if (!this.db) {
             console.error('AccountingManager: Firestore-Initialisierung fehlgeschlagen!');
         }
     }
@@ -44,7 +41,7 @@ class AccountingManager {
     // Hauptfunktion: Buchhaltungsdaten laden
     async loadAccountingData() {
         try {
-            console.log('AccountingManager: Lade Buchhaltungsdaten...');
+            // loading accounting data
 
             if (!this.db) {
                 console.error('AccountingManager: Firebase noch nicht initialisiert');
@@ -53,29 +50,23 @@ class AccountingManager {
             }
 
             // Teste Firebase-Verbindung mit einfacher Abfrage
-            console.log('AccountingManager: Teste Firebase-Verbindung...');
             const testQuery = await this.db.collection('orders').limit(1).get();
-            console.log('AccountingManager: Firebase-Verbindung erfolgreich, verfügbare Bestellungen:', testQuery.size);
 
             // Aktueller Monat
-            console.log(`AccountingManager: Berechne Statistiken für ${this.currentMonth}/${this.currentYear}`);
+            // calculate stats for current month
             const currentMonthStats = await this.calculateMonthlyStats(this.currentYear, this.currentMonth);
 
             // Vorheriger Monat für Vergleich
             const prevMonth = this.currentMonth === 1 ? 12 : this.currentMonth - 1;
             const prevYear = this.currentMonth === 1 ? this.currentYear - 1 : this.currentYear;
-            console.log(`AccountingManager: Berechne Vergleichsstatistiken für ${prevMonth}/${prevYear}`);
+            // calculate stats for previous month
             const previousMonthStats = await this.calculateMonthlyStats(prevYear, prevMonth);
 
             // Jahresstatistiken
-            console.log(`AccountingManager: Berechne Jahresstatistiken für ${this.currentYear}`);
+            // calculate yearly stats
             const yearlyStats = await this.calculateYearlyStats(this.currentYear);
 
-            console.log('AccountingManager: Alle Statistiken berechnet:', {
-                currentMonth: currentMonthStats,
-                previousMonth: previousMonthStats,
-                yearly: yearlyStats
-            });
+            // computed all statistics
 
             // UI aktualisieren
             this.updateAccountingUI({
@@ -92,19 +83,19 @@ class AccountingManager {
 
     // Monatliche Statistiken berechnen
     async calculateMonthlyStats(year, month) {
-        console.log(`AccountingManager: Berechne Monatsstatistiken für ${month}/${year}`);
+        // calculate monthly statistics
 
         const startDate = new Date(year, month - 1, 1); // Monatserster
         const endDate = new Date(year, month, 0, 23, 59, 59); // Monatsletzter
 
-        console.log(`AccountingManager: Datumbereich: ${startDate.toISOString()} bis ${endDate.toISOString()}`);
+        // datumbereich: start/end
 
         const ordersSnapshot = await this.db.collection('orders')
             .where('created', '>=', startDate.toISOString())
             .where('created', '<=', endDate.toISOString())
             .get();
 
-        console.log(`AccountingManager: Gefundene Bestellungen für ${month}/${year}:`, ordersSnapshot.size);
+        // found orders: ordersSnapshot.size
 
         let totalRevenue = 0;
         let orderCount = 0;
@@ -120,12 +111,11 @@ class AccountingManager {
 
         ordersSnapshot.forEach(doc => {
             const order = doc.data();
-            console.log(`AccountingManager: Verarbeite Bestellung ${doc.id}:`, order);
             orderCount++;
 
             // Gesamtumsatz - versuche verschiedene Preisfelder
             const price = parseFloat(order.gesamtpreis) || parseFloat(order.price) || parseFloat(order.total) || 0;
-            console.log(`AccountingManager: Preis für Bestellung ${doc.id}: ${price}€`);
+            // price for order
             totalRevenue += price;
 
             // Status-Aufschlüsselung
@@ -173,7 +163,7 @@ class AccountingManager {
             period: `${this.getMonthName(month)} ${year}`
         };
 
-        console.log(`AccountingManager: Ergebnis für ${month}/${year}:`, result);
+        // monthly result computed
         return result;
     }
 
@@ -198,13 +188,24 @@ class AccountingManager {
 
         ordersSnapshot.forEach(doc => {
             const order = doc.data();
-            const orderDate = new Date(order.created);
-            const orderMonth = orderDate.getMonth() + 1; // 1-12
+            // Normalize order date (support ISO strings and Firestore Timestamps)
+            let orderDate;
+            if (order.created && typeof order.created.toDate === 'function') {
+                orderDate = order.created.toDate();
+            } else if (order.created) {
+                orderDate = new Date(order.created);
+            } else {
+                orderDate = new Date();
+            }
+            const orderMonth = (orderDate.getMonth ? orderDate.getMonth() : (new Date()).getMonth()) + 1; // 1-12
 
             orderCount++;
-            const price = parseFloat(order.price) || 0;
+            // Try the same price fields as monthly calculation
+            const price = parseFloat(order.gesamtpreis) || parseFloat(order.price) || parseFloat(order.total) || 0;
             totalRevenue += price;
 
+            // Safely update monthly breakdown
+            if (!monthlyBreakdown[orderMonth]) monthlyBreakdown[orderMonth] = { revenue: 0, orders: 0 };
             monthlyBreakdown[orderMonth].revenue += price;
             monthlyBreakdown[orderMonth].orders++;
         });
@@ -338,9 +339,6 @@ class AccountingManager {
 
             <!-- Refresh-Button -->
             <div class="accounting-controls">
-                <button onclick="window.accountingManager.loadAccountingData()" class="btn btn-outline">
-                    🔄 Buchhaltung aktualisieren
-                </button>
                 <button onclick="window.accountingManager.exportAccountingData()" class="btn btn-outline">
                     📊 Daten exportieren
                 </button>

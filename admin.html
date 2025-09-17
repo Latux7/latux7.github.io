@@ -31,19 +31,11 @@
           <a href="index.html">Startseite</a>
           <a href="bestellen.html">Bestellen</a>
           <button
+            class="btn-admin-logout"
             onclick="adminSecurity.logout()"
-            style="
-              background: #e74c3c;
-              color: white;
-              border: none;
-              padding: 8px 16px;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 14px;
-              margin-left: 10px;
-            "
+            aria-label="Logout"
           >
-            🔓 Admin Logout
+            <span class="logout-text">Logout</span>
           </button>
         </nav>
       </header>
@@ -72,43 +64,40 @@
           </button>
         </div>
 
-        <!-- Firebase Connection Help -->
+        <!-- connectionHelp removed per user request -->
+
+        <!-- Bestellkalender: moved to top for faster access (stacked above Bestellungen) -->
         <div
-          id="connectionHelp"
           style="
-            display: none;
+            margin-top: 12px;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
+            border-top: 1px solid #eef4ee;
+            padding-top: 18px;
           "
         >
-          <h4 style="margin-top: 0; color: #856404">
-            🚫 Verbindungsproblem erkannt
-          </h4>
-          <p><strong>Adblocker blockiert Firebase:</strong></p>
-          <ul style="margin: 10px 0">
-            <li>Deaktivieren Sie Ihren Adblocker für diese Seite</li>
-            <li>
-              Oder fügen Sie <code>*.googleapis.com</code> zur Whitelist hinzu
-            </li>
-            <li>Browser neu laden nach der Änderung</li>
-          </ul>
-          <button
-            onclick="testFirebaseConnection(); this.parentElement.style.display='none';"
-            style="
-              background: #28a745;
-              color: white;
-              border: none;
-              padding: 8px 16px;
-              border-radius: 4px;
-              cursor: pointer;
-            "
+          <h2
+            style="margin: 0 0 12px 0; cursor: pointer; user-select: none"
+            onclick="toggleSection('calendarSection')"
+            title="Klicken zum Ein-/Ausblenden"
           >
-            🔄 Verbindung erneut testen
-          </button>
+            📅 Bestellkalender <span id="calendarToggle">▶</span>
+          </h2>
+          <div id="calendarSection" style="display: none">
+            <div style="margin-bottom: 12px">
+              <button
+                onclick="window.calendarManager.goToToday()"
+                class="btn btn-small"
+                style="background: var(--clr-accent)"
+              >
+                📍 Heute
+              </button>
+            </div>
+            <div id="calendarView">Lade Kalender...</div>
+          </div>
         </div>
+
+        <!-- divider between calendar and orders -->
+        <div class="section-divider" style="margin: 18px 0"></div>
 
         <div
           style="
@@ -343,21 +332,17 @@
                   <label style="font-size: 0.85em; color: #444"
                     >Kategorie</label
                   >
-                  <select
+                  <input
                     id="expenseCategory"
+                    type="text"
+                    placeholder="z.B. Zutaten, Miete, Personal, Umsatz"
                     style="
                       width: 100%;
                       padding: 8px;
                       border-radius: 6px;
                       border: 1px solid #ddd;
                     "
-                  >
-                    <option value="Zutaten">Zutaten</option>
-                    <option value="Miete">Miete</option>
-                    <option value="Personal">Personal</option>
-                    <option value="Sonstiges">Sonstiges</option>
-                    <option value="Umsatz">Umsatz</option>
-                  </select>
+                  />
                 </div>
                 <div style="flex: 0 0 180px">
                   <label style="font-size: 0.85em; color: #444">Datum</label>
@@ -387,16 +372,20 @@
                   />
                 </div>
 
-                <div style="display: flex; gap: 8px; align-items: center">
+                <div
+                  class="file-picker-wrapper"
+                  style="display: flex; gap: 8px; align-items: center"
+                >
                   <input
                     id="expenseReceiptInput"
                     type="file"
                     accept="image/*,application/pdf"
                     title="Beleg hochladen"
-                    style="display: inline-block"
+                    style="display: inline-block; flex: 1 1 auto; min-width: 0"
                   />
                   <button
                     id="addExpenseBtn"
+                    class="btn"
                     style="
                       background: #92d050;
                       color: white;
@@ -404,6 +393,7 @@
                       padding: 10px 14px;
                       border-radius: 6px;
                       cursor: pointer;
+                      flex: 0 0 auto;
                     "
                   >
                     Speichern
@@ -412,8 +402,9 @@
               </div>
 
               <div
+                class="expenses-controls"
                 style="
-                  display: flex;
+                  display: block;
                   gap: 16px;
                   align-items: center;
                   margin-bottom: 12px;
@@ -455,6 +446,7 @@
                 <div>
                   <button
                     id="exportExpensesCsv"
+                    class="btn"
                     style="
                       background: #3498db;
                       color: white;
@@ -479,6 +471,7 @@
               >
                 <button
                   id="groupExpensesBtn"
+                  class="btn"
                   style="
                     background: #f39c12;
                     color: #fff;
@@ -497,34 +490,6 @@
                 <p style="color: #666">Noch keine Einträge.</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div
-          style="
-            margin-top: 32px;
-            border-top: 1px solid #eef4ee;
-            padding-top: 20px;
-          "
-        >
-          <h2
-            style="margin: 0 0 20px 0; cursor: pointer; user-select: none"
-            onclick="toggleSection('calendarSection')"
-            title="Klicken zum Ein-/Ausblenden"
-          >
-            📅 Bestellkalender <span id="calendarToggle">▶</span>
-          </h2>
-          <div id="calendarSection" style="display: none">
-            <div style="margin-bottom: 12px">
-              <button
-                onclick="window.calendarManager.goToToday()"
-                class="btn btn-small"
-                style="background: var(--clr-accent)"
-              >
-                📍 Heute
-              </button>
-            </div>
-            <div id="calendarView">Lade Kalender...</div>
           </div>
         </div>
 
@@ -558,8 +523,7 @@
       <script src="js/common.js"></script>
       <!-- Email Template Manager für dynamische Benachrichtigungen -->
       <script src="js/email-template-manager.js"></script>
-      <!-- Test-Fixes für kritische Probleme -->
-      <script src="js/test-fixes.js"></script>
+      <!-- Test-Fixes removed in production -->
       <!-- Zuletzt die App-Scripts -->
       <script src="js/admin/notifications.js"></script>
       <script src="js/admin/orders.js"></script>

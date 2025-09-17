@@ -40,7 +40,7 @@ class OrderLimitManager {
     // Bestellungen für ein bestimmtes Wunschtermin-Datum zählen (optional für Statistiken)
     async countOrdersForDate(dateString) {
         try {
-            console.log(`OrderLimitManager: Zähle Bestellungen für Wunschtermin: ${dateString}`);
+            // Counting orders for requested date (debug)
 
             if (!this.db) {
                 console.warn('OrderLimitManager: Firebase noch nicht initialisiert');
@@ -52,7 +52,7 @@ class OrderLimitManager {
                 .where('wunschtermin.datum', '==', dateString)
                 .get();
 
-            console.log(`OrderLimitManager: ${ordersSnapshot.size} Bestellungen für Wunschtermin ${dateString} gefunden`);
+            // Orders found for requested date (count hidden)
 
             return ordersSnapshot.size;
 
@@ -67,7 +67,7 @@ class OrderLimitManager {
         const targetDate = dateString || this.getTodayString();
         const currentCount = await this.countOrdersForDate(targetDate);
 
-        console.log(`OrderLimitManager: Wunschtermin ${targetDate} - ${currentCount}/${this.dailyLimit} Bestellungen`);
+        // Limit check for target date (counts hidden)
 
         return {
             canAccept: currentCount < this.dailyLimit,
@@ -190,7 +190,7 @@ class OrderLimitManager {
         }
 
         const wunschDatum = wunschDatumInput.value;
-        console.log(`OrderLimitManager: Validiere Bestellung für Wunschtermin: ${wunschDatum}`);
+        // Validate order submission for requested date
 
         const status = await this.canAcceptOrder(wunschDatum);
 
@@ -200,7 +200,7 @@ class OrderLimitManager {
             return false;
         }
 
-        console.log(`OrderLimitManager: Bestellung für ${wunschDatum} freigegeben (${status.currentCount}/${status.limit})`);
+        // Order for requested date approved (counts hidden)
         return true;
     }
 
@@ -306,7 +306,7 @@ class OrderLimitManager {
     async setDailyLimit(newLimit) {
         this.dailyLimit = newLimit;
         localStorage.setItem('customDailyLimit', newLimit.toString());
-        console.log(`Tägliches Limit auf ${newLimit} gesetzt`);
+        // Daily limit updated
 
         // UI aktualisieren
         await this.showLimitStatus();
