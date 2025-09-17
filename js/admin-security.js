@@ -57,14 +57,14 @@
             };
             localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(sessionData));
             // cleanup admin overlay if present
-            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
+            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) { }
         },
 
         // Admin-Session löschen
         clearAdminSession() {
             localStorage.removeItem(ADMIN_SESSION_KEY);
             // ensure overlay removed
-            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
+            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) { }
         },
 
         // Login attempt tracking disabled: keep compat functions but do not enforce lockouts
@@ -152,7 +152,7 @@
 
             // cleanup handler
             overlay._cleanup = function () {
-                try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+                try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) { }
                 document.body.style.overflow = previousOverflow || '';
             };
         },
@@ -166,11 +166,11 @@
                     // compute SHA-256 of enteredCode and compare
                     sha256Hex(enteredCode).then(hex => {
                         if (hex === ADMIN_ACCESS_HASH) {
-                                this.clearLoginAttempts();
-                                // cleanup admin overlay if present
-                                try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
-                                this.createAdminSession();
-                                window.location.reload();
+                            this.clearLoginAttempts();
+                            // cleanup admin overlay if present
+                            try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) { }
+                            this.createAdminSession();
+                            window.location.reload();
                         } else {
                             onFailed();
                         }
@@ -178,7 +178,7 @@
                 } else if (ADMIN_ACCESS_CODE) {
                     if (enteredCode === ADMIN_ACCESS_CODE) {
                         this.clearLoginAttempts();
-                        try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) {}
+                        try { const ov = document.getElementById('adminSecurityOverlay'); if (ov && typeof ov._cleanup === 'function') ov._cleanup(); } catch (e) { }
                         this.createAdminSession();
                         window.location.reload();
                     } else {

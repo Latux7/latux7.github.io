@@ -233,7 +233,7 @@
 
         // store cleanup handler
         overlay._cleanup = function () {
-            try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+            try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) { }
             document.body.style.overflow = previousOverflow || '';
         };
     }
