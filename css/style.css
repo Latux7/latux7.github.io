@@ -2399,7 +2399,7 @@ html.dark .admin-section.collapsed {
   background: rgba(255, 255, 255, 0.01);
 }
 
-html.dark .admin-section-header:hover {
+html.dark .ad min-section-header:hover {
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -3070,4 +3070,171 @@ html.dark .btn:focus {
   #embeddedCalendar {
     margin-bottom: 86px; /* leave space for the fixed toggle */
   }
+}
+
+/* ==========================
+   Admin - Expenses UI improvements
+   ========================== */
+
+/* Container and card styling for the expenses section */
+.expenses-panel {
+  background: var(--clr-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.expenses-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.expenses-controls .btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.expenses-list {
+  border-radius: 8px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.01));
+}
+
+.expense-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+.expense-row:last-child {
+  border-bottom: none;
+}
+
+.expense-select-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  flex: 0 0 22px;
+}
+
+.expense-meta {
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+.expense-amount {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.expense-catdate {
+  color: var(--clr-muted);
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+}
+.expense-note {
+  color: #333;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+
+.expense-receipts {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.expense-receipts img {
+  width: 52px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.expense-receipts a {
+  color: var(--clr-accent-strong);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.expense-actions {
+  flex: 0 0 auto;
+}
+.expense-actions .btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* compact header with select all */
+.expenses-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+.expenses-list-header .select-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* responsive tweaks */
+@media (max-width: 880px) {
+  .expense-receipts img {
+    width: 40px;
+  }
+  .expense-row {
+    padding: 10px;
+  }
+  .expenses-controls {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .expense-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .expense-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+}
+
+/* subtle hover and focus states */
+.expense-row:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+.expense-row:focus-within {
+  outline: 2px solid rgba(143, 212, 107, 0.08);
+}
+
+/* Dark mode adjustments */
+html.dark .expenses-panel {
+  background: linear-gradient(180deg, #071018, #0b1112);
+  border-color: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow-md);
+}
+html.dark .expenses-list {
+  background: transparent;
+}
+html.dark .expense-row {
+  border-bottom-color: rgba(255, 255, 255, 0.03);
+}
+html.dark .expense-catdate {
+  color: rgba(255, 255, 255, 0.72);
+}
+html.dark .expense-note {
+  color: var(--clr-text);
+}
+html.dark .expense-actions .btn {
+  background: #b23b3b;
 }

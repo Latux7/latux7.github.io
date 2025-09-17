@@ -387,7 +387,14 @@
                   />
                 </div>
 
-                <div>
+                <div style="display: flex; gap: 8px; align-items: center">
+                  <input
+                    id="expenseReceiptInput"
+                    type="file"
+                    accept="image/*,application/pdf"
+                    title="Beleg hochladen"
+                    style="display: inline-block"
+                  />
                   <button
                     id="addExpenseBtn"
                     style="
@@ -460,6 +467,30 @@
                     Export CSV
                   </button>
                 </div>
+              </div>
+
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 8px;
+                "
+              >
+                <button
+                  id="groupExpensesBtn"
+                  style="
+                    background: #f39c12;
+                    color: #fff;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                  "
+                >
+                  Ausgewählte gruppieren
+                </button>
+                <div style="flex: 1"></div>
               </div>
 
               <div id="expensesList" style="margin-top: 8px">
