@@ -138,10 +138,16 @@ class AdminDashboard {
         // Statistiken laden
         this.loadStats();
 
-        // Starte Benachrichtigungen (falls in localStorage aktiviert)
+        // Starte Benachrichtigungen (immer aktiviert: Email + Sound, 10s Intervall)
         this.loadNotificationSettings();
-
-        if (localStorage.getItem("notificationsEnabled") === "true" && window.notificationManager) {
+        if (window.notificationManager) {
+            // Ensure email+sound defaults are set
+            if (window.emailConfig && window.emailConfig.adminNotifications) {
+                window.emailConfig.adminNotifications.options = window.emailConfig.adminNotifications.options || {};
+                window.emailConfig.adminNotifications.options.email = true;
+                window.emailConfig.adminNotifications.options.sound = true;
+                window.emailConfig.adminNotifications.checkInterval = 10000;
+            }
             window.notificationManager.startOrderMonitoring();
         }
     }
@@ -158,7 +164,7 @@ class AdminDashboard {
             if (!reviewsList) return;
 
             if (reviewsSnapshot.empty) {
-                reviewsList.innerHTML = '<div style="color: #666; font-style: italic;">Noch keine Bewertungen vorhanden.</div>';
+                reviewsList.innerHTML = '<div class="admin-review-empty">Noch keine Bewertungen vorhanden.</div>';
                 return;
             }
 
@@ -189,24 +195,24 @@ class AdminDashboard {
                 const reviewDate = formatDate(review.created);
 
                 reviewsHTML += `
-                    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: #f9f9f9;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="admin-review-item">
+                        <div class="admin-review-meta">
                             <strong>${review.customerName || 'Anonym'}</strong>
-                            <span style="color: #666; font-size: 0.9em;">${reviewDate}</span>
+                            <span class="admin-review-date">${reviewDate}</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px;">
-                            <div><strong>Geschmack:</strong> <span style="color: #FFD700;">${tasteStars}</span> (${taste}/5)</div>
-                            <div><strong>Aussehen:</strong> <span style="color: #FFD700;">${appearanceStars}</span> (${appearance}/5)</div>
-                            <div><strong>Service:</strong> <span style="color: #FFD700;">${serviceStars}</span> (${service}/5)</div>
-                            <div><strong>Gesamt:</strong> <span style="color: #FFD700;">${overallStars}</span> (${overall}/5)</div>
+                        <div class="admin-review-stats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-bottom:10px;">
+                            <div><strong>Geschmack:</strong> <span class="admin-review-stars">${tasteStars}</span> (${taste}/5)</div>
+                            <div><strong>Aussehen:</strong> <span class="admin-review-stars">${appearanceStars}</span> (${appearance}/5)</div>
+                            <div><strong>Service:</strong> <span class="admin-review-stars">${serviceStars}</span> (${service}/5)</div>
+                            <div><strong>Gesamt:</strong> <span class="admin-review-stars">${overallStars}</span> (${overall}/5)</div>
                         </div>
-                        <div style="margin-bottom: 10px;">
-                            <strong>Weiterempfehlung:</strong> 
-                            <span style="background: ${npsColor}; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold;">${npsScore}/10</span>
+                        <div class="admin-review-nps-container" style="margin-bottom:10px;">
+                            <strong>Weiterempfehlung:</strong>
+                            <span class="admin-review-nps" style="background:${npsColor};">${npsScore}/10</span>
                         </div>
-                        ${comment ? `<div style="background: white; padding: 10px; border-radius: 3px; border-left: 3px solid #8B4513; font-style: italic; margin-top: 10px;"><strong>Kommentar:</strong><br>"${comment}"</div>` : ''}
-                        ${improvements ? `<div style="margin-top: 8px; color: #666; background: #f0f0f0; padding: 8px; border-radius: 3px;"><strong>Verbesserungen:</strong> ${improvements}</div>` : ''}
-                        <div style="margin-top: 8px; color: #999; font-size: 0.8em;">
+                        ${comment ? `<div class="admin-review-comment"><strong>Kommentar:</strong><br>"${comment}"</div>` : ''}
+                        ${improvements ? `<div class="admin-review-improvements"><strong>Verbesserungen:</strong> ${improvements}</div>` : ''}
+                        <div class="admin-review-meta-info" style="margin-top:8px;color:var(--clr-muted);font-size:0.9em;">
                             <strong>Bestellung:</strong> ${review.orderId || 'Unbekannt'} | 
                             <strong>Kunde:</strong> ${review.customerId || 'Unbekannt'}
                         </div>
@@ -260,7 +266,8 @@ class AdminDashboard {
 
     // Benachrichtigungseinstellungen laden
     loadNotificationSettings() {
-        const notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
+        // Notifications are enforced as always enabled for email and sound
+        const notificationsEnabled = true;
         const emailEnabled = true; // E-Mail-Benachrichtigungen sind IMMER aktiviert
         const soundEnabled = localStorage.getItem("soundNotifications") !== "false"; // Default true
         const checkInterval = localStorage.getItem("checkInterval") || "10";
@@ -273,7 +280,11 @@ class AdminDashboard {
             checkInterval: document.getElementById('checkInterval')
         };
 
-        if (elements.notificationsEnabled) elements.notificationsEnabled.checked = notificationsEnabled;
+        if (elements.notificationsEnabled) {
+            elements.notificationsEnabled.checked = true;
+            elements.notificationsEnabled.disabled = true;
+            elements.notificationsEnabled.title = "Benachrichtigungen sind permanent aktiviert";
+        }
         if (elements.emailNotifications) {
             elements.emailNotifications.checked = true; // Immer aktiviert
             elements.emailNotifications.disabled = true; // Nicht änderbar
@@ -284,9 +295,10 @@ class AdminDashboard {
 
         // EmailConfig aktualisieren
         if (window.emailConfig && window.emailConfig.adminNotifications) {
+            // Enforce always-on and 10s interval
             window.emailConfig.adminNotifications.options.email = true; // Immer aktiviert
             window.emailConfig.adminNotifications.options.sound = soundEnabled;
-            window.emailConfig.adminNotifications.checkInterval = parseInt(checkInterval) * 1000;
+            window.emailConfig.adminNotifications.checkInterval = 10000;
         }
     }
 
@@ -311,20 +323,14 @@ class AdminDashboard {
 
     // Benachrichtigungseinstellungen speichern
     saveNotificationSettings() {
-        const enabledCheckbox = document.getElementById('notificationsEnabled');
-        if (!enabledCheckbox) {
-            console.error('Notifications-Checkbox nicht gefunden');
-            showNotification("Fehler beim Speichern der Einstellungen", "error");
-            return;
-        }
-
-        const enabled = enabledCheckbox.checked;
+        // Notifications are always enabled; persist sound preference only
+        const enabled = true;
         const emailEnabled = true; // Email-Benachrichtigungen sind IMMER aktiviert
         const soundEnabled = document.getElementById('soundNotifications')?.checked || false;
         const checkInterval = document.getElementById('checkInterval')?.value || 10;
 
         // Einstellungen in localStorage speichern
-        localStorage.setItem("notificationsEnabled", enabled.toString());
+        localStorage.setItem("notificationsEnabled", "true");
         localStorage.setItem("emailNotifications", "true"); // Immer aktiviert
         localStorage.setItem("soundNotifications", soundEnabled.toString());
         localStorage.setItem("checkInterval", checkInterval.toString());

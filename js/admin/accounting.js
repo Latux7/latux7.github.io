@@ -346,6 +346,15 @@ class AccountingManager {
                 </button>
             </div>
         `;
+            // If the expenses manager is present, inform it about the current month revenue
+            try {
+                if (window && typeof window.setAdminRevenue === 'function') {
+                    // Pass the current month's total revenue so the ExpensesManager can compute profit automatically
+                    window.setAdminRevenue(currentMonth.totalRevenue || 0);
+                }
+            } catch (e) {
+                console.warn('AccountingManager: could not set admin revenue on expenses manager', e);
+            }
     }
 
     // Aufschlüsselung rendern

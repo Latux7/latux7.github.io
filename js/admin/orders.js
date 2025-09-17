@@ -269,13 +269,13 @@ class OrderManager {
         const created = order.created ? formatDateTime(new Date(order.created)) : "Unbekannt";
 
         const customerBadge = isFirstTime
-            ? '<span style="background: #ff9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 8px;">NEUKUNDE</span>'
-            : '<span style="background: #4caf50; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 8px;">STAMMKUNDE</span>';
+            ? '<span class="badge badge-new" style="margin-left:8px;">NEUKUNDE</span>'
+            : '<span class="badge badge-old" style="margin-left:8px;">STAMMKUNDE</span>';
 
         return `
-            <details style="margin-bottom:16px;">
-                <summary style="cursor: pointer; font-weight: bold; padding: 8px; background: #f5f5f5; border-radius: 4px;">
-                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <strong>Wunschtermin:</strong> ${this.formatDesiredDate(order)} - <span style="color: ${this.getStatusColor(order.status)}">${order.status}</span>
+            <details class="list-item" style="margin-bottom:16px;">
+                <summary class="detail-summary">
+                    Bestellung ${orderId.substr(-6)} - ${customerName}${customerBadge} - ${price}€ - <strong>Wunschtermin:</strong> ${this.formatDesiredDate(order)} - <span class="order-status ${this.normalizeStatus(order.status)}">${order.status}</span>
                 </summary>
                 <div style="padding: 16px; border: 1px solid #ddd; border-top: none;">
                     <p><strong>Kunde:</strong> ${escapeHtml(customerName)}</p>
@@ -298,12 +298,12 @@ class OrderManager {
                             <option value="fertig" ${this.normalizeStatus(order.status) === "fertig" ? "selected" : ""}>fertig</option>
                             <option value="abgelehnt" ${this.normalizeStatus(order.status) === "abgelehnt" ? "selected" : ""}>abgelehnt</option>
                         </select>
-                        <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" style="display:none; margin-left:8px;">Speichern</button>
+                        <button onclick="this.style.display='none'; updateOrderStatus('${orderId}', this.previousElementSibling.value)" class="btn-small" style="display:none; margin-left:8px;">Speichern</button>
                     </p>
                     <div style="margin-top: 12px;">
                         <button class="btn-small" onclick="archiveOrder('${orderId}')">Archivieren</button>
                         <button class="btn-small" onclick="sendStatusEmail('${orderId}', '${customerEmail}', '${escapeHtml(customerName)}', '${order.status}', '${size}', '${extras}', '${price}')" ${!customerEmail ? "disabled" : ""}>E-Mail senden</button>
-                        <button class="btn-small btn-danger" onclick="deleteOrder('${orderId}')">Löschen</button>
+                        <button class="btn-small danger-btn" onclick="deleteOrder('${orderId}')">Löschen</button>
                     </div>
                 </div>
             </details>

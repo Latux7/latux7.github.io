@@ -177,7 +177,7 @@ class ArchiveManager {
 
             let html = "";
             if (archiveSnap.empty) {
-                html = '<div style="margin:2em 0;color:#666;">Keine archivierten Bestellungen vorhanden.</div>';
+                html = '<div class="list-item" style="margin:2em 0;">Keine archivierten Bestellungen vorhanden.</div>';
             } else {
                 // Gruppierung nach Monat/Jahr
                 const groupedByMonth = {};
@@ -205,7 +205,7 @@ class ArchiveManager {
                         const month = groupedByMonth[monthKey];
                         html += `
                             <details style="margin-bottom:12px;">
-                                <summary style="font-size:1.1em;font-weight:600;color:#666;cursor:pointer;">
+                                <summary class="detail-summary">
                                     📅 ${month.label} (${month.orders.length} Bestellungen)
                                 </summary>
                                 <div style="margin-left:20px;margin-top:10px;">
@@ -235,12 +235,12 @@ class ArchiveManager {
         const extras = order.details?.extras?.length ? order.details.extras.join(", ") : "keine";
 
         return `
-            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-bottom:16px;background:#f9f9f9;">
-                <div style="font-size:0.95em;color:#666;margin-bottom:8px;">
+            <div class="list-item">
+                <div class="muted" style="font-size:0.95em;margin-bottom:8px;">
                     <strong>Archiviert am:</strong> ${archivedDate} | <strong>Erstellt am:</strong> ${createdDate}
-                    ${order.autoArchived ? ' | <span style="color:#ff9800;">Auto-archiviert</span>' : ""}
+                    ${order.autoArchived ? ' | <span class="badge badge-new">Auto-archiviert</span>' : ""}
                 </div>
-                <div style="font-size:1em;font-weight:600;color:#333;">
+                <div style="font-size:1em;font-weight:600;">
                     Bestellung #${doc.id.substr(-6)}
                 </div>
                 <div style="margin:4px 0;">
@@ -248,7 +248,7 @@ class ArchiveManager {
                     <strong>Status:</strong> ${order.status || "Unbekannt"} |
                     <strong>Wert:</strong> ${order.gesamtpreis || "nicht berechnet"} €
                 </div>
-                <div style="margin:4px 0;color:#666;">
+                <div style="margin:4px 0;" class="muted">
                     <strong>Größe:</strong> ${size} | 
                     <strong>Extras:</strong> ${extras}
                 </div>

@@ -24,11 +24,12 @@ class NotificationManager {
 
     // Admin-Benachrichtigung senden
     async sendAdminNotification(orderData, customerData) {
-        const config = window.emailConfig.adminNotifications;
+        const config = window.emailConfig.adminNotifications || {};
 
-        if (!config.options.email) {
-            return; // Keine Benachrichtigungen aktiviert
-        }
+        // Enforce always-on behavior: email and sound must be true for admin notifications
+        config.options = config.options || {};
+        config.options.email = true;
+        config.options.sound = true;
 
         try {
             // E-Mail-Benachrichtigung
@@ -68,10 +69,8 @@ class NotificationManager {
                 console.log("Admin E-Mail-Benachrichtigung (Bestellung) gesendet");
             }
 
-            // Sound-Benachrichtigung im Browser
-            if (config.options.sound) {
-                this.playNotificationSound();
-            }
+            // Sound-Benachrichtigung im Browser (always-on)
+            this.playNotificationSound();
 
             showNotification("Admin-Benachrichtigung für neue Bestellung gesendet!", "success");
         } catch (error) {
@@ -102,11 +101,12 @@ class NotificationManager {
 
     // Admin-Benachrichtigung für neue Bewertung senden
     async sendReviewNotification(reviewData) {
-        const config = window.emailConfig.adminNotifications;
+        const config = window.emailConfig.adminNotifications || {};
 
-        if (!config.options.email) {
-            return; // Keine Benachrichtigungen aktiviert
-        }
+        // Enforce always-on
+        config.options = config.options || {};
+        config.options.email = true;
+        config.options.sound = true;
 
         try {
             // E-Mail-Benachrichtigung für Bewertung
@@ -143,10 +143,8 @@ class NotificationManager {
                 console.log('Admin E-Mail-Benachrichtigung (Bewertung) gesendet');
             }
 
-            // Sound-Benachrichtigung im Browser
-            if (config.options.sound) {
-                this.playNotificationSound();
-            }
+            // Sound-Benachrichtigung im Browser (always-on)
+            this.playNotificationSound();
 
             showNotification("Admin-Benachrichtigung für neue Bewertung gesendet!", "success");
         } catch (error) {
@@ -214,7 +212,12 @@ class NotificationManager {
 
     // Benachrichtigungsüberwachung starten
     startOrderMonitoring() {
-        const config = window.emailConfig.adminNotifications;
+        // Enforce 10s interval and always-on options
+        const config = window.emailConfig.adminNotifications || {};
+        config.checkInterval = 10000; // 10 seconds
+        config.options = config.options || {};
+        config.options.email = true;
+        config.options.sound = true;
 
         if (this.notificationInterval) {
             this.stopOrderMonitoring();
@@ -223,13 +226,13 @@ class NotificationManager {
         // Erste Prüfung
         this.checkForNewOrders();
 
-        // Intervall starten
+        // Intervall starten (10s enforced)
         this.notificationInterval = setInterval(() => {
             this.checkForNewOrders();
-        }, config.checkInterval || 30000);
+        }, config.checkInterval);
 
         console.log(`Benachrichtigungsüberwachung gestartet (${config.checkInterval / 1000}s Intervall)`);
-        showNotification("Benachrichtigungsüberwachung aktiviert", "success");
+        // Keep notifications persistent — no UI toggle required
     }
 
     // Überwachung stoppen

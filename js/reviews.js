@@ -18,7 +18,6 @@ async function loadAndDisplayReviews() {
     let reviewsHTML = '';
     reviewsSnapshot.forEach(doc => {
       const review = doc.data();
-      console.log('Review-Daten:', review); // Debug-Ausgabe für Datenstruktur
 
       // Sichere Feldextraktion mit verschiedenen möglichen Feldnamen (deutsche Felder bevorzugt)
       const taste = review.geschmack || review.taste || 0;
